@@ -115,10 +115,10 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
                             <NavigationMenuTrigger className="!bg-inherit">Kategorie</NavigationMenuTrigger>
                             <NavigationMenuContent>
                                 <ul className="grid w-[340px] gap-3 p-4 md:w-[340px]">
-                                    <ListItem href="/category/gry" title="Gry">Pełne wersje gier do pobrania.</ListItem>
-                                    <ListItem href="/category/dlc" title="Dodatki (DLC)">Rozszerzenia i przepustki.</ListItem>
-                                    <ListItem href="/category/waluty" title="Waluty">Karty i punkty do gier.</ListItem>
-                                    <ListItem href="/category/subskrypcje" title="Subskrypcje">PS Plus, Game Pass itd.</ListItem>
+                                    <ListItem href="/products/games" title="Gry">Pełne wersje gier do pobrania.</ListItem>
+                                    <ListItem href="/products/dlc" title="Dodatki (DLC)">Rozszerzenia i przepustki.</ListItem>
+                                    <ListItem href="/products/currencies" title="Waluty">Karty i punkty do gier.</ListItem>
+                                    <ListItem href="/products/subscriptions" title="Subskrypcje">PS Plus, Game Pass itd.</ListItem>
                                 </ul>
 
                             </NavigationMenuContent>

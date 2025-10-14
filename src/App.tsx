@@ -1,8 +1,9 @@
 import "./App.css"
-import { Routes, Route } from "react-router-dom"
+import {Routes, Route, Navigate} from "react-router-dom"
 import { Home } from "./pages/Home.tsx"
-import {PrivacyPolicy} from "@/pages/PrivacyPolicy.tsx";
-import {TermsOfService} from "@/pages/TermsOfService.tsx";
+import { PrivacyPolicy } from "@/pages/PrivacyPolicy.tsx";
+import { TermsOfService } from "@/pages/TermsOfService.tsx";
+import { ProductsPage } from "@/pages/ProductsPage.tsx";
 
 function App() {
 
@@ -11,7 +12,9 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-of-service" element={<TermsOfService />} />
-                <Route path="/" element={<Home />} />
+                <Route path="/products/:category" element={<ProductsPage />} />
+                <Route path="/products" element={<Navigate to="/products/games" replace />} />
+
             </Routes>
     )
 }

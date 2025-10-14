@@ -58,7 +58,7 @@ export function GameCard({ name, platform, price, img }: GameCardProps) {
                        shadow-md group transition-all duration-500
                        hover:-translate-y-1
                        bg-gradient-to-b from-[#1A1A1A] via-[#1E1E1E] to-[#2A2A2A]
-                       h-[420px] w-[240px]`}
+                       h-[360px] w-full`}
             style={{
                 boxShadow: "0 0 15px rgba(212,164,74,0.15)",
             }}
@@ -67,7 +67,7 @@ export function GameCard({ name, platform, price, img }: GameCardProps) {
                 <img
                     src={img}
                     alt={name}
-                    className={`w-full h-52 object-cover opacity-95 transition-opacity duration-500
+                    className={`w-full h-44 object-cover opacity-95 transition-opacity duration-500
                                 ${isMobile ? "opacity-100" : "group-hover:opacity-100"}`}
                 />
                 <div className="absolute top-2 right-2 z-20">
@@ -76,29 +76,29 @@ export function GameCard({ name, platform, price, img }: GameCardProps) {
             </div>
 
             <CardContent
-                className={`absolute bottom-0 left-0 w-full p-4 text-[#F8F8F8] bg-gradient-to-t from-[#1C1C1C] via-[#2A2A2A]/90 to-transparent
+                className={`absolute bottom-0 left-0 w-full p-3 text-[#F8F8F8] bg-gradient-to-t from-[#1C1C1C] via-[#2A2A2A]/90 to-transparent
                            transition-all duration-500 ease-out flex flex-col justify-end z-30
                            ${isMobile ? "h-[60%]" : "h-[35%] group-hover:h-[60%]"}`}
             >
                 <div className={`transition-all duration-500 ${isMobile ? "-translate-y-2" : "group-hover:-translate-y-2"}`}>
-                    <h3 className="text-lg font-semibold text-[#F8F8F8] mb-1">{name}</h3>
-                    <span className="text-xl font-bold text-[#D4A44A]">${price}</span>
+                    <h3 className="text-base font-semibold text-[#F8F8F8] mb-1 line-clamp-2">{name}</h3>
+                    <span className="text-lg font-bold text-[#D4A44A]">${price}</span>
                 </div>
 
-                <div className={`mt-4 flex flex-col gap-2 z-40 transition-all duration-500
+                <div className={`mt-3 flex flex-col gap-2 z-40 transition-all duration-500
                                  ${isMobile ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5 group-hover:opacity-100 group-hover:translate-y-0"}`}>
                     <Button
                         size="sm"
                         variant="outline"
-                        className="w-full border-[#D4A44A] text-[#D4A44A] hover:bg-[#D4A44A] hover:text-black transition-all gap-1 font-semibold"
+                        className="w-full border-[#D4A44A] text-[#D4A44A] hover:bg-[#D4A44A] hover:text-black transition-all gap-1 font-semibold text-xs py-1.5"
                     >
-                        <ShoppingCart className="h-4 w-4" /> Dodaj do koszyka
+                        <ShoppingCart className="h-3.5 w-3.5" /> Dodaj do koszyka
                     </Button>
                     <Button
                         size="sm"
-                        className="w-full bg-[#D4A44A] text-black hover:bg-[#f1c562] transition-all gap-1 font-semibold"
+                        className="w-full bg-[#D4A44A] text-black hover:bg-[#f1c562] transition-all gap-1 font-semibold text-xs py-1.5"
                     >
-                        <Search className="h-4 w-4" /> Sprawdź
+                        <Search className="h-3.5 w-3.5" /> Sprawdź
                     </Button>
                 </div>
             </CardContent>
