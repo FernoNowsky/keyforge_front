@@ -2,6 +2,7 @@
 
 import { CarouselPlugin } from "./CarouselSlider"
 import { NavigationBar } from "./NavigationBar"
+import { Footer } from "./Footer"
 
 export function Home() {
     const user = { isLoggedIn: false, username: "GamerX" }
@@ -14,9 +15,7 @@ export function Home() {
                     <CarouselPlugin />
                 </section>
             </main>
-            <footer className="text-center py-6 text-sm text-[#B0B0B0] border-t border-[#3A3A3A]">
-                © {new Date().getFullYear()} KeyForge — All rights reserved.
-            </footer>
+            <Footer />
         </div>
     )
 }
