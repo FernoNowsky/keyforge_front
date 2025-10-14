@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/carousel"
 import { GameCard } from "./GameCard"
 
-export function CarouselPlugin() {
+export function TopGamesCarousel() {
     const plugin = React.useRef(
         Autoplay({ delay: 3000, stopOnInteraction: true })
     )
@@ -77,7 +77,7 @@ export function CarouselPlugin() {
 
     return (
         <div className="py-10 relative">
-            <h3 className="text-3xl font-bold text-[#D4A44A] mb-6 tracking-wide">
+            <h3 className="text-3xl font-bold text-[#D4A44A] mb-6 tracking-wide text-center">
                 Najpopularniejsze Gry
             </h3>
             <Carousel

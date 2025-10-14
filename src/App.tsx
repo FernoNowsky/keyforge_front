@@ -1,6 +1,6 @@
 import "./App.css"
 import { Routes, Route } from "react-router-dom"
-import { Home } from "./components/Home"
+import { Home } from "./pages/Home.tsx"
 import {PrivacyPolicy} from "@/pages/PrivacyPolicy.tsx";
 import {TermsOfService} from "@/pages/TermsOfService.tsx";
 
