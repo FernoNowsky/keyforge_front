@@ -48,7 +48,7 @@ function Home() {
                 let totalPages = 1
 
                 while (page <= totalPages && allGames.length < 12) {
-                    const res = await fetch(`http://localhost:8080/products?page=${page}`)
+                    const res = await fetch(import.meta.env.VITE_BASE_API_URL ?? 'http://localhost:8080' + `/products?page=${page}`)
                     if (!res.ok) throw new Error(`Błąd HTTP ${res.status}`)
 
                     const data: ApiResponse = await res.json()
