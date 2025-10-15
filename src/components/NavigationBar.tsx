@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Link } from "react-router-dom"
+import { Link } from "@tanstack/react-router"
 import { UserIcon, SearchIcon, ShoppingCartIcon } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import Logo from "@/assets/logo_keyforge.png"

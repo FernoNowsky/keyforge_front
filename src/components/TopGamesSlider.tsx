@@ -11,69 +11,22 @@ import {
 } from "@/components/ui/carousel"
 import { GameCard } from "./GameCard"
 
-export function TopGamesCarousel() {
+interface Game {
+    id: number
+    name: string
+    price: number
+    logoId: string
+    platform: { id: number; name: string }
+}
+
+interface TopGamesCarouselProps {
+    games: Game[]
+}
+
+export function TopGamesCarousel({ games }: TopGamesCarouselProps) {
     const plugin = React.useRef(
         Autoplay({ delay: 3000, stopOnInteraction: true })
     )
-
-    const games = [
-        {
-            id: 1,
-            name: "Cyberpunk 2077",
-            platform: "Steam",
-            price: 39.99,
-            img: "https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg",
-        },
-        {
-            id: 2,
-            name: "Red Dead Redemption 2",
-            platform: "Rockstar",
-            price: 49.99,
-            img: "https://cdn.cloudflare.steamstatic.com/steam/apps/1174180/header.jpg",
-        },
-        {
-            id: 3,
-            name: "Elden Ring",
-            platform: "Steam",
-            price: 59.99,
-            img: "https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/header.jpg",
-        },
-        {
-            id: 4,
-            name: "Assassin’s Creed Mirage",
-            platform: "Ubisoft Connect",
-            price: 44.99,
-            img: "https://cdn.cloudflare.steamstatic.com/steam/apps/3035570/header.jpg",
-        },
-        {
-            id: 5,
-            name: "Cyberpunk 2077",
-            platform: "Steam",
-            price: 39.99,
-            img: "https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg",
-        },
-        {
-            id: 6,
-            name: "Red Dead Redemption 2",
-            platform: "Rockstar",
-            price: 49.99,
-            img: "https://cdn.cloudflare.steamstatic.com/steam/apps/1174180/header.jpg",
-        },
-        {
-            id: 7,
-            name: "Elden Ring",
-            platform: "Steam",
-            price: 59.99,
-            img: "https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/header.jpg",
-        },
-        {
-            id: 8,
-            name: "Assassin’s Creed Mirage",
-            platform: "Ubisoft Connect",
-            price: 44.99,
-            img: "https://cdn.cloudflare.steamstatic.com/steam/apps/3035570/header.jpg",
-        },
-    ]
 
     return (
         <div className="py-10 relative">
@@ -95,9 +48,9 @@ export function TopGamesCarousel() {
                             <div className="p-1 sm:p-3">
                                 <GameCard
                                     name={game.name}
-                                    platform={game.platform}
+                                    platform={game.platform.name}
                                     price={game.price}
-                                    img={game.img}
+                                    imgId={game.logoId}
                                 />
                             </div>
                         </CarouselItem>

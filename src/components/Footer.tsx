@@ -1,10 +1,10 @@
 "use client"
 
-import { Link } from "react-router-dom"
+import { Link } from "@tanstack/react-router"
 
 export function Footer() {
     return (
-        <footer className="mt-12 border-t border-[#3A3A3A] bg-[#1C1C1C] text-[#B0B0B0]">
+        <footer className="border-t border-[#3A3A3A] bg-[#1C1C1C] text-[#B0B0B0]">
             <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div className="text-sm text-center md:text-left">
                     © {new Date().getFullYear()} KeyForge — Wszelkie prawa zastrzeżone.

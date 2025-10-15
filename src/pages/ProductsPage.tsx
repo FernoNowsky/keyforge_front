@@ -1,15 +1,12 @@
 "use client"
 
-import { useParams } from "react-router-dom"
-import { NavigationBar } from "@/components/NavigationBar"
-import { Footer } from "@/components/Footer"
+import { useParams } from "@tanstack/react-router"
 import { GameCard } from "@/components/GameCard"
 import { useState } from "react"
 import {type Filters, FiltersPanel } from "@/components/FiltersPanel"
 
 export function ProductsPage() {
-    const { category } = useParams<{ category: string }>()
-    const user = { isLoggedIn: false, username: "GamerX" }
+    const { category } = useParams({from: '/products/$category' })
 
     const categoryTitles: Record<string, string> = {
         games: "Gry",
@@ -58,7 +55,6 @@ export function ProductsPage() {
 
     return (
         <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#1C1C1C] to-[#2A2A2A] text-[#F8F8F8]">
-            <NavigationBar isLoggedIn={user.isLoggedIn} username={user.username} />
 
             <main className="flex-1 pt-8 pb-12 px-6 max-w-[1800px] mx-auto w-full">
                 <div className="flex flex-col lg:flex-row gap-8">
@@ -89,7 +85,7 @@ export function ProductsPage() {
                                         name={game.name}
                                         platform={game.platform}
                                         price={game.price}
-                                        img={game.img}
+                                        imgId={game.img}
                                     />
                                 </div>
                             ))}
@@ -103,8 +99,6 @@ export function ProductsPage() {
                     </section>
                 </div>
             </main>
-
-            <Footer />
         </div>
     )
 }

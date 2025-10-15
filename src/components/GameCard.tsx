@@ -9,7 +9,7 @@ type GameCardProps = {
     name: string
     platform: string
     price: number
-    img: string
+    imgId: string
 }
 
 const PlatformBadge = ({ platform }: { platform: string }) => {
@@ -40,7 +40,7 @@ const PlatformBadge = ({ platform }: { platform: string }) => {
     }
 }
 
-export function GameCard({ name, platform, price, img }: GameCardProps) {
+export function GameCard({ name, platform, price, imgId }: GameCardProps) {
     const [isMobile, setIsMobile] = React.useState(
         typeof window !== "undefined" ? window.innerWidth < 768 : false
     );
@@ -65,7 +65,7 @@ export function GameCard({ name, platform, price, img }: GameCardProps) {
         >
             <div className="relative z-10">
                 <img
-                    src={img}
+                    src={`https://cdn.cloudflare.steamstatic.com/steam/apps/${imgId}/header.jpg`}
                     alt={name}
                     className={`w-full h-44 object-cover opacity-95 transition-opacity duration-500
                                 ${isMobile ? "opacity-100" : "group-hover:opacity-100"}`}

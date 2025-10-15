@@ -207,7 +207,7 @@ export function FiltersPanel({ onFilter, onClear }: FiltersPanelProps) {
 
     useEffect(() => {
         const checkMobile = () => {
-            setIsMobile(window.innerWidth < 1000)
+            setIsMobile(window.innerWidth < 1024)
         }
 
         checkMobile()

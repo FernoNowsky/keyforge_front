@@ -1,18 +1,9 @@
 "use client"
 
-import { NavigationBar } from "@/components/NavigationBar"
-import { Footer } from "@/components/Footer"
-
 export function TermsOfService() {
-
-    const user = { isLoggedIn: false, username: "GamerX" }
-
-
     return (
 
         <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#1C1C1C] to-[#2A2A2A] text-[#F8F8F8]">
-            <NavigationBar isLoggedIn={user.isLoggedIn} username={user.username} />
-            <main className="flex-1 pt-6 overflow-hidden">
                 <section className="max-w-6xl mx-auto px-4">
             <h1 className="text-3xl font-bold text-[#D4A44A] mb-6">Regulamin sklepu KeyForge</h1>
 
@@ -61,8 +52,6 @@ export function TermsOfService() {
                 Ostatnia aktualizacja: {new Date().toLocaleDateString("pl-PL")}
             </p>
                 </section>
-            </main>
-            <Footer />
         </div>
     )
 }
