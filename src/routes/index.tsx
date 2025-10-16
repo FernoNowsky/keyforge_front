@@ -39,7 +39,7 @@ function Home() {
     const [topGames, setTopGames] = useState<Game[]>([])
     const [newGames, setNewGames] = useState<Game[]>([])
     const [loading, setLoading] = useState(true)
-    const [baseUrl] = useState('http://localhost:8080')
+    const [baseUrl] = useState(import.meta.env.VITE_BASE_API_URL ?? 'http://localhost:8080')
     console.log('baseUrl: ' + baseUrl);
 
     useEffect(() => {
