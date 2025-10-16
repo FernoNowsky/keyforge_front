@@ -4,6 +4,9 @@ import * as React from "react"
 import { Link } from "@tanstack/react-router"
 import { UserIcon, SearchIcon, ShoppingCartIcon } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import { AuthDialog } from "@/components/AuthDialog"
+import { UserAccount } from "@/components/UserAccount"
+
 import Logo from "@/assets/logo_keyforge.png"
 import {
     NavigationMenu,
@@ -20,24 +23,26 @@ interface NavigationBarProps {
 }
 
 export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
-
     const [searchOpen, setSearchOpen] = React.useState(false)
+    const [authOpen, setAuthOpen] = React.useState(false)
+    const [userAccountOpen, setUserAccountOpen] = React.useState(false)
+
+    const handleUserIconClick = () => {
+        if (isLoggedIn) setUserAccountOpen(true)
+        else setAuthOpen(true)
+    }
 
     return (
         <header className="w-full bg-gradient-to-b from-[#1C1C1C] to-[#2A2A2A] text-white border-b border-[#3A3A3A] shadow-md">
-            {/* Górna część: logo + KeyForge + wyszukiwarka + koszyk + profil */}
+            {/* Górna część: logo + wyszukiwarka + koszyk + profil */}
             <div className="flex items-center justify-between px-6 py-3 border-t border-[#3A3A3A] bg-gradient-to-b from-[#2A2A2A] to-[#1F1F1F]">
                 {/* Lewa strona */}
                 <div className="flex items-center gap-3">
                     <Link to="/" className="flex items-center gap-2">
-                        <img
-                            src={Logo}
-                            alt="KeyForge Logo"
-                            className="h-16 w-auto"
-                        />
+                        <img src={Logo} alt="KeyForge Logo" className="h-16 w-auto" />
                         <span className="ml-4 text-2xl font-bold text-[#D4A44A] tracking-wide">
-                            KEYFORGE
-                        </span>
+              KEYFORGE
+            </span>
                     </Link>
                 </div>
 
@@ -51,15 +56,10 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
                     <SearchIcon className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                 </div>
 
-
-
                 {/* Prawa strona */}
                 <div className="flex items-center gap-5">
                     {/* Mobile: ikona wyszukiwania */}
-                    <button
-                        className="md:hidden relative"
-                        onClick={() => setSearchOpen(true)}
-                    >
+                    <button className="md:hidden relative" onClick={() => setSearchOpen(true)}>
                         <SearchIcon className="h-5 w-5" />
                     </button>
 
@@ -67,11 +67,11 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
                     {searchOpen && (
                         <div
                             className="fixed inset-0 bg-[#3A3A3A]/80 z-50 flex flex-col items-center p-3 pt-24"
-                            onClick={() => setSearchOpen(false)} // kliknięcie poza modal zamyka
+                            onClick={() => setSearchOpen(false)}
                         >
                             <div
                                 className="w-full bg-[#3A3A3A]/80 max-w-md relative"
-                                onClick={(e) => e.stopPropagation()} // kliknięcie wewnątrz nie zamyka
+                                onClick={(e) => e.stopPropagation()}
                             >
                                 <Input
                                     type="text"
@@ -90,24 +90,27 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
                         </div>
                     )}
 
+                    {/* Koszyk */}
                     <Link to="/cart" className="flex items-center hover:text-primary transition">
                         <ShoppingCartIcon className="h-5 w-5" />
                     </Link>
 
-                    <div className="flex items-center gap-2">
+                    {/* Sekcja użytkownika */}
+                    <div
+                        className="flex items-center gap-2 cursor-pointer"
+                        onClick={handleUserIconClick}
+                    >
                         <UserIcon className="h-5 w-5" />
                         {isLoggedIn ? (
                             <span className="font-medium text-sm">{username}</span>
                         ) : (
-                            <div className="flex gap-2 text-sm">
-                                <Link to="/login" className="hidden md:block font-medium hover:text-primary transition">Zaloguj się</Link>
-                            </div>
+                            <span className="font-medium text-sm hidden md:inline">Zaloguj się</span>
                         )}
                     </div>
                 </div>
             </div>
 
-            {/* Dolna część: nawigacja kategorii */}
+            {/* Dolna część: nawigacja */}
             <div className="flex justify-center border-t border-border bg-inherit/20">
                 <NavigationMenu>
                     <NavigationMenuList className="flex gap-6 py-2">
@@ -120,7 +123,6 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
                                     <ListItem href="/products/currencies" title="Waluty">Karty i punkty do gier.</ListItem>
                                     <ListItem href="/products/subscriptions" title="Subskrypcje">PS Plus, Game Pass itd.</ListItem>
                                 </ul>
-
                             </NavigationMenuContent>
                         </NavigationMenuItem>
 
@@ -153,6 +155,19 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
                     </NavigationMenuList>
                 </NavigationMenu>
             </div>
+
+            {/* Dialog logowania i konto użytkownika */}
+            <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
+            <UserAccount
+                open={userAccountOpen}
+                onOpenChange={setUserAccountOpen}
+                user={username ?? "Użytkownik"}
+                email="user@example.com"
+                onLogout={() => {
+                    setUserAccountOpen(false)
+                    console.log("Wylogowano")
+                }}
+            />
         </header>
     )
 }
