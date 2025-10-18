@@ -16,6 +16,11 @@ import {
     NavigationMenuList,
     NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu"
+import {useEffect, useState} from "react";
+import {type Category, type Platform, type ProductType} from "@/api";
+import {ProductTypeApi} from "@/api/productTypeApi.ts";
+import {CategoriesApi} from "@/api/categoriesApi.ts";
+import {PlatformsApi} from "@/api/platformsApi.ts";
 
 interface NavigationBarProps {
     isLoggedIn: boolean
@@ -23,6 +28,33 @@ interface NavigationBarProps {
 }
 
 export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
+    const [categories, setCategories] = useState<Category[]>([])
+    const [platforms, setPlatforms] = useState<Platform[]>([])
+    const [productTypes, setProductTypes] = useState<ProductType[]>([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        const fetchMenuData = async () => {
+            try {
+                const [typesRes, categoriesRes, platformsRes] = await Promise.all([
+                    ProductTypeApi.getAll(),
+                    CategoriesApi.getAll(),
+                    PlatformsApi.getAll(),
+                ])
+
+                setProductTypes(typesRes.content ?? typesRes)
+                setCategories(categoriesRes.content ?? categoriesRes)
+                setPlatforms(platformsRes.content ?? platformsRes)
+            } catch (err) {
+                console.error("Błąd pobierania danych do nawigacji:", err)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchMenuData()
+    }, [])
+
     const [searchOpen, setSearchOpen] = React.useState(false)
     const [authOpen, setAuthOpen] = React.useState(false)
     const [userAccountOpen, setUserAccountOpen] = React.useState(false)
@@ -40,9 +72,9 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
                 <div className="flex items-center gap-3">
                     <Link to="/" className="flex items-center gap-2">
                         <img src={Logo} alt="KeyForge Logo" className="h-16 w-auto" />
-                        <span className="ml-4 text-2xl font-bold text-[#D4A44A] tracking-wide">
-              KEYFORGE
-            </span>
+                        <span className="hidden md:block ml-4 text-2xl font-bold text-[#D4A44A] tracking-wide">
+                          KEYFORGE
+                        </span>
                     </Link>
                 </div>
 
@@ -113,50 +145,62 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
             {/* Dolna część: nawigacja */}
             <div className="flex justify-center border-t border-border bg-inherit/20">
                 <NavigationMenu>
-                    <NavigationMenuList className="flex gap-6 py-2">
-                        <NavigationMenuItem>
-                            <NavigationMenuTrigger className="!bg-inherit">Kategorie</NavigationMenuTrigger>
-                            <NavigationMenuContent>
-                                <ul className="grid w-[340px] gap-3 p-4 md:w-[340px]">
-                                    <ListItem href="/products/games" title="Gry">Pełne wersje gier do pobrania.</ListItem>
-                                    <ListItem href="/products/dlc" title="Dodatki (DLC)">Rozszerzenia i przepustki.</ListItem>
-                                    <ListItem href="/products/currencies" title="Waluty">Karty i punkty do gier.</ListItem>
-                                    <ListItem href="/products/subscriptions" title="Subskrypcje">PS Plus, Game Pass itd.</ListItem>
-                                </ul>
-                            </NavigationMenuContent>
-                        </NavigationMenuItem>
+                    <NavigationMenuList className="flex gap-0 md:gap-6 py-2">
 
+                        {/* Kategorie */}
                         <NavigationMenuItem>
-                            <NavigationMenuTrigger className="!bg-inherit">Platformy</NavigationMenuTrigger>
+                            <NavigationMenuTrigger className="!bg-inherit">
+                                Kategorie
+                            </NavigationMenuTrigger>
                             <NavigationMenuContent>
                                 <ul className="grid w-[340px] gap-3 p-4">
-                                    <ListItem href="/platform/steam" title="Steam" />
-                                    <ListItem href="/platform/playstation" title="PlayStation" />
-                                    <ListItem href="/platform/xbox" title="Xbox" />
-                                    <ListItem href="/platform/nintendo" title="Nintendo" />
-                                    <ListItem href="/platform/pc" title="PC" />
+                                    {loading && <li>Ładowanie...</li>}
+                                    {!loading && categories.map((cat: { id: React.Key | null | undefined; name: string }) => (
+                                        <ListItem
+                                            key={cat.id}
+                                            href={`/category/${cat.id}`}
+                                            title={cat.name}
+                                        />
+                                    ))}
                                 </ul>
                             </NavigationMenuContent>
                         </NavigationMenuItem>
 
+                        {/* Platformy */}
                         <NavigationMenuItem>
-                            <NavigationMenuTrigger className="!bg-inherit">Gatunki</NavigationMenuTrigger>
+                            <NavigationMenuTrigger className="!bg-inherit">
+                                Platformy
+                            </NavigationMenuTrigger>
                             <NavigationMenuContent>
-                                <ul className="grid w-[340px] gap-3 p-4 md:w-[340px] md:grid-cols-1">
-                                    <ListItem href="/genre/rpg" title="RPG" />
-                                    <ListItem href="/genre/fps" title="FPS" />
-                                    <ListItem href="/genre/strategy" title="Strategie" />
-                                    <ListItem href="/genre/sports" title="Sportowe" />
-                                    <ListItem href="/genre/horror" title="Horror" />
-                                    <ListItem href="/genre/indie" title="Indie" />
+                                <ul className="grid w-[340px] gap-3 p-4">
+                                    {loading && <li>Ładowanie...</li>}
+                                    {!loading && platforms.map((p: { id: React.Key | null | undefined; name: string }) => (
+                                        <ListItem key={p.id} href={`/platform/${p.id}`} title={p.name} />
+                                    ))}
                                 </ul>
                             </NavigationMenuContent>
                         </NavigationMenuItem>
+
+                        {/* Typy produktów */}
+                        <NavigationMenuItem>
+                            <NavigationMenuTrigger className="!bg-inherit">
+                                Typy produktów
+                            </NavigationMenuTrigger>
+                            <NavigationMenuContent>
+                                <ul className="grid w-[340px] gap-3 p-4">
+                                    {loading && <li>Ładowanie...</li>}
+                                    {!loading && productTypes.map((t: { id: React.Key | null | undefined; name: string }) => (
+                                        <ListItem key={t.id} href={`/type/${t.id}`} title={t.name} />
+                                    ))}
+                                </ul>
+                            </NavigationMenuContent>
+                        </NavigationMenuItem>
+
                     </NavigationMenuList>
                 </NavigationMenu>
             </div>
 
-            {/* Dialog logowania i konto użytkownika */}
+            {/* Dialog logowania i konto */}
             <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
             <UserAccount
                 open={userAccountOpen}
@@ -172,6 +216,7 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
     )
 }
 
+/* Komponent listy */
 function ListItem({
                       title,
                       href,

@@ -3,6 +3,21 @@ export interface Platform {
     name: string;
 }
 
+export interface Producent {
+    id: number;
+    name: string;
+}
+
+export interface Category {
+    id: number;
+    name: string;
+}
+
+export interface ProductType {
+    id: number;
+    name: string;
+}
+
 export interface Product {
     id: number;
     name: string;
