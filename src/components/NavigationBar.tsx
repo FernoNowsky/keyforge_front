@@ -7,6 +7,10 @@ import { Input } from "@/components/ui/input"
 import { AuthDialog } from "@/components/AuthDialog"
 import { UserAccount } from "@/components/UserAccount"
 
+import { useNavigate } from "@tanstack/react-router";
+
+
+
 import Logo from "@/assets/logo_keyforge.png"
 import {
     NavigationMenu,
@@ -158,7 +162,7 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
                                     {!loading && categories.map((cat: { id: React.Key | null | undefined; name: string }) => (
                                         <ListItem
                                             key={cat.id}
-                                            href={`/category/${cat.id}`}
+                                            href={`products/category/${cat.id}`}
                                             title={cat.name}
                                         />
                                     ))}
@@ -175,7 +179,7 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
                                 <ul className="grid w-[340px] gap-3 p-4">
                                     {loading && <li>Ładowanie...</li>}
                                     {!loading && platforms.map((p: { id: React.Key | null | undefined; name: string }) => (
-                                        <ListItem key={p.id} href={`/platform/${p.id}`} title={p.name} />
+                                        <ListItem key={p.id} href={`products/platform/${p.id}`} title={p.name} />
                                     ))}
                                 </ul>
                             </NavigationMenuContent>
@@ -190,7 +194,7 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
                                 <ul className="grid w-[340px] gap-3 p-4">
                                     {loading && <li>Ładowanie...</li>}
                                     {!loading && productTypes.map((t: { id: React.Key | null | undefined; name: string }) => (
-                                        <ListItem key={t.id} href={`/type/${t.id}`} title={t.name} />
+                                        <ListItem key={t.id} href={`products/type/${t.id}`} title={t.name} />
                                     ))}
                                 </ul>
                             </NavigationMenuContent>
@@ -223,19 +227,28 @@ function ListItem({
                       children,
                       ...props
                   }: React.ComponentPropsWithoutRef<"li"> & { href: string; title: string }) {
+    const navigate = useNavigate();
+
+    const handleClick = (e: React.MouseEvent) => {
+        e.preventDefault(); // zapobiega domyślnemu zachowaniu linku
+        navigate({ to: `/${href}` }); // absolutna ścieżka
+    }
+
     return (
         <li {...props}>
             <NavigationMenuLink asChild>
-                <Link
-                    to={href}
+                <a
+                    href={`/${href}`}
+                    onClick={handleClick}
                     className="block select-none rounded-md p-3 leading-none no-underline outline-none transition hover:bg-accent hover:text-accent-foreground"
                 >
                     <div className="text-sm font-medium">{title}</div>
                     {children && (
                         <p className="line-clamp-2 text-sm text-muted-foreground">{children}</p>
                     )}
-                </Link>
+                </a>
             </NavigationMenuLink>
         </li>
     )
 }
+

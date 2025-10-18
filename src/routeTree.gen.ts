@@ -14,7 +14,13 @@ import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ProductsCategoryRouteImport } from './routes/products/$category'
+import { Route as ProductsIndexRouteImport } from './routes/products/index'
+import { Route as ProductsTypeIndexRouteImport } from './routes/products/type/index'
+import { Route as ProductsPlatformIndexRouteImport } from './routes/products/platform/index'
+import { Route as ProductsCategoryIndexRouteImport } from './routes/products/category/index'
+import { Route as ProductsTypeTypeIdRouteImport } from './routes/products/type/$typeId'
+import { Route as ProductsPlatformPlatformIdRouteImport } from './routes/products/platform/$platformId'
+import { Route as ProductsCategoryCategoryIdRouteImport } from './routes/products/category/$categoryId'
 
 const TermsOfServiceRoute = TermsOfServiceRouteImport.update({
   id: '/terms-of-service',
@@ -41,11 +47,43 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProductsCategoryRoute = ProductsCategoryRouteImport.update({
-  id: '/products/$category',
-  path: '/products/$category',
+const ProductsIndexRoute = ProductsIndexRouteImport.update({
+  id: '/products/',
+  path: '/products/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProductsTypeIndexRoute = ProductsTypeIndexRouteImport.update({
+  id: '/products/type/',
+  path: '/products/type/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductsPlatformIndexRoute = ProductsPlatformIndexRouteImport.update({
+  id: '/products/platform/',
+  path: '/products/platform/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductsCategoryIndexRoute = ProductsCategoryIndexRouteImport.update({
+  id: '/products/category/',
+  path: '/products/category/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductsTypeTypeIdRoute = ProductsTypeTypeIdRouteImport.update({
+  id: '/products/type/$typeId',
+  path: '/products/type/$typeId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductsPlatformPlatformIdRoute =
+  ProductsPlatformPlatformIdRouteImport.update({
+    id: '/products/platform/$platformId',
+    path: '/products/platform/$platformId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ProductsCategoryCategoryIdRoute =
+  ProductsCategoryCategoryIdRouteImport.update({
+    id: '/products/category/$categoryId',
+    path: '/products/category/$categoryId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -53,7 +91,13 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/terms-of-service': typeof TermsOfServiceRoute
-  '/products/$category': typeof ProductsCategoryRoute
+  '/products': typeof ProductsIndexRoute
+  '/products/category/$categoryId': typeof ProductsCategoryCategoryIdRoute
+  '/products/platform/$platformId': typeof ProductsPlatformPlatformIdRoute
+  '/products/type/$typeId': typeof ProductsTypeTypeIdRoute
+  '/products/category': typeof ProductsCategoryIndexRoute
+  '/products/platform': typeof ProductsPlatformIndexRoute
+  '/products/type': typeof ProductsTypeIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -61,7 +105,13 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/terms-of-service': typeof TermsOfServiceRoute
-  '/products/$category': typeof ProductsCategoryRoute
+  '/products': typeof ProductsIndexRoute
+  '/products/category/$categoryId': typeof ProductsCategoryCategoryIdRoute
+  '/products/platform/$platformId': typeof ProductsPlatformPlatformIdRoute
+  '/products/type/$typeId': typeof ProductsTypeTypeIdRoute
+  '/products/category': typeof ProductsCategoryIndexRoute
+  '/products/platform': typeof ProductsPlatformIndexRoute
+  '/products/type': typeof ProductsTypeIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -70,7 +120,13 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/terms-of-service': typeof TermsOfServiceRoute
-  '/products/$category': typeof ProductsCategoryRoute
+  '/products/': typeof ProductsIndexRoute
+  '/products/category/$categoryId': typeof ProductsCategoryCategoryIdRoute
+  '/products/platform/$platformId': typeof ProductsPlatformPlatformIdRoute
+  '/products/type/$typeId': typeof ProductsTypeTypeIdRoute
+  '/products/category/': typeof ProductsCategoryIndexRoute
+  '/products/platform/': typeof ProductsPlatformIndexRoute
+  '/products/type/': typeof ProductsTypeIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -80,7 +136,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacy-policy'
     | '/terms-of-service'
-    | '/products/$category'
+    | '/products'
+    | '/products/category/$categoryId'
+    | '/products/platform/$platformId'
+    | '/products/type/$typeId'
+    | '/products/category'
+    | '/products/platform'
+    | '/products/type'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -88,7 +150,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacy-policy'
     | '/terms-of-service'
-    | '/products/$category'
+    | '/products'
+    | '/products/category/$categoryId'
+    | '/products/platform/$platformId'
+    | '/products/type/$typeId'
+    | '/products/category'
+    | '/products/platform'
+    | '/products/type'
   id:
     | '__root__'
     | '/'
@@ -96,7 +164,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacy-policy'
     | '/terms-of-service'
-    | '/products/$category'
+    | '/products/'
+    | '/products/category/$categoryId'
+    | '/products/platform/$platformId'
+    | '/products/type/$typeId'
+    | '/products/category/'
+    | '/products/platform/'
+    | '/products/type/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -105,7 +179,13 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   TermsOfServiceRoute: typeof TermsOfServiceRoute
-  ProductsCategoryRoute: typeof ProductsCategoryRoute
+  ProductsIndexRoute: typeof ProductsIndexRoute
+  ProductsCategoryCategoryIdRoute: typeof ProductsCategoryCategoryIdRoute
+  ProductsPlatformPlatformIdRoute: typeof ProductsPlatformPlatformIdRoute
+  ProductsTypeTypeIdRoute: typeof ProductsTypeTypeIdRoute
+  ProductsCategoryIndexRoute: typeof ProductsCategoryIndexRoute
+  ProductsPlatformIndexRoute: typeof ProductsPlatformIndexRoute
+  ProductsTypeIndexRoute: typeof ProductsTypeIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -145,11 +225,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/products/$category': {
-      id: '/products/$category'
-      path: '/products/$category'
-      fullPath: '/products/$category'
-      preLoaderRoute: typeof ProductsCategoryRouteImport
+    '/products/': {
+      id: '/products/'
+      path: '/products'
+      fullPath: '/products'
+      preLoaderRoute: typeof ProductsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/products/type/': {
+      id: '/products/type/'
+      path: '/products/type'
+      fullPath: '/products/type'
+      preLoaderRoute: typeof ProductsTypeIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/products/platform/': {
+      id: '/products/platform/'
+      path: '/products/platform'
+      fullPath: '/products/platform'
+      preLoaderRoute: typeof ProductsPlatformIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/products/category/': {
+      id: '/products/category/'
+      path: '/products/category'
+      fullPath: '/products/category'
+      preLoaderRoute: typeof ProductsCategoryIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/products/type/$typeId': {
+      id: '/products/type/$typeId'
+      path: '/products/type/$typeId'
+      fullPath: '/products/type/$typeId'
+      preLoaderRoute: typeof ProductsTypeTypeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/products/platform/$platformId': {
+      id: '/products/platform/$platformId'
+      path: '/products/platform/$platformId'
+      fullPath: '/products/platform/$platformId'
+      preLoaderRoute: typeof ProductsPlatformPlatformIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/products/category/$categoryId': {
+      id: '/products/category/$categoryId'
+      path: '/products/category/$categoryId'
+      fullPath: '/products/category/$categoryId'
+      preLoaderRoute: typeof ProductsCategoryCategoryIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -161,7 +283,13 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   TermsOfServiceRoute: TermsOfServiceRoute,
-  ProductsCategoryRoute: ProductsCategoryRoute,
+  ProductsIndexRoute: ProductsIndexRoute,
+  ProductsCategoryCategoryIdRoute: ProductsCategoryCategoryIdRoute,
+  ProductsPlatformPlatformIdRoute: ProductsPlatformPlatformIdRoute,
+  ProductsTypeTypeIdRoute: ProductsTypeTypeIdRoute,
+  ProductsCategoryIndexRoute: ProductsCategoryIndexRoute,
+  ProductsPlatformIndexRoute: ProductsPlatformIndexRoute,
+  ProductsTypeIndexRoute: ProductsTypeIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

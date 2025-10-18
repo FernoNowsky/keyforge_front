@@ -6,3 +6,12 @@ export interface PaginatedResponse<T> {
     totalPages: number;
     last: boolean;
 }
+
+export interface FilterParams {
+    page: number;
+    size?: number;
+    sortDirection?: "ASC" | "DESC";
+    platformId?: string;
+    typeId?: string;
+    categoryId?: string;
+}

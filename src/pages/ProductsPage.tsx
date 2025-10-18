@@ -1,91 +1,152 @@
 "use client"
 
-import { useParams } from "@tanstack/react-router"
+import { useMatch } from "@tanstack/react-router"
 import { GameCard } from "@/components/GameCard"
-import { useState } from "react"
-import {type Filters, FiltersPanel } from "@/components/FiltersPanel"
+import { useState, useEffect } from "react"
+import { type Filters, FiltersPanel } from "@/components/FiltersPanel"
+import { ProductsApi } from "@/api/productsApi"
+import type { Product } from "@/api/types/product.types"
+import type {FilterParams} from "@/api";
 
 export function ProductsPage() {
-    const { category } = useParams({from: '/products/$category' })
+    // Sprawdź, która ścieżka została dopasowana
+    const categoryMatch = useMatch({ from: '/products/category/$categoryId', shouldThrow: false })
+    const platformMatch = useMatch({ from: '/products/platform/$platformId', shouldThrow: false })
+    const typeMatch = useMatch({ from: '/products/type/$typeId', shouldThrow: false })
 
-    const categoryTitles: Record<string, string> = {
-        games: "Gry",
-        dlc: "Dodatki (DLC)",
-        currencies: "Waluty",
-        subscriptions: "Subskrypcje",
-    }
+    // Pobierz odpowiednie parametry
+    const categoryId = categoryMatch?.params.categoryId
+    const platformId = platformMatch?.params.platformId
+    const typeId = typeMatch?.params.typeId
 
-    const descriptionMap: Record<string, string> = {
-        games: "Pełne wersje gier do pobrania.",
-        dlc: "Rozszerzenia, przepustki i DLC.",
-        currencies: "Karty i punkty do gier.",
-        subscriptions: "PS Plus, Game Pass i inne subskrypcje.",
-    }
+    const [games, setGames] = useState<Product[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
 
-    const title = categoryTitles[category ?? ""] || "Produkty"
+    // Pobierz gry z API z uwzględnieniem filtrów z URL
+    useEffect(() => {
+        const fetchGames = async () => {
+            setLoading(true)
+            setError(null)
 
-    const allGames = [
-        { id: 1, name: "Cyberpunk 2077", platform: "Steam", price: 39.99, img: "https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg", genre: "RPG", type: "Gra pełna" },
-        { id: 2, name: "Red Dead Redemption 2", platform: "Rockstar", price: 49.99, img: "https://cdn.cloudflare.steamstatic.com/steam/apps/1174180/header.jpg", genre: "Przygodowa", type: "Gra pełna" },
-        { id: 3, name: "Elden Ring", platform: "Steam", price: 59.99, img: "https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/header.jpg", genre: "RPG", type: "Gra pełna" },
-        { id: 4, name: "Assassin’s Creed Mirage", platform: "Ubisoft Connect", price: 44.99, img: "https://cdn.cloudflare.steamstatic.com/steam/apps/3035570/header.jpg", genre: "Akcja", type: "Gra pełna" },
-        { id: 5, name: "The Sims 4: Cottage Living", platform: "EA App", price: 29.99, img: "https://cdn.cloudflare.steamstatic.com/steam/apps/1399350/header.jpg", genre: "Symulacja", type: "DLC" },
-    ]
+            try {
+                let allGames: Product[] = []
+                let page = 0
 
-    const [filteredGames, setFilteredGames] = useState(allGames)
+                const filterParams: FilterParams = {
+                    page,
+                    size: 20,
+                }
+
+                if (platformId) {
+                    filterParams.platformId = platformId
+                }
+
+                if (typeId) {
+                    filterParams.typeId = typeId
+                }
+
+                if (categoryId) {
+                    filterParams.categoryId = categoryId
+                }
+
+                const data = await ProductsApi.getAll({
+                    ...filterParams,
+                    page,
+                })
+
+                const availableGames = data.content.filter((g: { stock: number }) => g.stock > 0)
+                allGames = [...allGames, ...availableGames]
+                page++
+                setGames(allGames)
+            } catch (err) {
+                console.error("Błąd pobierania gier:", err)
+                setError("Nie udało się pobrać produktów. Spróbuj ponownie później.")
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchGames()
+    }, [categoryId, platformId, typeId])
+
+    // Dodatkowe filtrowanie przez panel filtrów
+    const [filteredGames, setFilteredGames] = useState<Product[]>([])
+
+    useEffect(() => {
+        setFilteredGames(games)
+    }, [games])
 
     const handleFilter = (filters: Filters) => {
         setFilteredGames(
-            allGames.filter((game) => {
+            games.filter((game) => {
                 const matchPlatform =
-                    filters.platforms.length === 0 || filters.platforms.includes(game.platform)
-                const matchGenre =
-                    filters.genres.length === 0 || filters.genres.includes(game.genre)
-                const matchType =
-                    filters.types.length === 0 || filters.types.includes(game.type)
+                    filters.platforms.length === 0 ||
+                    filters.platforms.includes(game.platform.name)
+
                 const matchPrice =
                     game.price >= (filters.priceRange.min ?? 0) &&
-                    game.price <= (filters.priceRange.max ?? Infinity);
-                return matchPlatform && matchGenre && matchType && matchPrice
+                    game.price <= (filters.priceRange.max ?? Infinity)
+
+                return matchPlatform && matchPrice
             })
         )
     }
 
-    const handleClear = () => setFilteredGames(allGames)
+    const handleClear = () => setFilteredGames(games)
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#1C1C1C] to-[#2A2A2A] text-[#F8F8F8]">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D4A44A] mx-auto mb-4"></div>
+                    <p className="text-[#B0B0B0]">Ładowanie produktów...</p>
+                </div>
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#1C1C1C] to-[#2A2A2A] text-[#F8F8F8]">
+                <div className="text-center">
+                    <p className="text-red-400 mb-4">{error}</p>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="px-4 py-2 bg-[#D4A44A] text-[#1C1C1C] rounded hover:bg-[#C4943A] transition"
+                    >
+                        Spróbuj ponownie
+                    </button>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#1C1C1C] to-[#2A2A2A] text-[#F8F8F8]">
-
             <main className="flex-1 pt-8 pb-12 px-6 max-w-[1800px] mx-auto w-full">
                 <div className="flex flex-col lg:flex-row gap-8">
-                    {/* Filters Section - Fixed width on desktop */}
                     <aside className="w-full lg:w-88 flex-shrink-0">
                         <FiltersPanel onFilter={handleFilter} onClear={handleClear} />
                     </aside>
 
-                    {/* Products Section - Takes remaining space */}
                     <section className="flex-1 min-w-0">
-                        <h1 className="text-3xl font-bold text-[#D4A44A] mb-4">
-                            {title}
-                        </h1>
-                        <p className="text-[#B0B0B0] mb-8">
-                            {descriptionMap[category ?? ""] || "Wybierz kategorię produktów."}
+                        <p className="text-[#808080] text-sm mb-8">
+                            Znaleziono {filteredGames.length} produktów
                         </p>
 
-                        {/* Dynamic Grid - Cards per row adapt to available space */}
                         <div className="grid gap-4 justify-items-center
                                       grid-cols-1
                                       min-[800px]:grid-cols-3
                                       xl:grid-cols-4
                                       2xl:grid-cols-5">
                             {filteredGames.map((game) => (
-                                <div className="w-full max-w-[240px]">
+                                <div key={game.id} className="w-full max-w-[240px]">
                                     <GameCard
-                                        key={game.id}
                                         name={game.name}
-                                        platform={game.platform}
+                                        platform={game.platform.name}
                                         price={game.price}
-                                        imgId={game.img}
+                                        imgId={game.logoId}
                                     />
                                 </div>
                             ))}

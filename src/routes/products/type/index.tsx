@@ -8,18 +8,10 @@ import { ProductsPage } from "@/pages/ProductsPage.tsx";
 //     price: number
 // }
 
-export const Route = createFileRoute("/products/$category")({
+export const Route = createFileRoute("/products/type/")({
     // loader: async ({ params }) => {
     //     const data = await fetchData<Product[]>(`/api/products/${params.category}`)
     //     return data
     // },
-    component: RouteComponent,
+    component: ProductsPage,
 })
-
-function RouteComponent() {
-    // const products = Route.useLoaderData()
-
-    return (
-        <ProductsPage />
-    )
-}
