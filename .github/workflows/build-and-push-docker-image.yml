@@ -1,8 +1,8 @@
 name: Web Build and Push Docker Image
 
 on:
-  push:
-    branches: [master, main]
+  # push:
+  #   branches: [master, main]
   workflow_dispatch:  # Allows manual triggering
 
 env:
