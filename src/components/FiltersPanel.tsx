@@ -2,23 +2,35 @@
 
 import { useState, useEffect } from "react"
 import { X, SlidersHorizontal } from "lucide-react"
+import {type Category, type Platform, type ProductType} from "@/api";
+import {ProductTypeApi} from "@/api/productTypeApi";
+import {CategoriesApi} from "@/api/categoriesApi";
+import {PlatformsApi} from "@/api/platformsApi";
+import {FilterButton} from "@/components/FilterButton"
+import {FilterSection} from "@/components/FilterSection";
 
-// Add keyframes for slide-in animation
-if (typeof document !== 'undefined') {
-    const style = document.createElement('style')
+// Animacja dla mobilnego slide-in
+if (typeof document !== "undefined") {
+    const style = document.createElement("style")
     style.textContent = `
         @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-            }
-            to {
-                transform: translateX(0);
-            }
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
         }
     `
-    if (!document.head.querySelector('[data-filter-animation]')) {
-        style.setAttribute('data-filter-animation', 'true')
+    if (!document.head.querySelector("[data-filter-animation]")) {
+        style.setAttribute("data-filter-animation", "true")
         document.head.appendChild(style)
+    }
+}
+
+export interface Filters {
+    platforms: string[]
+    categories: string[]
+    types: string[]
+    priceRange: {
+        min: number | null
+        max: number | null
     }
 }
 
@@ -27,56 +39,14 @@ interface FiltersPanelProps {
     onClear: () => void
 }
 
-export interface Filters {
-    platforms: string[]
-    genres: string[]
-    types: string[]
-    priceRange: {
-        min: number | null
-        max: number | null
-    }
-}
-
-const Section = ({
-                     title,
-                     children,
-                 }: {
-    title: string
-    children: React.ReactNode
-}) => (
-    <div className="py-4 border-b border-[#3A3A3A] last:border-none">
-        <h3 className="text-base font-semibold text-[#D4A44A] mb-3">{title}</h3>
-        {children}
-    </div>
-)
-
-const SquareButton = ({
-                          label,
-                          selected,
-                          onClick,
-                      }: {
-    label: string
-    selected: boolean
-    onClick: () => void
-}) => (
-    <button
-        onClick={onClick}
-        className={`px-3 py-1.5 rounded-md border text-sm mr-2 mb-2 transition-all 
-            ${
-            selected
-                ? "bg-[#D4A44A] text-[#1C1C1C] border-[#D4A44A]"
-                : "border-[#555] text-[#F8F8F8] hover:border-[#D4A44A]"
-        }`}
-    >
-        {label}
-    </button>
-)
-
 interface FilterContentProps {
+    platforms: Platform[]
+    categories: Category[]
+    types: ProductType[]
     selectedPlatforms: string[]
     setSelectedPlatforms: (v: string[]) => void
-    selectedGenres: string[]
-    setSelectedGenres: (v: string[]) => void
+    selectedCategories: string[]
+    setSelectedCategories: (v: string[]) => void
     selectedTypes: string[]
     setSelectedTypes: (v: string[]) => void
     minPrice: string
@@ -87,14 +57,17 @@ interface FilterContentProps {
     setPriceError: (v: string) => void
     handleApply: () => void
     handleClear: () => void
-    toggleSelection: (value: string, list: string[], setter: (v: string[]) => void) => void
+    toggleSelection: (value: number, list: string[], setter: (v: string[]) => void) => void
 }
 
 const FilterContent = ({
+                           platforms,
+                           categories,
+                           types,
                            selectedPlatforms,
                            setSelectedPlatforms,
-                           selectedGenres,
-                           setSelectedGenres,
+                           selectedCategories,
+                           setSelectedCategories,
                            selectedTypes,
                            setSelectedTypes,
                            minPrice,
@@ -108,40 +81,40 @@ const FilterContent = ({
                            toggleSelection,
                        }: FilterContentProps) => (
     <>
-        <Section title="Platformy">
-            {["Steam", "Rockstar", "Ubisoft Connect", "EA App"].map((platform) => (
-                <SquareButton
-                    key={platform}
-                    label={platform}
-                    selected={selectedPlatforms.includes(platform)}
-                    onClick={() => toggleSelection(platform, selectedPlatforms, setSelectedPlatforms)}
+        <FilterSection title="Platformy">
+            {platforms.map((p) => (
+                <FilterButton
+                    key={p.id}
+                    label={p.name}
+                    selected={selectedPlatforms.includes(String(p.id))}
+                    onClick={() => toggleSelection(p.id, selectedPlatforms, setSelectedPlatforms)}
                 />
             ))}
-        </Section>
+        </FilterSection>
 
-        <Section title="Gatunki">
-            {["RPG", "Akcja", "Przygodowa", "Symulacja"].map((genre) => (
-                <SquareButton
-                    key={genre}
-                    label={genre}
-                    selected={selectedGenres.includes(genre)}
-                    onClick={() => toggleSelection(genre, selectedGenres, setSelectedGenres)}
+        <FilterSection title="Kategorie">
+            {categories.map((g) => (
+                <FilterButton
+                    key={g.id}
+                    label={g.name}
+                    selected={selectedCategories.includes(String(g.id))}
+                    onClick={() => toggleSelection(g.id, selectedCategories, setSelectedCategories)}
                 />
             ))}
-        </Section>
+        </FilterSection>
 
-        <Section title="Typ gry">
-            {["Gra pełna", "DLC", "Subskrypcja"].map((type) => (
-                <SquareButton
-                    key={type}
-                    label={type}
-                    selected={selectedTypes.includes(type)}
-                    onClick={() => toggleSelection(type, selectedTypes, setSelectedTypes)}
+        <FilterSection title="Typ gry">
+            {types.map((t) => (
+                <FilterButton
+                    key={t.id}
+                    label={t.name}
+                    selected={selectedTypes.includes(String(t.id))}
+                    onClick={() => toggleSelection(t.id, selectedTypes, setSelectedTypes)}
                 />
             ))}
-        </Section>
+        </FilterSection>
 
-        <Section title="Zakres cenowy">
+        <FilterSection title="Zakres cenowy">
             <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-2">
                     <input
@@ -172,32 +145,39 @@ const FilterContent = ({
                         className="w-full px-3 py-2 bg-[#1C1C1C] border border-[#555] rounded-md text-[#F8F8F8] text-sm focus:border-[#D4A44A] focus:outline-none"
                     />
                 </div>
-                {priceError && (
-                    <p className="text-red-400 text-xs">{priceError}</p>
-                )}
+                {priceError && <p className="text-red-400 text-xs">{priceError}</p>}
             </div>
-        </Section>
+        </FilterSection>
 
         <div className="flex flex-col gap-3 mt-6">
             <button
+                type="button"
                 onClick={handleClear}
                 className="border border-[#D4A44A] text-[#D4A44A] py-2 rounded-md hover:bg-[#3A3A3A] transition"
             >
                 Wyczyść
             </button>
             <button
+                type="button"
                 onClick={handleApply}
                 className="border border-[#D4A44A] bg-[#D4A44A] text-[#1C1C1C] font-semibold py-2 rounded-md hover:bg-[#e1b85c] transition"
             >
                 Filtruj
             </button>
         </div>
+
     </>
 )
 
 export function FiltersPanel({ onFilter, onClear }: FiltersPanelProps) {
+    const [platforms, setPlatforms] = useState<Platform[]>([])
+    const [categories, setcategories] = useState<Category[]>([])
+    const [types, setTypes] = useState<ProductType[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+
     const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
-    const [selectedGenres, setSelectedGenres] = useState<string[]>([])
+    const [selectedCategories, setSelectedCategories] = useState<string[]>([])
     const [selectedTypes, setSelectedTypes] = useState<string[]>([])
     const [minPrice, setMinPrice] = useState<string>("")
     const [maxPrice, setMaxPrice] = useState<string>("")
@@ -206,36 +186,46 @@ export function FiltersPanel({ onFilter, onClear }: FiltersPanelProps) {
     const [isMobile, setIsMobile] = useState(false)
 
     useEffect(() => {
-        const checkMobile = () => {
-            setIsMobile(window.innerWidth < 1024)
+        const fetchData = async () => {
+            try {
+                setLoading(true)
+                const [platformRes, categoryRes, typeRes] = await Promise.all([
+                    PlatformsApi.getAll(),
+                    CategoriesApi.getAll(),
+                    ProductTypeApi.getAll(),
+                ])
+                setPlatforms(platformRes.content ?? platformRes)
+                setcategories(categoryRes.content ?? categoryRes)
+                setTypes(typeRes.content ?? typeRes)
+            } catch (err) {
+                console.error("Błąd pobierania filtrów:", err)
+                setError("Nie udało się załadować filtrów.")
+            } finally {
+                setLoading(false)
+            }
         }
+        fetchData()
+    }, [])
 
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 1024)
         checkMobile()
         window.addEventListener("resize", checkMobile)
-
         return () => window.removeEventListener("resize", checkMobile)
     }, [])
 
-    // Prevent body scroll when mobile menu is open
     useEffect(() => {
-        if (isMobileOpen && isMobile) {
-            document.body.style.overflow = "hidden"
-        } else {
-            document.body.style.overflow = "unset"
-        }
-
+        document.body.style.overflow = isMobileOpen && isMobile ? "hidden" : "unset"
         return () => {
             document.body.style.overflow = "unset"
         }
     }, [isMobileOpen, isMobile])
 
-    const toggleSelection = (value: string, list: string[], setter: (v: string[]) => void) => {
-        setter(
-            list.includes(value)
-                ? list.filter((v) => v !== value)
-                : [...list, value]
-        )
+    const toggleSelection = (id: number, list: string[], setter: (v: string[]) => void) => {
+        const idStr = id.toString()
+        setter(list.includes(idStr) ? list.filter((v) => v !== idStr) : [...list, idStr])
     }
+
 
     const handleApply = () => {
         const min = minPrice ? parseFloat(minPrice) : null
@@ -250,40 +240,41 @@ export function FiltersPanel({ onFilter, onClear }: FiltersPanelProps) {
 
         onFilter({
             platforms: selectedPlatforms,
-            genres: selectedGenres,
+            categories: selectedCategories,
             types: selectedTypes,
-            priceRange: {
-                min,
-                max
-            }
+            priceRange: { min, max },
         })
 
-        // Close mobile menu after applying filters
-        if (isMobile) {
-            setIsMobileOpen(false)
-        }
+        if (isMobile) setIsMobileOpen(false)
     }
 
     const handleClear = () => {
         setSelectedPlatforms([])
-        setSelectedGenres([])
+        setSelectedCategories([])
         setSelectedTypes([])
         setMinPrice("")
         setMaxPrice("")
         setPriceError("")
         onClear()
-
-        // Close mobile menu after clearing
-        if (isMobile) {
-            setIsMobileOpen(false)
-        }
     }
 
-    // Mobile view - show button
+    if (loading)
+        return (
+            <div className="text-center text-sm text-gray-400 p-6">
+                Ładowanie filtrów...
+            </div>
+        )
+
+    if (error)
+        return (
+            <div className="text-center text-red-500 p-6 text-sm">
+                {error}
+            </div>
+        )
+
     if (isMobile) {
         return (
             <>
-                {/* Mobile Filter Button */}
                 <button
                     onClick={() => setIsMobileOpen(true)}
                     className="w-full bg-[#D4A44A] text-[#1C1C1C] font-semibold py-3 px-4 rounded-lg shadow-lg hover:bg-[#e1b85c] transition-all flex items-center justify-center gap-2"
@@ -292,19 +283,16 @@ export function FiltersPanel({ onFilter, onClear }: FiltersPanelProps) {
                     Filtruj gry
                 </button>
 
-                {/* Mobile Overlay */}
                 {isMobileOpen && (
                     <div className="fixed inset-0 z-50 flex">
-                        {/* Backdrop */}
                         <div
                             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                             onClick={() => setIsMobileOpen(false)}
                         />
-
-                        {/* Slide-in Panel */}
-                        <div className="relative ml-auto w-full max-w-sm bg-[#2A2A2A] h-full overflow-y-auto shadow-2xl transition-transform duration-300 ease-out"
-                             style={{ animation: 'slideIn 0.3s ease-out' }}>
-                            {/* Header */}
+                        <div
+                            className="relative ml-auto w-full max-w-sm bg-[#2A2A2A] h-full overflow-y-auto shadow-2xl transition-transform duration-300 ease-out"
+                            style={{ animation: "slideIn 0.3s ease-out" }}
+                        >
                             <div className="sticky top-0 bg-[#2A2A2A] border-b border-[#3A3A3A] p-4 flex items-center justify-between z-10">
                                 <h2 className="text-xl font-bold text-[#D4A44A]">Filtry</h2>
                                 <button
@@ -315,13 +303,15 @@ export function FiltersPanel({ onFilter, onClear }: FiltersPanelProps) {
                                 </button>
                             </div>
 
-                            {/* Filter Content */}
                             <div className="p-6">
                                 <FilterContent
+                                    platforms={platforms}
+                                    categories={categories}
+                                    types={types}
                                     selectedPlatforms={selectedPlatforms}
                                     setSelectedPlatforms={setSelectedPlatforms}
-                                    selectedGenres={selectedGenres}
-                                    setSelectedGenres={setSelectedGenres}
+                                    selectedCategories={selectedCategories}
+                                    setSelectedCategories={setSelectedCategories}
                                     selectedTypes={selectedTypes}
                                     setSelectedTypes={setSelectedTypes}
                                     minPrice={minPrice}
@@ -342,15 +332,17 @@ export function FiltersPanel({ onFilter, onClear }: FiltersPanelProps) {
         )
     }
 
-    // Desktop view - show sidebar
     return (
         <aside className="w-full bg-[#2A2A2A] rounded-2xl shadow-md p-6 h-fit border border-[#3A3A3A] sticky top-8">
             <h2 className="text-xl font-bold text-[#D4A44A] mb-5 text-center">Filtry</h2>
             <FilterContent
+                platforms={platforms}
+                categories={categories}
+                types={types}
                 selectedPlatforms={selectedPlatforms}
                 setSelectedPlatforms={setSelectedPlatforms}
-                selectedGenres={selectedGenres}
-                setSelectedGenres={setSelectedGenres}
+                selectedCategories={selectedCategories}
+                setSelectedCategories={setSelectedCategories}
                 selectedTypes={selectedTypes}
                 setSelectedTypes={setSelectedTypes}
                 minPrice={minPrice}

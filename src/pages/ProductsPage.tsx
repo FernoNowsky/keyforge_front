@@ -2,19 +2,17 @@
 
 import { useMatch } from "@tanstack/react-router"
 import { GameCard } from "@/components/GameCard"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { type Filters, FiltersPanel } from "@/components/FiltersPanel"
 import { ProductsApi } from "@/api/productsApi"
 import type { Product } from "@/api/types/product.types"
-import type {FilterParams} from "@/api";
+import type {FilterParams} from "@/api"
 
 export function ProductsPage() {
-    // Sprawdź, która ścieżka została dopasowana
     const categoryMatch = useMatch({ from: '/products/category/$categoryId', shouldThrow: false })
     const platformMatch = useMatch({ from: '/products/platform/$platformId', shouldThrow: false })
     const typeMatch = useMatch({ from: '/products/type/$typeId', shouldThrow: false })
 
-    // Pobierz odpowiednie parametry
     const categoryId = categoryMatch?.params.categoryId
     const platformId = platformMatch?.params.platformId
     const typeId = typeMatch?.params.typeId
@@ -22,8 +20,8 @@ export function ProductsPage() {
     const [games, setGames] = useState<Product[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [filteredGames, setFilteredGames] = useState<Product[]>([])
 
-    // Pobierz gry z API z uwzględnieniem filtrów z URL
     useEffect(() => {
         const fetchGames = async () => {
             setLoading(true)
@@ -39,15 +37,24 @@ export function ProductsPage() {
                 }
 
                 if (platformId) {
-                    filterParams.platformId = platformId
+                    if (!filterParams.platformId) {
+                        filterParams.platformId = [];
+                    }
+                    filterParams.platformId.push(platformId);
                 }
 
                 if (typeId) {
-                    filterParams.typeId = typeId
+                    if (!filterParams.typeId) {
+                        filterParams.typeId = [];
+                    }
+                    filterParams.typeId.push(typeId);
                 }
 
                 if (categoryId) {
-                    filterParams.categoryId = categoryId
+                    if (!filterParams.categoryId) {
+                        filterParams.categoryId = [];
+                    }
+                    filterParams.categoryId.push(categoryId);
                 }
 
                 const data = await ProductsApi.getAll({
@@ -70,30 +77,47 @@ export function ProductsPage() {
         fetchGames()
     }, [categoryId, platformId, typeId])
 
-    // Dodatkowe filtrowanie przez panel filtrów
-    const [filteredGames, setFilteredGames] = useState<Product[]>([])
-
     useEffect(() => {
         setFilteredGames(games)
     }, [games])
 
-    const handleFilter = (filters: Filters) => {
-        setFilteredGames(
-            games.filter((game) => {
-                const matchPlatform =
-                    filters.platforms.length === 0 ||
-                    filters.platforms.includes(game.platform.name)
+    const handleFilter = useCallback(async (filters: Filters) => {
+        setLoading(true)
+        setError(null)
 
-                const matchPrice =
-                    game.price >= (filters.priceRange.min ?? 0) &&
-                    game.price <= (filters.priceRange.max ?? Infinity)
+        try {
+            const filterParams: FilterParams = {
+                page: 0,
+                size: 20,
+            }
 
-                return matchPlatform && matchPrice
-            })
-        )
-    }
+            if (filters.platforms.length > 0) {
+                filterParams.platformId = filters.platforms
+            }
 
-    const handleClear = () => setFilteredGames(games)
+            if (filters.categories.length > 0) {
+                filterParams.categoryId = filters.categories
+            }
+
+            if (filters.types.length > 0) {
+                filterParams.typeId = filters.types
+            }
+
+            console.log(filterParams)
+            const data = await ProductsApi.getAll(filterParams)
+            const availableGames = data.content.filter((g: { stock: number }) => g.stock > 0)
+            setFilteredGames(availableGames)
+        } catch (err) {
+            console.error("Błąd filtrowania:", err)
+            setError("Nie udało się pobrać przefiltrowanych produktów.")
+        } finally {
+            setLoading(false)
+        }
+    }, [platformId, typeId, categoryId])
+
+    const handleClear = useCallback(() => {
+        // Przycisk "Wyczyść" tylko resetuje stan w FiltersPanel
+    }, [])
 
     if (loading) {
         return (

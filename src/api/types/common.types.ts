@@ -11,7 +11,7 @@ export interface FilterParams {
     page: number;
     size?: number;
     sortDirection?: "ASC" | "DESC";
-    platformId?: string;
-    typeId?: string;
-    categoryId?: string;
+    platformId?: string[];
+    typeId?: string[];
+    categoryId?: string[];
 }
