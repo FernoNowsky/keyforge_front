@@ -3,7 +3,15 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ShoppingCart, Search } from "lucide-react"
 import { SiSteam, SiUbisoft, SiRockstargames } from "react-icons/si"
+import { toast } from "sonner";
 import React from "react";
+
+type CartItem = {
+    id: string
+    name: string
+    price: number
+    quantity: number
+}
 
 type GameCardProps = {
     name: string
@@ -52,6 +60,40 @@ export function GameCard({ name, platform, price, imgId }: GameCardProps) {
         window.addEventListener("resize", handleResize);
         return () => window.removeEventListener("resize", handleResize);
     }, []);
+
+    const handleAddToCart = () => {
+        try {
+            // Odczyt aktualnego koszyka z localStorage
+            const cartData = localStorage.getItem('gameCart');
+            const cart = cartData ? JSON.parse(cartData) : [];
+
+            // Sprawdzenie czy produkt już istnieje
+            const existingItemIndex = cart.findIndex((item: CartItem) => item.id === imgId);
+
+            if (existingItemIndex !== -1) {
+                // Zwiększ ilość jeśli produkt już istnieje
+                cart[existingItemIndex].quantity += 1;
+            } else {
+                // Dodaj nowy produkt
+                cart.push({
+                    id: imgId,
+                    name: name,
+                    price: price,
+                    quantity: 1
+                });
+            }
+
+            // Zapis do localStorage
+            localStorage.setItem('gameCart', JSON.stringify(cart));
+
+            toast.success(`Dodano produkt ${name} do koszyka`)
+
+        } catch (error) {
+            console.error('Błąd dodawania do koszyka:', error);
+            toast.warning("Wystąpił błąd podczas dodawania produktu do koszyka")
+        }
+    };
+
     return (
         <Card
             className={`relative overflow-hidden flex flex-col justify-between rounded-2xl border border-[#3A3A3A]
@@ -60,7 +102,7 @@ export function GameCard({ name, platform, price, imgId }: GameCardProps) {
                        bg-gradient-to-b from-[#1A1A1A] via-[#1E1E1E] to-[#2A2A2A]
                        h-[360px] w-full`}
             style={{
-                boxShadow: "0 0 15px rgba(212,164,74,0.15)",
+                boxShadow: "0 0 5px rgba(212,164,74,0.15)",
             }}
         >
             <div className="relative z-10">
@@ -91,6 +133,7 @@ export function GameCard({ name, platform, price, imgId }: GameCardProps) {
                         size="sm"
                         variant="outline"
                         className="w-full border-[#D4A44A] text-[#D4A44A] hover:bg-[#D4A44A] hover:text-black transition-all gap-1 font-semibold text-xs py-1.5"
+                        onClick={handleAddToCart}
                     >
                         <ShoppingCart className="h-3.5 w-3.5" /> Dodaj do koszyka
                     </Button>

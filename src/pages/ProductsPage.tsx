@@ -132,7 +132,7 @@ export function ProductsPage() {
 
     if (error) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#1C1C1C] to-[#2A2A2A] text-[#F8F8F8]">
+            <div className="min-h-screen flex items-center justify-center bg-[#1C1C1C] text-[#F8F8F8]">
                 <div className="text-center">
                     <p className="text-red-400 mb-4">{error}</p>
                     <button
@@ -147,7 +147,7 @@ export function ProductsPage() {
     }
 
     return (
-        <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#1C1C1C] to-[#2A2A2A] text-[#F8F8F8]">
+        <div className="min-h-screen flex flex-col bg-[#1C1C1C] text-[#F8F8F8]">
             <main className="flex-1 pt-8 pb-12 px-6 max-w-[1800px] mx-auto w-full">
                 <div className="flex flex-col lg:flex-row gap-8">
                     <aside className="w-full lg:w-88 flex-shrink-0">
