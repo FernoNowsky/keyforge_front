@@ -13,9 +13,9 @@ export function ProductsPage() {
     const platformMatch = useMatch({ from: '/products/platform/$platformId', shouldThrow: false })
     const typeMatch = useMatch({ from: '/products/type/$typeId', shouldThrow: false })
 
-    const categoryId = categoryMatch?.params.categoryId
-    const platformId = platformMatch?.params.platformId
-    const typeId = typeMatch?.params.typeId
+    const categoryIds = categoryMatch?.params.categoryId
+    const platformIds = platformMatch?.params.platformId
+    const typeIds = typeMatch?.params.typeId
 
     const [games, setGames] = useState<Product[]>([])
     const [loading, setLoading] = useState(true)
@@ -36,25 +36,25 @@ export function ProductsPage() {
                     size: 20,
                 }
 
-                if (platformId) {
-                    if (!filterParams.platformId) {
-                        filterParams.platformId = [];
+                if (platformIds) {
+                    if (!filterParams.platformIds) {
+                        filterParams.platformIds = [];
                     }
-                    filterParams.platformId.push(platformId);
+                    filterParams.platformIds.push(platformIds);
                 }
 
-                if (typeId) {
-                    if (!filterParams.typeId) {
-                        filterParams.typeId = [];
+                if (typeIds) {
+                    if (!filterParams.typeIds) {
+                        filterParams.typeIds = [];
                     }
-                    filterParams.typeId.push(typeId);
+                    filterParams.typeIds.push(typeIds);
                 }
 
-                if (categoryId) {
-                    if (!filterParams.categoryId) {
-                        filterParams.categoryId = [];
+                if (categoryIds) {
+                    if (!filterParams.categoryIds) {
+                        filterParams.categoryIds = [];
                     }
-                    filterParams.categoryId.push(categoryId);
+                    filterParams.categoryIds.push(categoryIds);
                 }
 
                 const data = await ProductsApi.getAll({
@@ -75,7 +75,7 @@ export function ProductsPage() {
         }
 
         fetchGames()
-    }, [categoryId, platformId, typeId])
+    }, [categoryIds, platformIds, typeIds])
 
     useEffect(() => {
         setFilteredGames(games)
@@ -92,15 +92,15 @@ export function ProductsPage() {
             }
 
             if (filters.platforms.length > 0) {
-                filterParams.platformId = filters.platforms
+                filterParams.platformIds = filters.platforms
             }
 
             if (filters.categories.length > 0) {
-                filterParams.categoryId = filters.categories
+                filterParams.categoryIds = filters.categories
             }
 
             if (filters.types.length > 0) {
-                filterParams.typeId = filters.types
+                filterParams.typeIds = filters.types
             }
 
             console.log(filterParams)
@@ -113,7 +113,7 @@ export function ProductsPage() {
         } finally {
             setLoading(false)
         }
-    }, [platformId, typeId, categoryId])
+    }, [platformIds, typeIds, categoryIds])
 
     const handleClear = useCallback(() => {
         // Przycisk "Wyczyść" tylko resetuje stan w FiltersPanel
