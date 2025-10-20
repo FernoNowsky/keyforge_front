@@ -14,9 +14,13 @@ import {
 } from "@/components/ui/table"
 import { Trash2, Plus, Minus, ShoppingCart, CreditCard } from "lucide-react"
 import { toast } from "sonner";
+import { PlatformBadge } from "@/components/PlatformBadge";
+
 type CartItem = {
-    id: string
+    id: number
     name: string
+    imgId: string
+    platform: string
     price: number
     quantity: number
 }
@@ -51,13 +55,14 @@ export function CartPage() {
     const saveCart = (updatedCart: CartItem[]) => {
         try {
             localStorage.setItem("gameCart", JSON.stringify(updatedCart))
+            window.dispatchEvent(new Event('cartUpdated'));
             setCart(updatedCart)
         } catch (error) {
             console.error("Błąd zapisu koszyka:", error)
         }
     }
 
-    const updateQuantity = (id: string, delta: number) => {
+    const updateQuantity = (id: number, delta: number) => {
         const updatedCart = cart.map((item) => {
             if (item.id === id) {
                 const newQuantity = item.quantity + delta
@@ -74,7 +79,7 @@ export function CartPage() {
         }
     }
 
-    const removeItem = (id: string, name: string) => {
+    const removeItem = (id: number, name: string) => {
         const updatedCart = cart.filter((item) => item.id !== id)
         saveCart(updatedCart)
         toast.success(`Usunięto ${name} z koszyka`,)
@@ -149,9 +154,16 @@ export function CartPage() {
                                                 className="bg-[#1C1C1C] rounded-lg p-4 border border-[#3A3A3A]"
                                             >
                                                 <div className="flex justify-between items-start mb-3">
-                                                    <h3 className="text-[#F8F8F8] font-semibold flex-1 pr-2">
-                                                        {item.name}
-                                                    </h3>
+                                                    <div className="flex flex-col">
+                                                        <h3 className="text-[#F8F8F8] font-semibold pr-2">
+                                                            {item.name}
+                                                        </h3>
+                                                        {item.platform && (
+                                                            <span className="pt-1 w-max">
+                                                                <PlatformBadge platform={item.platform} />
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                     <button
                                                         onClick={() => removeItem(item.id, item.name)}
                                                         className="text-red-400 hover:text-red-300 transition-colors"
@@ -168,8 +180,8 @@ export function CartPage() {
                                                             <Minus className="w-4 h-4" />
                                                         </button>
                                                         <span className="text-[#F8F8F8] font-semibold w-8 text-center">
-                              {item.quantity}
-                            </span>
+                                                          {item.quantity}
+                                                        </span>
                                                         <button
                                                             onClick={() => updateQuantity(item.id, 1)}
                                                             className="w-8 h-8 rounded bg-[#2A2A2A] text-[#D4A44A] hover:bg-[#3A3A3A] transition-colors flex items-center justify-center"
@@ -196,6 +208,7 @@ export function CartPage() {
                                             <TableHeader>
                                                 <TableRow className="border-[#3A3A3A] hover:bg-transparent">
                                                     <TableHead className="text-[#A0A0A0]">Produkt</TableHead>
+                                                    <TableHead className="text-[#A0A0A0]"></TableHead>
                                                     <TableHead className="text-[#A0A0A0] text-center">
                                                         Ilość
                                                     </TableHead>
@@ -214,9 +227,33 @@ export function CartPage() {
                                                         key={item.id}
                                                         className="border-[#3A3A3A] hover:bg-[#1C1C1C]"
                                                     >
-                                                        <TableCell className="text-[#F8F8F8] font-medium">
-                                                            {item.name}
+                                                        {/* Obrazek produktu */}
+                                                        <TableCell className="p-2">
+                                                            <img
+                                                                src={`https://cdn.cloudflare.steamstatic.com/steam/apps/${item.imgId}/header.jpg`}
+                                                                alt={item.name}
+                                                                className="w-16 h-8 rounded"
+                                                            />
                                                         </TableCell>
+
+                                                        {/* Nazwa produktu */}
+                                                        <TableCell className="text-[#F8F8F8] font-medium">
+                                                            <div className="flex items-center gap-2 h-full">
+                                                                <button
+                                                                    onClick={() => navigate({ to: `/products/${item.id}` })}
+                                                                    className="flex-1 text-left !bg-transparent border-none p-0 m-0"
+                                                                >
+                                                                    {item.name}
+                                                                </button>
+                                                                <span className="pt-0.5">
+                                                                {item.platform && (
+                                                                    <PlatformBadge platform={item.platform} />
+                                                                )}
+                                                                </span>
+                                                            </div>
+                                                        </TableCell>
+
+                                                        {/* Ilość */}
                                                         <TableCell>
                                                             <div className="flex items-center justify-center gap-2">
                                                                 <button
@@ -226,8 +263,8 @@ export function CartPage() {
                                                                     <Minus className="w-4 h-4" />
                                                                 </button>
                                                                 <span className="text-[#F8F8F8] font-semibold w-8 text-center">
-                                  {item.quantity}
-                                </span>
+                                                                    {item.quantity}
+                                                                </span>
                                                                 <button
                                                                     onClick={() => updateQuantity(item.id, 1)}
                                                                     className="w-8 h-8 rounded bg-[#2A2A2A] text-[#D4A44A] hover:bg-[#3A3A3A] transition-colors flex items-center justify-center"
@@ -236,18 +273,24 @@ export function CartPage() {
                                                                 </button>
                                                             </div>
                                                         </TableCell>
+
+                                                        {/* Cena */}
                                                         <TableCell className="text-[#A0A0A0] text-right">
                                                             ${item.price.toFixed(2)}
                                                         </TableCell>
+
+                                                        {/* Suma */}
                                                         <TableCell className="text-[#D4A44A] font-bold text-right">
                                                             ${(item.price * item.quantity).toFixed(2)}
                                                         </TableCell>
+
+                                                        {/* Usuń */}
                                                         <TableCell>
                                                             <button
                                                                 onClick={() => removeItem(item.id, item.name)}
-                                                                className="text-red-400 hover:text-red-300 transition-colors"
+                                                                className="text-red-400 hover:text-red-300 transition-colors !bg-transparent"
                                                             >
-                                                                <Trash2 className="w-5 h-5" />
+                                                                <Trash2 className="w-5 h-5 " />
                                                             </button>
                                                         </TableCell>
                                                     </TableRow>

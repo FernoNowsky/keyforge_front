@@ -2,53 +2,28 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ShoppingCart, Search } from "lucide-react"
-import { SiSteam, SiUbisoft, SiRockstargames } from "react-icons/si"
 import { toast } from "sonner";
 import React from "react";
+import { PlatformBadge } from "@/components/PlatformBadge";
 
 type CartItem = {
-    id: string
+    id: number
     name: string
+    imgId: string
+    platform: string
     price: number
     quantity: number
 }
 
 type GameCardProps = {
+    id: number
     name: string
     platform: string
     price: number
     imgId: string
 }
 
-const PlatformBadge = ({ platform }: { platform: string }) => {
-    const baseClasses =
-        "flex items-center gap-1 text-white text-xs px-2 py-1 rounded-md shadow"
-    switch (platform) {
-        case "Steam":
-            return (
-                <span className={`${baseClasses} bg-[#1b2838]`}>
-                    <SiSteam size={14} /> Steam
-                </span>
-            )
-        case "Ubisoft":
-        case "Ubisoft Connect":
-            return (
-                <span className={`${baseClasses} bg-[#0099ff]`}>
-                    <SiUbisoft size={14} /> Ubisoft
-                </span>
-            )
-        case "Rockstar":
-            return (
-                <span className={`${baseClasses} bg-[#D4A44A] text-black`}>
-                    <SiRockstargames size={14} /> Rockstar
-                </span>
-            )
-        default:
-            return <span className={`${baseClasses} bg-gray-600`}>{platform}</span>
-    }
-}
-
-export function GameCard({ name, platform, price, imgId }: GameCardProps) {
+export function GameCard({ name, platform, price, imgId, id }: GameCardProps) {
     const [isMobile, setIsMobile] = React.useState(
         typeof window !== "undefined" ? window.innerWidth < 768 : false
     );
@@ -68,7 +43,7 @@ export function GameCard({ name, platform, price, imgId }: GameCardProps) {
             const cart = cartData ? JSON.parse(cartData) : [];
 
             // Sprawdzenie czy produkt już istnieje
-            const existingItemIndex = cart.findIndex((item: CartItem) => item.id === imgId);
+            const existingItemIndex = cart.findIndex((item: CartItem) => item.id === id);
 
             if (existingItemIndex !== -1) {
                 // Zwiększ ilość jeśli produkt już istnieje
@@ -76,8 +51,10 @@ export function GameCard({ name, platform, price, imgId }: GameCardProps) {
             } else {
                 // Dodaj nowy produkt
                 cart.push({
-                    id: imgId,
+                    id: id,
+                    imgId: imgId,
                     name: name,
+                    platform: platform,
                     price: price,
                     quantity: 1
                 });
@@ -85,7 +62,7 @@ export function GameCard({ name, platform, price, imgId }: GameCardProps) {
 
             // Zapis do localStorage
             localStorage.setItem('gameCart', JSON.stringify(cart));
-
+            window.dispatchEvent(new Event('cartUpdated'));
             toast.success(`Dodano produkt ${name} do koszyka`)
 
         } catch (error) {

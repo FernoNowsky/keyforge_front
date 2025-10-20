@@ -47,6 +47,7 @@ export function TopGamesCarousel({ games }: TopGamesCarouselProps) {
                         >
                             <div className="p-1 sm:p-3">
                                 <GameCard
+                                    id={game.id}
                                     name={game.name}
                                     platform={game.platform.name}
                                     price={game.price}

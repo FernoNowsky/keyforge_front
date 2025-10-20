@@ -2,11 +2,11 @@
 
 import * as React from "react"
 import { Link } from "@tanstack/react-router"
-import { UserIcon, SearchIcon, ShoppingCartIcon } from "lucide-react"
+import { UserIcon, SearchIcon } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { AuthDialog } from "@/components/AuthDialog"
 import { UserAccount } from "@/components/UserAccount"
-
+import { CartHoverSection } from "@/components/CartHoverSection";
 import { useNavigate } from "@tanstack/react-router";
 
 
@@ -127,9 +127,7 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
                     )}
 
                     {/* Koszyk */}
-                    <Link to="/cart" className="flex items-center hover:text-primary transition">
-                        <ShoppingCartIcon className="h-5 w-5" />
-                    </Link>
+                    <CartHoverSection />
 
                     {/* Sekcja użytkownika */}
                     <div

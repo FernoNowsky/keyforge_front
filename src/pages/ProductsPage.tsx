@@ -167,6 +167,7 @@ export function ProductsPage() {
                             {filteredGames.map((game) => (
                                 <div key={game.id} className="w-full max-w-[240px]">
                                     <GameCard
+                                        id={game.id}
                                         name={game.name}
                                         platform={game.platform.name}
                                         price={game.price}
