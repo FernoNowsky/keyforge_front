@@ -1,187 +1,89 @@
 "use client"
 
-import { useMatch } from "@tanstack/react-router"
-import { GameCard } from "@/components/GameCard"
 import { useState, useEffect, useCallback } from "react"
-import { type Filters, FiltersPanel } from "@/components/FiltersPanel"
-import { ProductsApi } from "@/api/productsApi"
-import type { Product } from "@/api/types/product.types"
-import type {FilterParams} from "@/api"
+import { FiltersPanel, type Filters } from "@/components/FiltersPanel"
+import { ProductsContainer } from "@/components/ProductsContainer"
+import { useMatch } from "@tanstack/react-router"
 
 export function ProductsPage() {
+
     const categoryMatch = useMatch({ from: '/products/category/$categoryId', shouldThrow: false })
     const platformMatch = useMatch({ from: '/products/platform/$platformId', shouldThrow: false })
     const typeMatch = useMatch({ from: '/products/type/$typeId', shouldThrow: false })
+    const initialCategoryIds = categoryMatch?.params.categoryId
+    const initialPlatformIds = platformMatch?.params.platformId
+    const initialTypeIds = typeMatch?.params.typeId
 
-    const categoryIds = categoryMatch?.params.categoryId
-    const platformIds = platformMatch?.params.platformId
-    const typeIds = typeMatch?.params.typeId
+    const initialFilters: Filters = {
+        platforms: initialPlatformIds ? [initialPlatformIds] : [],
+        categories: initialCategoryIds ? [initialCategoryIds] : [],
+        types: initialTypeIds ? [initialTypeIds] : [],
+        priceRange: { min: null, max: null }
+    }
 
-    const [games, setGames] = useState<Product[]>([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
-    const [filteredGames, setFilteredGames] = useState<Product[]>([])
-
-    useEffect(() => {
-        const fetchGames = async () => {
-            setLoading(true)
-            setError(null)
-
-            try {
-                let allGames: Product[] = []
-                let page = 0
-
-                const filterParams: FilterParams = {
-                    page,
-                    size: 20,
-                }
-
-                if (platformIds) {
-                    if (!filterParams.platformIds) {
-                        filterParams.platformIds = [];
-                    }
-                    filterParams.platformIds.push(platformIds);
-                }
-
-                if (typeIds) {
-                    if (!filterParams.typeIds) {
-                        filterParams.typeIds = [];
-                    }
-                    filterParams.typeIds.push(typeIds);
-                }
-
-                if (categoryIds) {
-                    if (!filterParams.categoryIds) {
-                        filterParams.categoryIds = [];
-                    }
-                    filterParams.categoryIds.push(categoryIds);
-                }
-
-                const data = await ProductsApi.getAll({
-                    ...filterParams,
-                    page,
-                })
-
-                const availableGames = data.content.filter((g: { stock: number }) => g.stock > 0)
-                allGames = [...allGames, ...availableGames]
-                page++
-                setGames(allGames)
-            } catch (err) {
-                console.error("Błąd pobierania gier:", err)
-                setError("Nie udało się pobrać produktów. Spróbuj ponownie później.")
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        fetchGames()
-    }, [categoryIds, platformIds, typeIds])
+    const [filters, setFilters] = useState<Filters | null>(initialFilters)
+    const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(initialFilters.platforms)
+    const [selectedCategories, setSelectedCategories] = useState<string[]>(initialFilters.categories)
+    const [selectedTypes, setSelectedTypes] = useState<string[]>(initialFilters.types)
+    const [minPrice, setMinPrice] = useState<string>("")
+    const [maxPrice, setMaxPrice] = useState<string>("")
 
     useEffect(() => {
-        setFilteredGames(games)
-    }, [games])
-
-    const handleFilter = useCallback(async (filters: Filters) => {
-        setLoading(true)
-        setError(null)
-
-        try {
-            const filterParams: FilterParams = {
-                page: 0,
-                size: 20,
+        const newFilters: Filters = {
+            platforms: initialPlatformIds ? [initialPlatformIds] : [],
+            categories: initialCategoryIds ? [initialCategoryIds] : [],
+            types: initialTypeIds ? [initialTypeIds] : [],
+            priceRange: {
+                min: null,
+                max: null
             }
-
-            if (filters.platforms.length > 0) {
-                filterParams.platformIds = filters.platforms
-            }
-
-            if (filters.categories.length > 0) {
-                filterParams.categoryIds = filters.categories
-            }
-
-            if (filters.types.length > 0) {
-                filterParams.typeIds = filters.types
-            }
-
-            console.log(filterParams)
-            const data = await ProductsApi.getAll(filterParams)
-            const availableGames = data.content.filter((g: { stock: number }) => g.stock > 0)
-            setFilteredGames(availableGames)
-        } catch (err) {
-            console.error("Błąd filtrowania:", err)
-            setError("Nie udało się pobrać przefiltrowanych produktów.")
-        } finally {
-            setLoading(false)
         }
-    }, [platformIds, typeIds, categoryIds])
+        setFilters(newFilters)
+        setSelectedPlatforms(newFilters.platforms)
+        setSelectedCategories(newFilters.categories)
+        setSelectedTypes(newFilters.types)
+    }, [initialPlatformIds, initialCategoryIds, initialTypeIds])
 
-    const handleClear = useCallback(() => {
-        // Przycisk "Wyczyść" tylko resetuje stan w FiltersPanel
+    const handleFilter = useCallback((newFilters: Filters) => {
+        setFilters(newFilters)
+        setSelectedPlatforms(newFilters.platforms)
+        setSelectedCategories(newFilters.categories)
+        setSelectedTypes(newFilters.types)
+        setMinPrice(newFilters.priceRange.min?.toString() ?? "")
+        setMaxPrice(newFilters.priceRange.max?.toString() ?? "")
     }, [])
 
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#1C1C1C] to-[#2A2A2A] text-[#F8F8F8]">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D4A44A] mx-auto mb-4"></div>
-                    <p className="text-[#B0B0B0]">Ładowanie produktów...</p>
-                </div>
-            </div>
-        )
-    }
-
-    if (error) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-[#1C1C1C] text-[#F8F8F8]">
-                <div className="text-center">
-                    <p className="text-red-400 mb-4">{error}</p>
-                    <button
-                        onClick={() => window.location.reload()}
-                        className="px-4 py-2 bg-[#D4A44A] text-[#1C1C1C] rounded hover:bg-[#C4943A] transition"
-                    >
-                        Spróbuj ponownie
-                    </button>
-                </div>
-            </div>
-        )
-    }
+    const handleClear = useCallback(() => {
+        setFilters(null)
+        setSelectedPlatforms([])
+        setSelectedCategories([])
+        setSelectedTypes([])
+        setMinPrice("")
+        setMaxPrice("")
+    }, [])
 
     return (
         <div className="min-h-screen flex flex-col bg-[#1C1C1C] text-[#F8F8F8]">
             <main className="flex-1 pt-8 pb-12 px-6 max-w-[1800px] mx-auto w-full">
                 <div className="flex flex-col lg:flex-row gap-8">
                     <aside className="w-full lg:w-88 flex-shrink-0">
-                        <FiltersPanel onFilter={handleFilter} onClear={handleClear} />
+                        <FiltersPanel
+                            onFilter={handleFilter}
+                            onClear={handleClear}
+                            initialPlatformIds={initialPlatformIds ? [initialPlatformIds] : []}
+                            initialCategoryIds={initialCategoryIds ? [initialCategoryIds] : []}
+                            initialTypeIds={initialTypeIds ? [initialTypeIds] : []}
+                            // Przekaż kontrolowane wartości
+                            controlledPlatforms={selectedPlatforms}
+                            controlledCategories={selectedCategories}
+                            controlledTypes={selectedTypes}
+                            controlledMinPrice={minPrice}
+                            controlledMaxPrice={maxPrice}
+                        />
                     </aside>
 
                     <section className="flex-1 min-w-0">
-                        <p className="text-[#808080] text-sm mb-8">
-                            Znaleziono {filteredGames.length} produktów
-                        </p>
-
-                        <div className="grid gap-4 justify-items-center
-                                      grid-cols-1
-                                      min-[800px]:grid-cols-3
-                                      xl:grid-cols-4
-                                      2xl:grid-cols-5">
-                            {filteredGames.map((game) => (
-                                <div key={game.id} className="w-full max-w-[240px]">
-                                    <GameCard
-                                        id={game.id}
-                                        name={game.name}
-                                        platform={game.platform.name}
-                                        price={game.price}
-                                        imgId={game.logoId}
-                                    />
-                                </div>
-                            ))}
-                        </div>
-
-                        {filteredGames.length === 0 && (
-                            <p className="text-center text-[#B0B0B0] mt-10">
-                                Brak produktów spełniających wybrane kryteria.
-                            </p>
-                        )}
+                        <ProductsContainer filters={filters} />
                     </section>
                 </div>
             </main>

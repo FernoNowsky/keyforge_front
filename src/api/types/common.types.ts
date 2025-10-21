@@ -14,4 +14,6 @@ export interface FilterParams {
     platformIds?: string[];
     typeIds?: string[];
     categoryIds?: string[];
+    priceMin?: number;
+    priceMax?: number;
 }
