@@ -3,6 +3,7 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import { useNavigate } from "@tanstack/react-router"
 import {
     User,
     LogOut,
@@ -29,53 +30,66 @@ interface UserAccountProps {
 }
 
 export function UserAccount({
-                                        open,
-                                        onOpenChange,
-                                        user,
-                                        email = "user@keyforge.com",
-                                        level = "Mistrz Kuźni",
-                                        keyPoints = 2450,
-                                        discount = 15,
-                                        onLogout,
-                                    }: UserAccountProps) {
+                                open,
+                                onOpenChange,
+                                user,
+                                email = "user@keyforge.com",
+                                level = "Mistrz Kuźni",
+                                keyPoints = 2450,
+                                discount = 15,
+                                onLogout,
+                            }: UserAccountProps) {
+    const navigate = useNavigate()
+
     const accountSections = [
         {
             icon: ShoppingBag,
             title: "Moje zakupy",
             description: "Historia i pobieranie kluczy",
-            color: "text-[#D4A44A]"
+            color: "text-[#D4A44A]",
+            path: "/account/purchases"
         },
         {
             icon: Key,
             title: "Moje klucze",
             description: "Zakupione klucze aktywacyjne",
-            color: "text-[#D4A44A]"
+            color: "text-[#D4A44A]",
+            path: "/account/keys"
         },
         {
             icon: Star,
             title: "Opinie i oceny",
             description: "Twoje recenzje gier",
-            color: "text-[#D4A44A]"
+            color: "text-[#D4A44A]",
+            path: "/account/reviews"
         },
         {
             icon: Award,
             title: "Punkty lojalnościowe",
             description: "Zbieraj i wymieniaj na rabaty",
-            color: "text-[#D4A44A]"
+            color: "text-[#D4A44A]",
+            path: "/account/loyalty"
         },
         {
             icon: Settings,
             title: "Ustawienia konta",
             description: "Profil, hasło, preferencje",
-            color: "text-[#D4A44A]"
+            color: "text-[#D4A44A]",
+            path: "/account/settings"
         },
         {
             icon: MessageSquare,
             title: "Wsparcie",
             description: "Kontakt przez WhatsApp",
-            color: "text-[#D4A44A]"
+            color: "text-[#D4A44A]",
+            path: "/account/support"
         }
     ]
+
+    const handleSectionClick = (path: string) => {
+        navigate({ to: path })
+        onOpenChange(false)
+    }
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
@@ -134,13 +148,14 @@ export function UserAccount({
                             return (
                                 <button
                                     key={index}
+                                    onClick={() => handleSectionClick(section.path)}
                                     className="w-full flex items-center gap-4 p-3 rounded-lg bg-[#1F1F1F] hover:bg-[#3A3A3A] transition-all duration-200 border border-transparent hover:border-[#D4A44A]/30 group"
                                 >
                                     <div className={`${section.color} p-2 rounded-md bg-[#2A2A2A] group-hover:scale-110 transition-transform`}>
                                         <IconComponent className="h-5 w-5" />
                                     </div>
                                     <div className="flex-1 text-left">
-                                        <p className="text-sm font-semibold text-[#D4A44A] group-hover:text-[#D4A44A] transition-colors">
+                                        <p className="text-sm font-semibold text-[#D4A44A] transition-colors">
                                             {section.title}
                                         </p>
                                         <p className="text-xs text-gray-500">

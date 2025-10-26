@@ -15,9 +15,11 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductsIndexRouteImport } from './routes/products/index'
+import { Route as AccountIndexRouteImport } from './routes/account/index'
 import { Route as ProductsTypeIndexRouteImport } from './routes/products/type/index'
 import { Route as ProductsPlatformIndexRouteImport } from './routes/products/platform/index'
 import { Route as ProductsCategoryIndexRouteImport } from './routes/products/category/index'
+import { Route as AccountLoyaltyIndexRouteImport } from './routes/account/loyalty/index'
 import { Route as ProductsTypeTypeIdRouteImport } from './routes/products/type/$typeId'
 import { Route as ProductsPlatformPlatformIdRouteImport } from './routes/products/platform/$platformId'
 import { Route as ProductsCategoryCategoryIdRouteImport } from './routes/products/category/$categoryId'
@@ -52,6 +54,11 @@ const ProductsIndexRoute = ProductsIndexRouteImport.update({
   path: '/products/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountIndexRoute = AccountIndexRouteImport.update({
+  id: '/account/',
+  path: '/account/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProductsTypeIndexRoute = ProductsTypeIndexRouteImport.update({
   id: '/products/type/',
   path: '/products/type/',
@@ -65,6 +72,11 @@ const ProductsPlatformIndexRoute = ProductsPlatformIndexRouteImport.update({
 const ProductsCategoryIndexRoute = ProductsCategoryIndexRouteImport.update({
   id: '/products/category/',
   path: '/products/category/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountLoyaltyIndexRoute = AccountLoyaltyIndexRouteImport.update({
+  id: '/account/loyalty/',
+  path: '/account/loyalty/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProductsTypeTypeIdRoute = ProductsTypeTypeIdRouteImport.update({
@@ -91,10 +103,12 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/terms-of-service': typeof TermsOfServiceRoute
+  '/account': typeof AccountIndexRoute
   '/products': typeof ProductsIndexRoute
   '/products/category/$categoryId': typeof ProductsCategoryCategoryIdRoute
   '/products/platform/$platformId': typeof ProductsPlatformPlatformIdRoute
   '/products/type/$typeId': typeof ProductsTypeTypeIdRoute
+  '/account/loyalty': typeof AccountLoyaltyIndexRoute
   '/products/category': typeof ProductsCategoryIndexRoute
   '/products/platform': typeof ProductsPlatformIndexRoute
   '/products/type': typeof ProductsTypeIndexRoute
@@ -105,10 +119,12 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/terms-of-service': typeof TermsOfServiceRoute
+  '/account': typeof AccountIndexRoute
   '/products': typeof ProductsIndexRoute
   '/products/category/$categoryId': typeof ProductsCategoryCategoryIdRoute
   '/products/platform/$platformId': typeof ProductsPlatformPlatformIdRoute
   '/products/type/$typeId': typeof ProductsTypeTypeIdRoute
+  '/account/loyalty': typeof AccountLoyaltyIndexRoute
   '/products/category': typeof ProductsCategoryIndexRoute
   '/products/platform': typeof ProductsPlatformIndexRoute
   '/products/type': typeof ProductsTypeIndexRoute
@@ -120,10 +136,12 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/terms-of-service': typeof TermsOfServiceRoute
+  '/account/': typeof AccountIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/products/category/$categoryId': typeof ProductsCategoryCategoryIdRoute
   '/products/platform/$platformId': typeof ProductsPlatformPlatformIdRoute
   '/products/type/$typeId': typeof ProductsTypeTypeIdRoute
+  '/account/loyalty/': typeof AccountLoyaltyIndexRoute
   '/products/category/': typeof ProductsCategoryIndexRoute
   '/products/platform/': typeof ProductsPlatformIndexRoute
   '/products/type/': typeof ProductsTypeIndexRoute
@@ -136,10 +154,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacy-policy'
     | '/terms-of-service'
+    | '/account'
     | '/products'
     | '/products/category/$categoryId'
     | '/products/platform/$platformId'
     | '/products/type/$typeId'
+    | '/account/loyalty'
     | '/products/category'
     | '/products/platform'
     | '/products/type'
@@ -150,10 +170,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacy-policy'
     | '/terms-of-service'
+    | '/account'
     | '/products'
     | '/products/category/$categoryId'
     | '/products/platform/$platformId'
     | '/products/type/$typeId'
+    | '/account/loyalty'
     | '/products/category'
     | '/products/platform'
     | '/products/type'
@@ -164,10 +186,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacy-policy'
     | '/terms-of-service'
+    | '/account/'
     | '/products/'
     | '/products/category/$categoryId'
     | '/products/platform/$platformId'
     | '/products/type/$typeId'
+    | '/account/loyalty/'
     | '/products/category/'
     | '/products/platform/'
     | '/products/type/'
@@ -179,10 +203,12 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   TermsOfServiceRoute: typeof TermsOfServiceRoute
+  AccountIndexRoute: typeof AccountIndexRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
   ProductsCategoryCategoryIdRoute: typeof ProductsCategoryCategoryIdRoute
   ProductsPlatformPlatformIdRoute: typeof ProductsPlatformPlatformIdRoute
   ProductsTypeTypeIdRoute: typeof ProductsTypeTypeIdRoute
+  AccountLoyaltyIndexRoute: typeof AccountLoyaltyIndexRoute
   ProductsCategoryIndexRoute: typeof ProductsCategoryIndexRoute
   ProductsPlatformIndexRoute: typeof ProductsPlatformIndexRoute
   ProductsTypeIndexRoute: typeof ProductsTypeIndexRoute
@@ -232,6 +258,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account/': {
+      id: '/account/'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/products/type/': {
       id: '/products/type/'
       path: '/products/type'
@@ -251,6 +284,13 @@ declare module '@tanstack/react-router' {
       path: '/products/category'
       fullPath: '/products/category'
       preLoaderRoute: typeof ProductsCategoryIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/loyalty/': {
+      id: '/account/loyalty/'
+      path: '/account/loyalty'
+      fullPath: '/account/loyalty'
+      preLoaderRoute: typeof AccountLoyaltyIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/products/type/$typeId': {
@@ -283,10 +323,12 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   TermsOfServiceRoute: TermsOfServiceRoute,
+  AccountIndexRoute: AccountIndexRoute,
   ProductsIndexRoute: ProductsIndexRoute,
   ProductsCategoryCategoryIdRoute: ProductsCategoryCategoryIdRoute,
   ProductsPlatformPlatformIdRoute: ProductsPlatformPlatformIdRoute,
   ProductsTypeTypeIdRoute: ProductsTypeTypeIdRoute,
+  AccountLoyaltyIndexRoute: AccountLoyaltyIndexRoute,
   ProductsCategoryIndexRoute: ProductsCategoryIndexRoute,
   ProductsPlatformIndexRoute: ProductsPlatformIndexRoute,
   ProductsTypeIndexRoute: ProductsTypeIndexRoute,
