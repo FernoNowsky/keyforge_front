@@ -82,7 +82,7 @@ export function UserAccount({
             title: "Wsparcie",
             description: "Kontakt przez WhatsApp",
             color: "text-[#D4A44A]",
-            path: "/account/support"
+            path: "/support"
         }
     ]
 

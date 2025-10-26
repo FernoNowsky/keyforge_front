@@ -15,8 +15,8 @@ export function PrivacyPolicy() {
 
                     <h2 className="text-xl font-semibold mt-6 mb-2">1. Administrator danych</h2>
                     <p className="mb-4">
-                        Administratorem danych osobowych jest KeyForge Sp. z o.o. z siedzibą w Warszawie,
-                        ul. Pixelowa 12, 00-001 Warszawa.
+                        Administratorem danych osobowych jest KeyForge Sp. z o.o. z siedzibą w Łodzi,
+                        ul. Piotrkowska 123, 90-001 Łódź.
                     </p>
 
                     <h2 className="text-xl font-semibold mt-6 mb-2">2. Zakres zbieranych danych</h2>

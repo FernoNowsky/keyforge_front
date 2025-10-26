@@ -14,7 +14,7 @@ export function TermsOfService() {
 
             <h2 className="text-xl font-semibold mt-6 mb-2">1. Postanowienia ogólne</h2>
             <p className="mb-4">
-                Sklep KeyForge prowadzony jest przez KeyForge Sp. z o.o. z siedzibą w Warszawie.
+                Sklep KeyForge prowadzony jest przez KeyForge Sp. z o.o. z siedzibą w Łodzi.
                 Regulamin określa prawa i obowiązki Sprzedawcy oraz Klienta.
             </p>
 

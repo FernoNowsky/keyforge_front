@@ -14,6 +14,7 @@ import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SupportIndexRouteImport } from './routes/support/index'
 import { Route as ProductsIndexRouteImport } from './routes/products/index'
 import { Route as AccountIndexRouteImport } from './routes/account/index'
 import { Route as ProductsTypeIndexRouteImport } from './routes/products/type/index'
@@ -50,6 +51,11 @@ const CartRoute = CartRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SupportIndexRoute = SupportIndexRouteImport.update({
+  id: '/support/',
+  path: '/support/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProductsIndexRoute = ProductsIndexRouteImport.update({
@@ -123,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/terms-of-service': typeof TermsOfServiceRoute
   '/account': typeof AccountIndexRoute
   '/products': typeof ProductsIndexRoute
+  '/support': typeof SupportIndexRoute
   '/products/category/$categoryId': typeof ProductsCategoryCategoryIdRoute
   '/products/platform/$platformId': typeof ProductsPlatformPlatformIdRoute
   '/products/type/$typeId': typeof ProductsTypeTypeIdRoute
@@ -142,6 +149,7 @@ export interface FileRoutesByTo {
   '/terms-of-service': typeof TermsOfServiceRoute
   '/account': typeof AccountIndexRoute
   '/products': typeof ProductsIndexRoute
+  '/support': typeof SupportIndexRoute
   '/products/category/$categoryId': typeof ProductsCategoryCategoryIdRoute
   '/products/platform/$platformId': typeof ProductsPlatformPlatformIdRoute
   '/products/type/$typeId': typeof ProductsTypeTypeIdRoute
@@ -162,6 +170,7 @@ export interface FileRoutesById {
   '/terms-of-service': typeof TermsOfServiceRoute
   '/account/': typeof AccountIndexRoute
   '/products/': typeof ProductsIndexRoute
+  '/support/': typeof SupportIndexRoute
   '/products/category/$categoryId': typeof ProductsCategoryCategoryIdRoute
   '/products/platform/$platformId': typeof ProductsPlatformPlatformIdRoute
   '/products/type/$typeId': typeof ProductsTypeTypeIdRoute
@@ -183,6 +192,7 @@ export interface FileRouteTypes {
     | '/terms-of-service'
     | '/account'
     | '/products'
+    | '/support'
     | '/products/category/$categoryId'
     | '/products/platform/$platformId'
     | '/products/type/$typeId'
@@ -202,6 +212,7 @@ export interface FileRouteTypes {
     | '/terms-of-service'
     | '/account'
     | '/products'
+    | '/support'
     | '/products/category/$categoryId'
     | '/products/platform/$platformId'
     | '/products/type/$typeId'
@@ -221,6 +232,7 @@ export interface FileRouteTypes {
     | '/terms-of-service'
     | '/account/'
     | '/products/'
+    | '/support/'
     | '/products/category/$categoryId'
     | '/products/platform/$platformId'
     | '/products/type/$typeId'
@@ -241,6 +253,7 @@ export interface RootRouteChildren {
   TermsOfServiceRoute: typeof TermsOfServiceRoute
   AccountIndexRoute: typeof AccountIndexRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
+  SupportIndexRoute: typeof SupportIndexRoute
   ProductsCategoryCategoryIdRoute: typeof ProductsCategoryCategoryIdRoute
   ProductsPlatformPlatformIdRoute: typeof ProductsPlatformPlatformIdRoute
   ProductsTypeTypeIdRoute: typeof ProductsTypeTypeIdRoute
@@ -288,6 +301,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/support/': {
+      id: '/support/'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/products/': {
@@ -385,6 +405,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsOfServiceRoute: TermsOfServiceRoute,
   AccountIndexRoute: AccountIndexRoute,
   ProductsIndexRoute: ProductsIndexRoute,
+  SupportIndexRoute: SupportIndexRoute,
   ProductsCategoryCategoryIdRoute: ProductsCategoryCategoryIdRoute,
   ProductsPlatformPlatformIdRoute: ProductsPlatformPlatformIdRoute,
   ProductsTypeTypeIdRoute: ProductsTypeTypeIdRoute,
