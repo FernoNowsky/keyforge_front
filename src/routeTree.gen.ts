@@ -20,6 +20,7 @@ import { Route as AccountIndexRouteImport } from './routes/account/index'
 import { Route as ProductsTypeIndexRouteImport } from './routes/products/type/index'
 import { Route as ProductsPlatformIndexRouteImport } from './routes/products/platform/index'
 import { Route as ProductsCategoryIndexRouteImport } from './routes/products/category/index'
+import { Route as AccountSettingsIndexRouteImport } from './routes/account/settings/index'
 import { Route as AccountReviewsIndexRouteImport } from './routes/account/reviews/index'
 import { Route as AccountPurchasesIndexRouteImport } from './routes/account/purchases/index'
 import { Route as AccountLoyaltyIndexRouteImport } from './routes/account/loyalty/index'
@@ -83,6 +84,11 @@ const ProductsCategoryIndexRoute = ProductsCategoryIndexRouteImport.update({
   path: '/products/category/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountSettingsIndexRoute = AccountSettingsIndexRouteImport.update({
+  id: '/account/settings/',
+  path: '/account/settings/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountReviewsIndexRoute = AccountReviewsIndexRouteImport.update({
   id: '/account/reviews/',
   path: '/account/reviews/',
@@ -137,6 +143,7 @@ export interface FileRoutesByFullPath {
   '/account/loyalty': typeof AccountLoyaltyIndexRoute
   '/account/purchases': typeof AccountPurchasesIndexRoute
   '/account/reviews': typeof AccountReviewsIndexRoute
+  '/account/settings': typeof AccountSettingsIndexRoute
   '/products/category': typeof ProductsCategoryIndexRoute
   '/products/platform': typeof ProductsPlatformIndexRoute
   '/products/type': typeof ProductsTypeIndexRoute
@@ -157,6 +164,7 @@ export interface FileRoutesByTo {
   '/account/loyalty': typeof AccountLoyaltyIndexRoute
   '/account/purchases': typeof AccountPurchasesIndexRoute
   '/account/reviews': typeof AccountReviewsIndexRoute
+  '/account/settings': typeof AccountSettingsIndexRoute
   '/products/category': typeof ProductsCategoryIndexRoute
   '/products/platform': typeof ProductsPlatformIndexRoute
   '/products/type': typeof ProductsTypeIndexRoute
@@ -178,6 +186,7 @@ export interface FileRoutesById {
   '/account/loyalty/': typeof AccountLoyaltyIndexRoute
   '/account/purchases/': typeof AccountPurchasesIndexRoute
   '/account/reviews/': typeof AccountReviewsIndexRoute
+  '/account/settings/': typeof AccountSettingsIndexRoute
   '/products/category/': typeof ProductsCategoryIndexRoute
   '/products/platform/': typeof ProductsPlatformIndexRoute
   '/products/type/': typeof ProductsTypeIndexRoute
@@ -200,6 +209,7 @@ export interface FileRouteTypes {
     | '/account/loyalty'
     | '/account/purchases'
     | '/account/reviews'
+    | '/account/settings'
     | '/products/category'
     | '/products/platform'
     | '/products/type'
@@ -220,6 +230,7 @@ export interface FileRouteTypes {
     | '/account/loyalty'
     | '/account/purchases'
     | '/account/reviews'
+    | '/account/settings'
     | '/products/category'
     | '/products/platform'
     | '/products/type'
@@ -240,6 +251,7 @@ export interface FileRouteTypes {
     | '/account/loyalty/'
     | '/account/purchases/'
     | '/account/reviews/'
+    | '/account/settings/'
     | '/products/category/'
     | '/products/platform/'
     | '/products/type/'
@@ -261,6 +273,7 @@ export interface RootRouteChildren {
   AccountLoyaltyIndexRoute: typeof AccountLoyaltyIndexRoute
   AccountPurchasesIndexRoute: typeof AccountPurchasesIndexRoute
   AccountReviewsIndexRoute: typeof AccountReviewsIndexRoute
+  AccountSettingsIndexRoute: typeof AccountSettingsIndexRoute
   ProductsCategoryIndexRoute: typeof ProductsCategoryIndexRoute
   ProductsPlatformIndexRoute: typeof ProductsPlatformIndexRoute
   ProductsTypeIndexRoute: typeof ProductsTypeIndexRoute
@@ -345,6 +358,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsCategoryIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account/settings/': {
+      id: '/account/settings/'
+      path: '/account/settings'
+      fullPath: '/account/settings'
+      preLoaderRoute: typeof AccountSettingsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account/reviews/': {
       id: '/account/reviews/'
       path: '/account/reviews'
@@ -413,6 +433,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountLoyaltyIndexRoute: AccountLoyaltyIndexRoute,
   AccountPurchasesIndexRoute: AccountPurchasesIndexRoute,
   AccountReviewsIndexRoute: AccountReviewsIndexRoute,
+  AccountSettingsIndexRoute: AccountSettingsIndexRoute,
   ProductsCategoryIndexRoute: ProductsCategoryIndexRoute,
   ProductsPlatformIndexRoute: ProductsPlatformIndexRoute,
   ProductsTypeIndexRoute: ProductsTypeIndexRoute,
