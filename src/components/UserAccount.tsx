@@ -66,7 +66,7 @@ export function UserAccount({
         {
             icon: Award,
             title: "Punkty lojalnościowe",
-            description: "Zbieraj i wymieniaj na rabaty",
+            description: "Sprawdź poziomy lojalnościowe",
             color: "text-[#D4A44A]",
             path: "/account/loyalty"
         },

@@ -19,6 +19,7 @@ import { Route as AccountIndexRouteImport } from './routes/account/index'
 import { Route as ProductsTypeIndexRouteImport } from './routes/products/type/index'
 import { Route as ProductsPlatformIndexRouteImport } from './routes/products/platform/index'
 import { Route as ProductsCategoryIndexRouteImport } from './routes/products/category/index'
+import { Route as AccountReviewsIndexRouteImport } from './routes/account/reviews/index'
 import { Route as AccountPurchasesIndexRouteImport } from './routes/account/purchases/index'
 import { Route as AccountLoyaltyIndexRouteImport } from './routes/account/loyalty/index'
 import { Route as AccountKeysIndexRouteImport } from './routes/account/keys/index'
@@ -76,6 +77,11 @@ const ProductsCategoryIndexRoute = ProductsCategoryIndexRouteImport.update({
   path: '/products/category/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountReviewsIndexRoute = AccountReviewsIndexRouteImport.update({
+  id: '/account/reviews/',
+  path: '/account/reviews/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountPurchasesIndexRoute = AccountPurchasesIndexRouteImport.update({
   id: '/account/purchases/',
   path: '/account/purchases/',
@@ -123,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/account/keys': typeof AccountKeysIndexRoute
   '/account/loyalty': typeof AccountLoyaltyIndexRoute
   '/account/purchases': typeof AccountPurchasesIndexRoute
+  '/account/reviews': typeof AccountReviewsIndexRoute
   '/products/category': typeof ProductsCategoryIndexRoute
   '/products/platform': typeof ProductsPlatformIndexRoute
   '/products/type': typeof ProductsTypeIndexRoute
@@ -141,6 +148,7 @@ export interface FileRoutesByTo {
   '/account/keys': typeof AccountKeysIndexRoute
   '/account/loyalty': typeof AccountLoyaltyIndexRoute
   '/account/purchases': typeof AccountPurchasesIndexRoute
+  '/account/reviews': typeof AccountReviewsIndexRoute
   '/products/category': typeof ProductsCategoryIndexRoute
   '/products/platform': typeof ProductsPlatformIndexRoute
   '/products/type': typeof ProductsTypeIndexRoute
@@ -160,6 +168,7 @@ export interface FileRoutesById {
   '/account/keys/': typeof AccountKeysIndexRoute
   '/account/loyalty/': typeof AccountLoyaltyIndexRoute
   '/account/purchases/': typeof AccountPurchasesIndexRoute
+  '/account/reviews/': typeof AccountReviewsIndexRoute
   '/products/category/': typeof ProductsCategoryIndexRoute
   '/products/platform/': typeof ProductsPlatformIndexRoute
   '/products/type/': typeof ProductsTypeIndexRoute
@@ -180,6 +189,7 @@ export interface FileRouteTypes {
     | '/account/keys'
     | '/account/loyalty'
     | '/account/purchases'
+    | '/account/reviews'
     | '/products/category'
     | '/products/platform'
     | '/products/type'
@@ -198,6 +208,7 @@ export interface FileRouteTypes {
     | '/account/keys'
     | '/account/loyalty'
     | '/account/purchases'
+    | '/account/reviews'
     | '/products/category'
     | '/products/platform'
     | '/products/type'
@@ -216,6 +227,7 @@ export interface FileRouteTypes {
     | '/account/keys/'
     | '/account/loyalty/'
     | '/account/purchases/'
+    | '/account/reviews/'
     | '/products/category/'
     | '/products/platform/'
     | '/products/type/'
@@ -235,6 +247,7 @@ export interface RootRouteChildren {
   AccountKeysIndexRoute: typeof AccountKeysIndexRoute
   AccountLoyaltyIndexRoute: typeof AccountLoyaltyIndexRoute
   AccountPurchasesIndexRoute: typeof AccountPurchasesIndexRoute
+  AccountReviewsIndexRoute: typeof AccountReviewsIndexRoute
   ProductsCategoryIndexRoute: typeof ProductsCategoryIndexRoute
   ProductsPlatformIndexRoute: typeof ProductsPlatformIndexRoute
   ProductsTypeIndexRoute: typeof ProductsTypeIndexRoute
@@ -312,6 +325,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsCategoryIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account/reviews/': {
+      id: '/account/reviews/'
+      path: '/account/reviews'
+      fullPath: '/account/reviews'
+      preLoaderRoute: typeof AccountReviewsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account/purchases/': {
       id: '/account/purchases/'
       path: '/account/purchases'
@@ -371,6 +391,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountKeysIndexRoute: AccountKeysIndexRoute,
   AccountLoyaltyIndexRoute: AccountLoyaltyIndexRoute,
   AccountPurchasesIndexRoute: AccountPurchasesIndexRoute,
+  AccountReviewsIndexRoute: AccountReviewsIndexRoute,
   ProductsCategoryIndexRoute: ProductsCategoryIndexRoute,
   ProductsPlatformIndexRoute: ProductsPlatformIndexRoute,
   ProductsTypeIndexRoute: ProductsTypeIndexRoute,
