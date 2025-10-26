@@ -35,8 +35,8 @@ export function UserAccount({
                                 user,
                                 email = "user@keyforge.com",
                                 level = "Mistrz Kuźni",
-                                keyPoints = 2450,
-                                discount = 15,
+                                keyPoints = 5450,
+                                discount = 9,
                                 onLogout,
                             }: UserAccountProps) {
     const navigate = useNavigate()
