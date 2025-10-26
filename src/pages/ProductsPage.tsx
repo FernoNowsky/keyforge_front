@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { FiltersPanel, type Filters } from "@/components/FiltersPanel"
 import { ProductsContainer } from "@/components/ProductsContainer"
-import { useMatch } from "@tanstack/react-router"
+import { useMatch, useLocation } from "@tanstack/react-router"
 
 export function ProductsPage() {
 
@@ -13,8 +13,11 @@ export function ProductsPage() {
     const initialCategoryIds = categoryMatch?.params.categoryId
     const initialPlatformIds = platformMatch?.params.platformId
     const initialTypeIds = typeMatch?.params.typeId
-
+    const location = useLocation()
+    const params = new URLSearchParams(location.search)
+    const initialName = params.get("name") ?? ""
     const initialFilters: Filters = {
+        name: initialName ? initialName : "",
         platforms: initialPlatformIds ? [initialPlatformIds] : [],
         categories: initialCategoryIds ? [initialCategoryIds] : [],
         types: initialTypeIds ? [initialTypeIds] : [],
@@ -30,6 +33,7 @@ export function ProductsPage() {
 
     useEffect(() => {
         const newFilters: Filters = {
+            name: initialName ? initialName : "",
             platforms: initialPlatformIds ? [initialPlatformIds] : [],
             categories: initialCategoryIds ? [initialCategoryIds] : [],
             types: initialTypeIds ? [initialTypeIds] : [],
@@ -42,7 +46,7 @@ export function ProductsPage() {
         setSelectedPlatforms(newFilters.platforms)
         setSelectedCategories(newFilters.categories)
         setSelectedTypes(newFilters.types)
-    }, [initialPlatformIds, initialCategoryIds, initialTypeIds])
+    }, [initialName, initialPlatformIds, initialCategoryIds, initialTypeIds])
 
     const handleFilter = useCallback((newFilters: Filters) => {
         setFilters(newFilters)
@@ -73,6 +77,7 @@ export function ProductsPage() {
                             initialPlatformIds={initialPlatformIds ? [initialPlatformIds] : []}
                             initialCategoryIds={initialCategoryIds ? [initialCategoryIds] : []}
                             initialTypeIds={initialTypeIds ? [initialTypeIds] : []}
+                            initialName={initialName ? initialName : ""}
                             // Przekaż kontrolowane wartości
                             controlledPlatforms={selectedPlatforms}
                             controlledCategories={selectedCategories}

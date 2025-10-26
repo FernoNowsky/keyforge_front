@@ -8,6 +8,7 @@ import type { FilterParams } from "@/api"
 import { GameCard } from "@/components/GameCard"
 
 export function ProductsContainer({ filters }: { filters: Filters | null }) {
+
     const [games, setGames] = useState<Product[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -32,6 +33,7 @@ export function ProductsContainer({ filters }: { filters: Filters | null }) {
                     ...(filters?.types?.length ? { typeIds: filters.types } : {}),
                     ...(filters?.priceRange.min ? { priceMin: filters.priceRange.min } : {}),
                     ...(filters?.priceRange.max ? { priceMax: filters.priceRange.max } : {}),
+                    ...(filters?.name ? { filter: filters.name } : "")
                 }
 
                 const data = await ProductsApi.getAll(params)

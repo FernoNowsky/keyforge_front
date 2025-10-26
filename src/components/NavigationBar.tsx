@@ -36,6 +36,20 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
     const [platforms, setPlatforms] = useState<Platform[]>([])
     const [productTypes, setProductTypes] = useState<ProductType[]>([])
     const [loading, setLoading] = useState(true)
+    const [searchTerm, setSearchTerm] = useState("")
+    const navigate = useNavigate()
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault()
+        if (searchTerm.trim()) {
+            navigate({
+                to: "/products",
+                search: { name: searchTerm.trim() }  // przekazanie parametru do URL
+            })
+        }
+        setSearchOpen(false)
+    }
+
 
     useEffect(() => {
         const fetchMenuData = async () => {
@@ -70,9 +84,7 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
 
     return (
         <header className="w-full bg-gradient-to-b from-[#1C1C1C] to-[#2A2A2A] text-white border-b border-[#3A3A3A] shadow-md">
-            {/* Górna część: logo + wyszukiwarka + koszyk + profil */}
             <div className="flex items-center justify-between px-6 py-3 border-t border-[#3A3A3A] bg-gradient-to-b from-[#2A2A2A] to-[#1F1F1F]">
-                {/* Lewa strona */}
                 <div className="flex items-center gap-3">
                     <Link to="/" className="flex items-center gap-2">
                         <img src={Logo} alt="KeyForge Logo" className="h-16 w-auto" />
@@ -81,25 +93,25 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
                         </span>
                     </Link>
                 </div>
-
-                {/* Środkowa wyszukiwarka (desktop) */}
                 <div className="hidden md:flex relative w-[40%]">
-                    <Input
-                        type="text"
-                        placeholder="Szukaj gier, DLC lub platform..."
-                        className="pl-9 w-full"
-                    />
-                    <SearchIcon className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <form onSubmit={handleSearch} className="w-full">
+                        <Input
+                            type="text"
+                            placeholder="Szukaj gier, DLC lub platform..."
+                            className="pl-9 w-full"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                        <SearchIcon
+                            className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground cursor-pointer"
+                            onClick={handleSearch}
+                        />
+                    </form>
                 </div>
-
-                {/* Prawa strona */}
                 <div className="flex items-center gap-5">
-                    {/* Mobile: ikona wyszukiwania */}
                     <button className="md:hidden relative" onClick={() => setSearchOpen(true)}>
                         <SearchIcon className="h-5 w-5" />
                     </button>
-
-                    {/* Overlay wyszukiwania na mobile */}
                     {searchOpen && (
                         <div
                             className="fixed inset-0 bg-[#3A3A3A]/80 z-50 flex flex-col items-center p-3 pt-24"
@@ -109,13 +121,19 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
                                 className="w-full bg-[#3A3A3A]/80 max-w-md relative"
                                 onClick={(e) => e.stopPropagation()}
                             >
-                                <Input
-                                    type="text"
-                                    placeholder="Szukaj gier, DLC lub platform..."
-                                    className="pl-9 w-full text-[#D4A44A] font-medium"
-                                    autoFocus
-                                />
-                                <SearchIcon className="absolute left-3 top-3 h-4 w-4 text-[#D4A44A]" />
+                                <form onSubmit={handleSearch} className="w-full">
+                                    <Input
+                                        type="text"
+                                        placeholder="Szukaj gier, DLC lub platform..."
+                                        className="pl-9 w-full"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                    <SearchIcon
+                                        className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground cursor-pointer"
+                                        onClick={handleSearch}
+                                    />
+                                </form>
                                 <button
                                     className="absolute right-2 top-2 !bg-[#3A3A3A]/80"
                                     onClick={() => setSearchOpen(false)}
@@ -125,11 +143,7 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
                             </div>
                         </div>
                     )}
-
-                    {/* Koszyk */}
                     <CartHoverSection />
-
-                    {/* Sekcja użytkownika */}
                     <div
                         className="flex items-center gap-2 cursor-pointer"
                         onClick={handleUserIconClick}
@@ -143,13 +157,9 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
                     </div>
                 </div>
             </div>
-
-            {/* Dolna część: nawigacja */}
             <div className="flex justify-center border-t border-border bg-inherit/20">
                 <NavigationMenu>
                     <NavigationMenuList className="flex gap-0 md:gap-6 py-2">
-
-                        {/* Kategorie */}
                         <NavigationMenuItem>
                             <NavigationMenuTrigger className="!bg-inherit">
                                 Kategorie
@@ -167,8 +177,6 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
                                 </ul>
                             </NavigationMenuContent>
                         </NavigationMenuItem>
-
-                        {/* Platformy */}
                         <NavigationMenuItem>
                             <NavigationMenuTrigger className="!bg-inherit">
                                 Platformy
@@ -182,8 +190,6 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
                                 </ul>
                             </NavigationMenuContent>
                         </NavigationMenuItem>
-
-                        {/* Typy produktów */}
                         <NavigationMenuItem>
                             <NavigationMenuTrigger className="!bg-inherit">
                                 Typy produktów
@@ -201,8 +207,6 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
                     </NavigationMenuList>
                 </NavigationMenu>
             </div>
-
-            {/* Dialog logowania i konto */}
             <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
             <UserAccount
                 open={userAccountOpen}
@@ -217,8 +221,6 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
         </header>
     )
 }
-
-/* Komponent listy */
 function ListItem({
                       title,
                       href,
@@ -231,7 +233,6 @@ function ListItem({
         e.preventDefault(); // zapobiega domyślnemu zachowaniu linku
         navigate({ to: `/${href}` }); // absolutna ścieżka
     }
-
     return (
         <li {...props}>
             <NavigationMenuLink asChild>

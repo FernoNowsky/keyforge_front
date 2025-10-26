@@ -9,6 +9,7 @@ export interface PaginatedResponse<T> {
 
 export interface FilterParams {
     page: number;
+    filter?: string;
     size?: number;
     sortDirection?: "ASC" | "DESC";
     platformIds?: string[];

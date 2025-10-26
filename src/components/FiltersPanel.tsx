@@ -24,6 +24,7 @@ if (typeof document !== "undefined") {
 }
 
 export interface Filters {
+    name?: string
     platforms: string[]
     categories: string[]
     types: string[]
@@ -39,6 +40,7 @@ interface FiltersPanelProps {
     initialPlatformIds?: string[]
     initialCategoryIds?: string[]
     initialTypeIds?: string[]
+    initialName?: string
     controlledPlatforms?: string[]
     controlledCategories?: string[]
     controlledTypes?: string[]
@@ -52,6 +54,7 @@ export function FiltersPanel({
                                  initialPlatformIds = [],
                                  initialCategoryIds = [],
                                  initialTypeIds = [],
+                                 initialName,
                                  controlledPlatforms,
                                  controlledCategories,
                                  controlledTypes,
@@ -70,13 +73,12 @@ export function FiltersPanel({
     const [localTypes, setLocalTypes] = useState<string[]>([])
     const [localMinPrice, setLocalMinPrice] = useState<string>("")
     const [localMaxPrice, setLocalMaxPrice] = useState<string>("")
-
+    const [localName, setLocalName] = useState(initialName ?? "")
     const selectedPlatforms = controlledPlatforms ?? localPlatforms
     const selectedCategories = controlledCategories ?? localCategories
     const selectedTypes = controlledTypes ?? localTypes
     const minPrice = controlledMinPrice ?? localMinPrice
     const maxPrice = controlledMaxPrice ?? localMaxPrice
-
     const setSelectedPlatforms = controlledPlatforms !== undefined ? () => {} : setLocalPlatforms
     const setSelectedCategories = controlledCategories !== undefined ? () => {} : setLocalCategories
     const setSelectedTypes = controlledTypes !== undefined ? () => {} : setLocalTypes
@@ -93,6 +95,9 @@ export function FiltersPanel({
     // synchronizacja przy zmianie kontrolowanego min/max
     useEffect(() => { setTempMinPrice(minPrice) }, [minPrice])
     useEffect(() => { setTempMaxPrice(maxPrice) }, [maxPrice])
+    useEffect(() => {
+        setLocalName(initialName ?? "")
+    }, [initialName])
 
     // fetch danych filtrów
     useEffect(() => {
@@ -154,6 +159,7 @@ export function FiltersPanel({
                 platforms: setter === setSelectedPlatforms ? newList : selectedPlatforms,
                 categories: setter === setSelectedCategories ? newList : selectedCategories,
                 types: setter === setSelectedTypes ? newList : selectedTypes,
+                name: localName,
                 priceRange: {
                     min: minPrice ? parseFloat(minPrice) : null,
                     max: maxPrice ? parseFloat(maxPrice) : null,
@@ -165,11 +171,12 @@ export function FiltersPanel({
         }
     }
 
-    const applyFilter = (newSelectedPlatforms: string[], newSelectedCategories: string[], newSelectedTypes: string[], newMin: string, newMax: string) => {
+    const applyFilter = (newSelectedPlatforms: string[], newSelectedCategories: string[], newSelectedTypes: string[], newMin: string, newMax: string, name: string) => {
         const filters: Filters = {
             platforms: newSelectedPlatforms,
             categories: newSelectedCategories,
             types: newSelectedTypes,
+            name: name,
             priceRange: {
                 min: newMin ? parseFloat(newMin) : null,
                 max: newMax ? parseFloat(newMax) : null,
@@ -186,7 +193,7 @@ export function FiltersPanel({
         setPriceError("")
         if (setMinPrice) setMinPrice(tempMinPrice)
         if (setMaxPrice) setMaxPrice(tempMaxPrice)
-        applyFilter(selectedPlatforms, selectedCategories, selectedTypes, tempMinPrice, tempMaxPrice)
+        applyFilter(selectedPlatforms, selectedCategories, selectedTypes, tempMinPrice, tempMaxPrice, localName)
     }
 
     const handleClear = () => {
@@ -198,6 +205,7 @@ export function FiltersPanel({
         setTempMinPrice("")
         setTempMaxPrice("")
         setPriceError("")
+        setLocalName("")
         onClear()
     }
 
