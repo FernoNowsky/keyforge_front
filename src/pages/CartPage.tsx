@@ -15,6 +15,7 @@ import {
 import { Trash2, Plus, Minus, ShoppingCart, CreditCard } from "lucide-react"
 import { toast } from "sonner";
 import { PlatformBadge } from "@/components/PlatformBadge";
+import {OrdersApi} from "@/api";
 
 type CartItem = {
     id: number
@@ -99,12 +100,38 @@ export function CartPage() {
         }
     }
 
-    const handleCheckout = () => {
+    const handleCheckout = async () => {
         if (cart.length === 0) {
             toast.warning("Pusty koszyk")
             return
         }
+
+        try {
+            const items = cart.map((item) => ({
+                productId: item.id,
+                quantity: item.quantity,
+            }))
+
+            const orderRequest = {
+                userId: 1, // TODO: true userID
+                products: items,
+            }
+
+            const order = await OrdersApi.create(orderRequest)
+
+            console.log("✅ Odpowiedź serwera:", order)
+            toast.success(`Zamówienie utworzone, ID: ${order.id}`)
+
+            // 💾 Wyczyść koszyk po złożeniu zamówienia
+            // localStorage.removeItem("gameCart")
+            // setCart([])
+
+        } catch (error: any) {
+            console.error("❌ Błąd tworzenia zamówienia:", error)
+            toast.error("Nie udało się utworzyć zamówienia")
+        }
     }
+
 
     if (isLoading) {
         return (

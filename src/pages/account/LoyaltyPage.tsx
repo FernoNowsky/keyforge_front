@@ -21,19 +21,43 @@ export function LoyaltyPage() {
         ? ((currentPoints - currentLevel.pointsRequired) / (nextLevel.pointsRequired - currentLevel.pointsRequired)) * 100
         : 100
 
+
+    // tailwind ma problem z dynamicznymi klasami np text-{zmienna}, wiec trzeba mu wgrac całą klasę
+    const colorMap: Record<string, string> = {
+        'gray-400': 'text-gray-400',
+        'blue-400': 'text-blue-400',
+        'green-400': 'text-green-400',
+        'purple-400': 'text-purple-400',
+        'yellow-400': 'text-yellow-400',
+        'orange-400': 'text-orange-400',
+    };
+
+    const bgColorMap: Record<string, string> = {
+        'gray-400': 'bg-gray-400/20',
+        'blue-400': 'bg-blue-400/20',
+        'green-400': 'bg-green-400/20',
+        'purple-400': 'bg-purple-400/20',
+        'yellow-400': 'bg-yellow-400/20',
+        'orange-400': 'bg-orange-400/20',
+    }
+
+    const currentColorClass = colorMap[currentLevel.color] || 'text-gray-400';
+    const nextColorClass = colorMap[nextLevel?.color] || 'text-gray-400';
+    const currentBgClass = bgColorMap[currentLevel.color] || 'bg-gray-400/20';
+
     return (
         <div className="flex justify-center px-4 sm:px-6 lg:px-8 py-10">
             <div className="w-full max-w-4xl space-y-8">
                 <Card className="bg-gradient-to-br from-[#D4A44A]/20 to-[#B8873D]/20 border-[#D4A44A]/50 shadow-lg">
                     <CardContent className="p-8">
                         <div className="text-center mb-6">
-                            <div className={`inline-flex items-center justify-center bg-${currentLevel.color}/20 p-6 rounded-full mb-4`}>
-                                <Trophy className={`h-12 w-12 text-${currentLevel.color}`}/>
+                            <div className={`inline-flex items-center justify-center ${currentBgClass} p-6 rounded-full mb-4`}>
+                                <Trophy className={` h-12 w-12 ${currentColorClass}`} />
                             </div>
-                            <h2 className={`text-3xl font-bold mb-2 text-${currentLevel.color}`}>{currentLevel.name}</h2>
+                            <h2 className={`text-3xl font-bold mb-2 ${currentColorClass}`}>{currentLevel.name}</h2>
                             <p className="text-gray-300 text-lg">
                                 Aktualny rabat:{' '}
-                                <span className={`text-${currentLevel.color} font-bold`}>{currentLevel.discount}%</span>
+                                <span className={`font-bold ${currentColorClass}`}>{currentLevel.discount}%</span>
                             </p>
                         </div>
 
@@ -56,10 +80,10 @@ export function LoyaltyPage() {
                         {nextLevel && (
                             <div className="mt-6 p-4 bg-[#2A2A2A] rounded-lg border border-[#3A3A3A]">
                                 <div className="flex items-center gap-3">
-                                    <TrendingUp className="h-5 w-5 text-[#D4A44A]" />
+                                    <TrendingUp className={`h-5 w-5 text-${nextLevel.color}`} />
                                     <div>
                                         <p className="text-sm text-gray-400">Następny poziom</p>
-                                        <p className={`font-bold text-${nextLevel.color}`}>{nextLevel.name}</p>
+                                        <p className={`font-bold ${nextColorClass}`}>{nextLevel.name}</p>
                                         <p className="text-sm text-gray-300">
                                             Rabat:{' '}
                                             <span className="text-[#D4A44A] font-bold">{nextLevel.discount}%</span>
@@ -80,31 +104,34 @@ export function LoyaltyPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {levels.map((level, index) => (
-                                <div
-                                    key={index}
-                                    className={`p-4 rounded-lg border-2 ${
-                                        index === currentLevelIndex
-                                            ? 'bg-[#D4A44A]/10 border-[#D4A44A]'
-                                            : 'bg-[#2A2A2A] border-[#3A3A3A]'
-                                    }`}
-                                >
-                                    <div className="flex justify-between items-center">
-                                        <div className="flex items-center gap-3">
-                                            <Trophy className={`h-6 w-6 text-${level.color}`} />
-                                            <div>
-                                                <p className={`font-bold text-${level.color}`}>{level.name}</p>
-                                                <p className="text-sm text-gray-400">
-                                                    {level.pointsRequired} KeyPoints
-                                                </p>
+                            {levels.map((level, index) => {
+                                const levelColorClass = colorMap[level.color] || 'text-gray-400';
+                                return (
+                                    <div
+                                        key={index}
+                                        className={`p-4 rounded-lg border-2 ${
+                                            index === currentLevelIndex
+                                                ? 'bg-[#D4A44A]/10 border-[#D4A44A]'
+                                                : 'bg-[#2A2A2A] border-[#3A3A3A]'
+                                        }`}
+                                    >
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center gap-3">
+                                                <Trophy className={`h-6 w-6 ${levelColorClass}`} />
+                                                <div>
+                                                    <p className={`font-bold ${levelColorClass}`}>{level.name}</p>
+                                                    <p className="text-sm text-gray-400">
+                                                        {level.pointsRequired} KeyPoints
+                                                    </p>
+                                                </div>
                                             </div>
+                                            <Badge variant="outline" className={`border-current ${levelColorClass}`}>
+                                                {level.discount}% rabatu
+                                            </Badge>
                                         </div>
-                                        <Badge variant="outline" className={`border-current text-${level.color}`}>
-                                            {level.discount}% rabatu
-                                        </Badge>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </CardContent>
                 </Card>
