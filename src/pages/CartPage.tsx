@@ -113,7 +113,7 @@ export function CartPage() {
             }))
 
             const orderRequest = {
-                userId: 1, // TODO: true userID
+                // userId: 1, // TODO: true userID
                 products: items,
             }
 
