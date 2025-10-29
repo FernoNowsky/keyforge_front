@@ -37,7 +37,7 @@ export function CartPage() {
     }, [])
 
     const handleClick = () => {
-        navigate({ to: "/products" }) // ⬅️ przekierowanie na stronę produktów
+        navigate({ to: "/products" })
     }
 
     const loadCart = () => {
@@ -100,37 +100,39 @@ export function CartPage() {
         }
     }
 
-    const handleCheckout = async () => {
-        if (cart.length === 0) {
-            toast.warning("Pusty koszyk")
-            return
-        }
-
-        try {
-            const items = cart.map((item) => ({
-                productId: item.id,
-                quantity: item.quantity,
-            }))
-
-            const orderRequest = {
-                // userId: 1, // TODO: true userID
-                products: items,
-            }
-
-            const order = await OrdersApi.create(orderRequest)
-
-            console.log("✅ Odpowiedź serwera:", order)
-            toast.success(`Zamówienie utworzone, ID: ${order.id}`)
-
-            // 💾 Wyczyść koszyk po złożeniu zamówienia
-            // localStorage.removeItem("gameCart")
-            // setCart([])
-
-        } catch (error: any) {
-            console.error("❌ Błąd tworzenia zamówienia:", error)
-            toast.error("Nie udało się utworzyć zamówienia")
-        }
+const handleCheckout = async (): Promise<void> => {
+    if (cart.length === 0) {
+        toast.warning("Pusty koszyk")
+        return
     }
+
+    try {
+        const items = cart.map((item) => ({
+            productId: item.id,
+            quantity: item.quantity,
+        }))
+
+        const orderRequest = {
+            products: items,
+        }
+
+        type OrderResponse = {
+            orderId: number
+            paymentId: string
+            paymentUrl: string
+        }
+
+        const order: OrderResponse = await OrdersApi.create(orderRequest)
+
+        console.log("✅ Odpowiedź serwera:", order)
+        toast.success(`Zamówienie utworzone, ID: ${order.orderId}`)
+        window.location.href = order.paymentUrl
+
+    } catch (error) {
+        console.error("Błąd tworzenia zamówienia:", error)
+        toast.error("Nie udało się utworzyć zamówienia")
+    }
+}
 
 
     if (isLoading) {

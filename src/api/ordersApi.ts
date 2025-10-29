@@ -8,6 +8,12 @@ export interface Order {
     userId: number;
 }
 
+export type OrderResponse = {
+  orderId: number
+  paymentId: string
+  paymentUrl: string
+}
+
 export interface CreateOrderRequest {
     userId?: number; // User id is not required, we will get it from token on backend which should be sent in headers
     products: { productId: number; quantity: number }[];
@@ -22,6 +28,7 @@ export const OrdersApi = {
 
     create: (data: CreateOrderRequest) => {
         const obj = {items: data.products}; //TODO: adjust to backend dto
-        return apiRequest<Order>("/orders", { method: "post", data: obj });
+        console.log(obj)
+        return apiRequest<OrderResponse>("/orders", { method: "post", data: obj });
     }
 };
