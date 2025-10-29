@@ -124,7 +124,6 @@ const handleCheckout = async (): Promise<void> => {
 
         const order: OrderResponse = await OrdersApi.create(orderRequest)
 
-        console.log("✅ Odpowiedź serwera:", order)
         toast.success(`Zamówienie utworzone, ID: ${order.orderId}`)
         window.location.href = order.paymentUrl
 

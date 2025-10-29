@@ -9,4 +9,12 @@ export const ProductsApi = {
 
     getById: (id: number) =>
         apiRequest<Product>(`/products/${id}`),
+
+    getByIds: (ids: number[], onlyAvailable: boolean) =>
+    apiRequest<Product[]>('/products/specific', {
+      params: {
+        productIds: ids.join(','),
+        onlyAvailable: onlyAvailable.toString(),
+      },
+    }),
 };
