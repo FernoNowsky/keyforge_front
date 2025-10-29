@@ -25,4 +25,5 @@ export interface Product {
     logoId: string;
     platform: Platform;
     stock: number;
+    discountPercentage: number;
 }
