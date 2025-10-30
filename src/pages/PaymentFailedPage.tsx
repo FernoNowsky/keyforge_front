@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { ShoppingCart, Package } from "lucide-react"
+import { OrdersApi } from "@/api/ordersApi"
 
 export function PaymentFailedPage() {
     const [showCancelDialog, setShowCancelDialog] = useState(false)
@@ -22,6 +23,20 @@ export function PaymentFailedPage() {
     useEffect(() => {
         if (orderId) {
             setShowCancelDialog(true)
+            const changeOrderStatus = async () => {
+                try{
+                    const orderIdAsNumber = Number(orderId);
+                    if (!isNaN(orderIdAsNumber)) {
+                        await OrdersApi.updateOrderById({
+                            orderId: Number(orderId),
+                            status: "PAYMENT_FAILED"
+                        })
+                    }
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+            changeOrderStatus();
         }
     }, [orderId])
 
