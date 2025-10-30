@@ -13,7 +13,6 @@ import {
     Trophy,
     Settings,
     MessageSquare,
-    Key,
     Award,
     Percent
 } from "lucide-react"
@@ -48,13 +47,6 @@ export function UserAccount({
             description: "Historia i pobieranie kluczy",
             color: "text-[#D4A44A]",
             path: "/account/purchases"
-        },
-        {
-            icon: Key,
-            title: "Moje klucze",
-            description: "Zakupione klucze aktywacyjne",
-            color: "text-[#D4A44A]",
-            path: "/account/keys"
         },
         {
             icon: Star,

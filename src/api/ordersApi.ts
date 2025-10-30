@@ -26,6 +26,8 @@ export type OrderResponse = {
   paymentUrl: string
 }
 
+export type OrderStatus = "READY_FOR_PAYMENT" | "PAID" | "COMPLETED" | "CANCELLED" | "PAYMENT_FAILED";
+
 export interface OrdersResponse {
   content: Order[]
 }
@@ -33,6 +35,11 @@ export interface OrdersResponse {
 export interface CreateOrderRequest {
     userId?: number; // User id is not required, we will get it from token on backend which should be sent in headers
     products: { productId: number; quantity: number }[];
+}
+
+export interface UpdateOrderRequest {
+  orderId: number;
+  status: OrderStatus;
 }
 
 export const OrdersApi = {
@@ -49,5 +56,10 @@ export const OrdersApi = {
     create: (data: CreateOrderRequest) => {
         const obj = {items: data.products}; //TODO: adjust to backend dto
         return apiRequest<OrderResponse>("/orders", { method: "post", data: obj });
+    },
+
+    updateOrderById: (data: UpdateOrderRequest) => {
+        const obj = {status: data.status}
+        return apiRequest<Order>(`/orders/${data.orderId}`, {method: "PUT", data: obj})
     }
 };
