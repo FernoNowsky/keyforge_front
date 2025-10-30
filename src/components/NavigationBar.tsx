@@ -41,12 +41,10 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault()
-        if (searchTerm.trim()) {
-            navigate({
+        navigate({
                 to: "/products",
                 search: { name: searchTerm.trim() }  // przekazanie parametru do URL
-            })
-        }
+        })
         setSearchOpen(false)
     }
 
