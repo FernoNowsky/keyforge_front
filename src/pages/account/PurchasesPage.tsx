@@ -55,7 +55,7 @@ const statusMap: Record<
   },
   COMPLETED: {
     label: 'Odebrane',
-    className: 'bg-emerald-500/2- text-emerald-400 border-emerald-500/20'
+    className: 'bg-[#D4A44A]/20 text-[#D4A44A] border-[#D4A44A]'
   },
   CANCELLED: {
     label: 'Anulowane',
