@@ -16,4 +16,7 @@ export const ReviewsAPI = {
 
     getByProductId: (productId: number) =>
         apiRequest<PaginatedResponse<Review>>(`/reviews?productId=${productId}`),
+
+    getByUserId: (userId: number) =>
+        apiRequest<PaginatedResponse<Review>>(`reviews?userId=${userId}`),
 };
