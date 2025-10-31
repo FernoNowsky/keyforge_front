@@ -2,38 +2,14 @@ import { useCallback, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, ShoppingCart, AlertCircle, User } from "lucide-react";
+import { Star, ShoppingCart, AlertCircle, User, CheckCircle } from "lucide-react";
 import { PlatformBadge } from "@/components/PlatformBadge";
 import { ProductsApi } from "@/api/productsApi";
 import type { DetailedProduct } from "@/api/types/product.types";
 import { useMatch } from "@tanstack/react-router";
 import type { CartItem } from "@/components/GameCard";
 import { toast } from "sonner";
-
-// TODO: Get reviews from db
-const mockReviews = [
-  {
-    id: 1,
-    rating: 5,
-    review: "Niesamowita gra! Grafika i rozgrywka na najwyższym poziomie.",
-    author: "GamerPro123",
-    date: "2024-10-15",
-  },
-  {
-    id: 2,
-    rating: 4,
-    review: "Świetna gra, choć wymaga mocnego sprzętu.",
-    author: "TechEnthusiast",
-    date: "2024-10-20",
-  },
-  {
-    id: 3,
-    rating: 5,
-    review: "Najlepsza gra w swojej kategorii!",
-    author: "GameMaster",
-    date: "2024-10-25",
-  },
-];
+import { ReviewsAPI, type Review } from "@/api/reviewsApi";
 
 //TODO: GET summary from AI-service
 const aiSummary =
@@ -41,9 +17,12 @@ const aiSummary =
 
 export function ProductPage() {
   const [product, setProduct] = useState<DetailedProduct | undefined>();
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [totalReviews, setTotalReviews] = useState(0);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [averageRating, setAverageRating] = useState(0);
-
+  const [addedToCart, setAddedToCart] = useState(false);
   const match = useMatch({ from: "/products/$productId", shouldThrow: false });
   const productId = match?.params?.productId;
 
@@ -59,15 +38,35 @@ export function ProductPage() {
     }
   }, [productId]);
 
+const loadReviews = useCallback(async () => {
+  if (!productId) return;
+
+  try {
+    setReviewsLoading(true);
+    const reviewData = await ReviewsAPI.getByProductId(Number(productId));
+    setReviews(reviewData.content);
+    setTotalReviews(reviewData.totalElements);
+  } catch (error) {
+    console.error("Błąd podczas pobierania danych o opiniach:", error);
+    toast.warning("Nie udało się wczytać opinii produktu");
+  } finally {
+    setReviewsLoading(false);
+  }
+}, [productId]);
+
   useEffect(() => {
     loadProduct();
   }, [loadProduct]);
 
   useEffect(() => {
+  loadReviews();
+}, [loadReviews]);
+
+  useEffect(() => {
     const avg =
-      mockReviews.reduce((sum, r) => sum + r.rating, 0) / mockReviews.length;
+      reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
     setAverageRating(avg);
-  }, []);
+  }, [reviews]);
 
   if (isLoading) {
     return (
@@ -112,36 +111,39 @@ export function ProductPage() {
 
   const stockStatus = getStockStatus();
 
-  //TODO: Animation, Timeout or change colors of button after adding to cart.
   const handleAddToCart = (p: DetailedProduct) => {
-    try {
-      const cartData = localStorage.getItem("gameCart");
-      const cart = cartData ? JSON.parse(cartData) : [];
-      const existingItemIndex = cart.findIndex(
-        (item: CartItem) => item.id === p.id,
-      );
+  try {
+    const cartData = localStorage.getItem("gameCart");
+    const cart = cartData ? JSON.parse(cartData) : [];
+    const existingItemIndex = cart.findIndex(
+      (item: CartItem) => item.id === p.id
+    );
 
-      if (existingItemIndex !== -1) {
-        cart[existingItemIndex].quantity += 1;
-      } else {
-        cart.push({
-          id: p.id,
-          imgId: p.logoId,
-          name: p.name,
-          platform: p.platform.name,
-          price: p.price,
-          quantity: 1,
-        });
-      }
-
-      localStorage.setItem("gameCart", JSON.stringify(cart));
-      window.dispatchEvent(new Event("cartUpdated"));
-      toast.success(`Dodano produkt ${p.name} do koszyka`);
-    } catch (error) {
-      console.error("Błąd dodawania do koszyka:", error);
-      toast.warning("Wystąpił błąd podczas dodawania produktu do koszyka");
+    if (existingItemIndex !== -1) {
+      cart[existingItemIndex].quantity += 1;
+    } else {
+      cart.push({
+        id: p.id,
+        imgId: p.logoId,
+        name: p.name,
+        platform: p.platform.name,
+        price: p.price,
+        quantity: 1,
+      });
     }
-  };
+
+    localStorage.setItem("gameCart", JSON.stringify(cart));
+    window.dispatchEvent(new Event("cartUpdated"));
+    toast.success(`Dodano produkt ${p.name} do koszyka`);
+
+    setAddedToCart(true);
+    setTimeout(() => setAddedToCart(false), 2500);
+
+  } catch (error) {
+    console.error("Błąd dodawania do koszyka:", error);
+    toast.warning("Wystąpił błąd podczas dodawania produktu do koszyka");
+  }
+};
 
   return (
     <div className="min-h-screen bg-[#1C1C1C] p-4 md:p-8">
@@ -176,10 +178,10 @@ export function ProductPage() {
                         ))}
                       </div>
                       <span className="text-[#F8F8F8] text-base font-semibold">
-                        {averageRating.toFixed(1)}
+                        {reviews.length > 0 ? averageRating.toFixed(1) : ""}
                       </span>
                       <span className="text-[#A0A0A0] text-sm">
-                        ({mockReviews.length} opinii)
+                        ({totalReviews} opinii)
                       </span>
                     </div>
                   </div>
@@ -278,54 +280,63 @@ export function ProductPage() {
             </Card>
 
             <Card className="bg-[#2A2A2A] border-[#3A3A3A]">
-              <CardHeader>
-                <h3 className="text-xl font-bold text-[#F8F8F8]">
-                  Opinie użytkowników
-                </h3>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {mockReviews.map((review) => (
-                  <div
-                    key={review.id}
-                    className="bg-gradient-to-br from-[#1C1C1C] to-[#252525] p-5 rounded-xl border border-[#3A3A3A] hover:border-[#D4A44A]/30 transition-all duration-300 shadow-lg"
-                  >
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="bg-[#D4A44A]/20 p-2 rounded-full">
-                        <User className="h-5 w-5 text-[#D4A44A]" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-[#F8F8F8] font-semibold text-sm">
-                          {review.author}
-                        </p>
-                        <p className="text-[#A0A0A0] text-xs">
-                          {new Date(review.date).toLocaleDateString("pl-PL", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
-                        </p>
-                      </div>
-                      <div className="flex gap-1">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`h-4 w-4 ${
-                              i < review.rating
-                                ? "fill-yellow-400 text-yellow-400"
-                                : "text-gray-600"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    </div>
+  <CardHeader>
+    <h3 className="text-xl font-bold text-[#F8F8F8]">
+      Opinie użytkowników
+    </h3>
+  </CardHeader>
+  <CardContent className="space-y-4">
+    {reviewsLoading ? (
+      <div className="flex justify-center items-center py-10">
+        <div className="w-8 h-8 border-4 border-t-[#D4A44A] border-gray-500 rounded-full animate-spin"></div>
+      </div>
+    ) : reviews.length === 0 ? (
+      <p className="text-[#A0A0A0] text-center">Brak opinii dla tego produktu.</p>
+    ) : (
+      reviews.map((review) => (
+        <div
+          key={review.id}
+          className="bg-gradient-to-br from-[#1C1C1C] to-[#252525] p-5 rounded-xl border border-[#3A3A3A] hover:border-[#D4A44A]/30 transition-all duration-300 shadow-lg"
+        >
+          <div className="flex items-center gap-3 mb-3">
+            <div className="bg-[#D4A44A]/20 p-2 rounded-full">
+              <User className="h-5 w-5 text-[#D4A44A]" />
+            </div>
+            <div className="flex-1">
+              <p className="text-[#F8F8F8] font-semibold text-sm">
+                {review.userId}
+              </p>
+              <p className="text-[#A0A0A0] text-xs">
+                {new Date(review.createdAt).toLocaleDateString("pl-PL", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </p>
+            </div>
+            <div className="flex gap-1">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  className={`h-4 w-4 ${
+                    i < review.rating
+                      ? "fill-yellow-400 text-yellow-400"
+                      : "text-gray-600"
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
 
-                    <p className="text-[#F8F8F8] leading-relaxed pl-12">
-                      {review.review}
-                    </p>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+          <p className="text-[#F8F8F8] leading-relaxed pl-12">
+            {review.content}
+          </p>
+        </div>
+      ))
+    )}
+  </CardContent>
+</Card>
+
           </div>
 
           <div className="lg:col-span-1">
@@ -364,24 +375,38 @@ export function ProductPage() {
                   </Badge>
                 </div>
 
-                {product.stock > 0 ? (
-                  <Button
-                    onClick={() => handleAddToCart(product)}
-                    variant="outline"
-                    className="w-full bg-[#D4A44A] hover:bg-[#C19440] text-black border-[#D4A44A] font-semibold py-6 text-base transition-all duration-200 hover:scale-105"
-                  >
-                    <ShoppingCart className="w-5 h-5 mr-2" />
-                    Dodaj do koszyka
-                  </Button>
-                ) : (
-                  <Button
-                    disabled
-                    className="w-full bg-[#3A3A3A] text-[#A0A0A0] cursor-not-allowed py-6 text-base"
-                  >
-                    <AlertCircle className="w-5 h-5 mr-2" />
-                    Produkt niedostępny
-                  </Button>
-                )}
+{product.stock > 0 ? (
+  <Button
+    onClick={() => handleAddToCart(product)}
+    variant="outline"
+    disabled={addedToCart}
+    className={`w-full py-6 text-base font-semibold border-2 transition-all duration-300
+      ${addedToCart
+        ? "bg-transparent border-[#D4A44A] text-[#D4A44A] hover:scale-100"
+        : "bg-[#D4A44A] hover:bg-[#C19440] text-black border-[#D4A44A] hover:scale-105"
+      }`}
+  >
+    {addedToCart ? (
+      <>
+        <CheckCircle className="w-5 h-5 mr-2" />
+        Dodano do koszyka
+      </>
+    ) : (
+      <>
+        <ShoppingCart className="w-5 h-5 mr-2" />
+        Dodaj do koszyka
+      </>
+    )}
+  </Button>
+) : (
+  <Button
+    disabled
+    className="w-full bg-[#3A3A3A] text-[#A0A0A0] cursor-not-allowed py-6 text-base"
+  >
+    <AlertCircle className="w-5 h-5 mr-2" />
+    Produkt niedostępny
+  </Button>
+)}
 
                 <div className="border-t border-[#3A3A3A] pt-4 space-y-3">
                   <div className="flex items-start gap-3 text-sm">

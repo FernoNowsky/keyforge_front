@@ -5,7 +5,9 @@ const ORDER_SERVICE_URL =
     import.meta.env.VITE_ORDER_SERVICE_URL || "http://localhost:8090/order-service";
 const PRODUCT_SERVICE_URL =
     import.meta.env.VITE_PRODUCT_SERVICE_URL || "http://localhost:8090/product-service";
-
+const REVIEW_SERVICE_URL =
+    import.meta.env.VITE_REVIEW_SERVICE_URL || "http://localhost:8090/review-service";
+    
 export interface PaginationDto {
     page?: number;
     size?: number;
@@ -37,6 +39,8 @@ export async function apiRequest<T = unknown>(
         )
     ) {
         baseUrl = PRODUCT_SERVICE_URL;
+    } else if (path.includes("reviews")) {
+        baseUrl = REVIEW_SERVICE_URL;
     } else {
         baseUrl = $axios.defaults.baseURL || "http://localhost:8090";
     }

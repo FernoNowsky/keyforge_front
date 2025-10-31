@@ -15,9 +15,5 @@ export interface Review {
 export const ReviewsAPI = {
 
     getByProductId: (productId: number) =>
-        apiRequest<PaginatedResponse<Review>>(`/reviews/${productId}`, {
-            params: {
-                productId: productId
-            },
-        }),
+        apiRequest<PaginatedResponse<Review>>(`/reviews?productId=${productId}`),
 };
