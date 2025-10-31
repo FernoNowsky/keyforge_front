@@ -30,7 +30,8 @@ const platformStyles: Record<
 
 export const PlatformBadge: React.FC<PlatformBadgeProps> = ({ platform }) => {
     if (!platform) return null
-
+    if (typeof platform !== "string" || platform.trim() === "") return null
+    
     const key = platform.trim().toLowerCase()
     const data = platformStyles[key] || { icon: SiEpicgames, color: "#444", label: platform }
 

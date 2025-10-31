@@ -1,6 +1,6 @@
 import { apiRequest } from "@/lib/apiRequest";
 import type { PaginationDto } from "@/lib/apiRequest";
-import type { Product } from "@/api/types/product.types";
+import type { DetailedProduct, Product } from "@/api/types/product.types";
 import type { PaginatedResponse } from "@/api/types/common.types";
 
 export const ProductsApi = {
@@ -8,7 +8,7 @@ export const ProductsApi = {
         apiRequest<PaginatedResponse<Product>>("/products", { params }),
 
     getById: (id: number) =>
-        apiRequest<Product>(`/products/${id}`),
+        apiRequest<DetailedProduct>(`/products/${id}`),
 
     getByIds: (ids: number[], onlyAvailable: boolean) =>
     apiRequest<Product[]>('/products/specific', {

@@ -5,8 +5,9 @@ import { ShoppingCart, Search } from "lucide-react"
 import { toast } from "sonner";
 import React from "react";
 import { PlatformBadge } from "@/components/PlatformBadge";
+import { useNavigate } from "@tanstack/react-router";
 
-type CartItem = {
+export type CartItem = {
     id: number
     name: string
     imgId: string
@@ -15,7 +16,7 @@ type CartItem = {
     quantity: number
 }
 
-type GameCardProps = {
+export type GameCardProps = {
     id: number
     name: string
     platform: string
@@ -27,7 +28,7 @@ export function GameCard({ name, platform, price, imgId, id }: GameCardProps) {
     const [isMobile, setIsMobile] = React.useState(
         typeof window !== "undefined" ? window.innerWidth < 768 : false
     );
-
+    const navigate = useNavigate()
     React.useEffect(() => {
         const handleResize = () => {
             setIsMobile(window.innerWidth < 768);
@@ -70,6 +71,10 @@ export function GameCard({ name, platform, price, imgId, id }: GameCardProps) {
             toast.warning("Wystąpił błąd podczas dodawania produktu do koszyka")
         }
     };
+
+    const handleCheckProduct = (productId: number) => {
+        navigate({to: `/products/${productId}`})
+    }
 
     return (
         <Card
@@ -117,6 +122,7 @@ export function GameCard({ name, platform, price, imgId, id }: GameCardProps) {
                     <Button
                         size="sm"
                         className="w-full bg-[#D4A44A] text-black hover:bg-[#f1c562] transition-all gap-1 font-semibold text-xs py-1.5"
+                        onClick={() => handleCheckProduct(id)}
                     >
                         <Search className="h-3.5 w-3.5" /> Sprawdź
                     </Button>
