@@ -12,14 +12,17 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsOfServiceRouteImport } from './routes/terms-of-service'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as CartRouteImport } from './routes/cart'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SupportIndexRouteImport } from './routes/support/index'
 import { Route as ProductsIndexRouteImport } from './routes/products/index'
+import { Route as CartIndexRouteImport } from './routes/cart/index'
 import { Route as AccountIndexRouteImport } from './routes/account/index'
+import { Route as ProductsProductIdRouteImport } from './routes/products/$productId'
 import { Route as ProductsTypeIndexRouteImport } from './routes/products/type/index'
 import { Route as ProductsPlatformIndexRouteImport } from './routes/products/platform/index'
 import { Route as ProductsCategoryIndexRouteImport } from './routes/products/category/index'
+import { Route as CartSuccessIndexRouteImport } from './routes/cart/success/index'
+import { Route as CartCancelIndexRouteImport } from './routes/cart/cancel/index'
 import { Route as AccountSettingsIndexRouteImport } from './routes/account/settings/index'
 import { Route as AccountReviewsIndexRouteImport } from './routes/account/reviews/index'
 import { Route as AccountPurchasesIndexRouteImport } from './routes/account/purchases/index'
@@ -44,11 +47,6 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CartRoute = CartRouteImport.update({
-  id: '/cart',
-  path: '/cart',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -64,9 +62,19 @@ const ProductsIndexRoute = ProductsIndexRouteImport.update({
   path: '/products/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CartIndexRoute = CartIndexRouteImport.update({
+  id: '/cart/',
+  path: '/cart/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountIndexRoute = AccountIndexRouteImport.update({
   id: '/account/',
   path: '/account/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductsProductIdRoute = ProductsProductIdRouteImport.update({
+  id: '/products/$productId',
+  path: '/products/$productId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProductsTypeIndexRoute = ProductsTypeIndexRouteImport.update({
@@ -82,6 +90,16 @@ const ProductsPlatformIndexRoute = ProductsPlatformIndexRouteImport.update({
 const ProductsCategoryIndexRoute = ProductsCategoryIndexRouteImport.update({
   id: '/products/category/',
   path: '/products/category/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CartSuccessIndexRoute = CartSuccessIndexRouteImport.update({
+  id: '/cart/success/',
+  path: '/cart/success/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CartCancelIndexRoute = CartCancelIndexRouteImport.update({
+  id: '/cart/cancel/',
+  path: '/cart/cancel/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccountSettingsIndexRoute = AccountSettingsIndexRouteImport.update({
@@ -129,11 +147,12 @@ const ProductsCategoryCategoryIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/cart': typeof CartRoute
   '/login': typeof LoginRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/terms-of-service': typeof TermsOfServiceRoute
+  '/products/$productId': typeof ProductsProductIdRoute
   '/account': typeof AccountIndexRoute
+  '/cart': typeof CartIndexRoute
   '/products': typeof ProductsIndexRoute
   '/support': typeof SupportIndexRoute
   '/products/category/$categoryId': typeof ProductsCategoryCategoryIdRoute
@@ -144,17 +163,20 @@ export interface FileRoutesByFullPath {
   '/account/purchases': typeof AccountPurchasesIndexRoute
   '/account/reviews': typeof AccountReviewsIndexRoute
   '/account/settings': typeof AccountSettingsIndexRoute
+  '/cart/cancel': typeof CartCancelIndexRoute
+  '/cart/success': typeof CartSuccessIndexRoute
   '/products/category': typeof ProductsCategoryIndexRoute
   '/products/platform': typeof ProductsPlatformIndexRoute
   '/products/type': typeof ProductsTypeIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/cart': typeof CartRoute
   '/login': typeof LoginRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/terms-of-service': typeof TermsOfServiceRoute
+  '/products/$productId': typeof ProductsProductIdRoute
   '/account': typeof AccountIndexRoute
+  '/cart': typeof CartIndexRoute
   '/products': typeof ProductsIndexRoute
   '/support': typeof SupportIndexRoute
   '/products/category/$categoryId': typeof ProductsCategoryCategoryIdRoute
@@ -165,6 +187,8 @@ export interface FileRoutesByTo {
   '/account/purchases': typeof AccountPurchasesIndexRoute
   '/account/reviews': typeof AccountReviewsIndexRoute
   '/account/settings': typeof AccountSettingsIndexRoute
+  '/cart/cancel': typeof CartCancelIndexRoute
+  '/cart/success': typeof CartSuccessIndexRoute
   '/products/category': typeof ProductsCategoryIndexRoute
   '/products/platform': typeof ProductsPlatformIndexRoute
   '/products/type': typeof ProductsTypeIndexRoute
@@ -172,11 +196,12 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/cart': typeof CartRoute
   '/login': typeof LoginRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/terms-of-service': typeof TermsOfServiceRoute
+  '/products/$productId': typeof ProductsProductIdRoute
   '/account/': typeof AccountIndexRoute
+  '/cart/': typeof CartIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/support/': typeof SupportIndexRoute
   '/products/category/$categoryId': typeof ProductsCategoryCategoryIdRoute
@@ -187,6 +212,8 @@ export interface FileRoutesById {
   '/account/purchases/': typeof AccountPurchasesIndexRoute
   '/account/reviews/': typeof AccountReviewsIndexRoute
   '/account/settings/': typeof AccountSettingsIndexRoute
+  '/cart/cancel/': typeof CartCancelIndexRoute
+  '/cart/success/': typeof CartSuccessIndexRoute
   '/products/category/': typeof ProductsCategoryIndexRoute
   '/products/platform/': typeof ProductsPlatformIndexRoute
   '/products/type/': typeof ProductsTypeIndexRoute
@@ -195,11 +222,12 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/cart'
     | '/login'
     | '/privacy-policy'
     | '/terms-of-service'
+    | '/products/$productId'
     | '/account'
+    | '/cart'
     | '/products'
     | '/support'
     | '/products/category/$categoryId'
@@ -210,17 +238,20 @@ export interface FileRouteTypes {
     | '/account/purchases'
     | '/account/reviews'
     | '/account/settings'
+    | '/cart/cancel'
+    | '/cart/success'
     | '/products/category'
     | '/products/platform'
     | '/products/type'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/cart'
     | '/login'
     | '/privacy-policy'
     | '/terms-of-service'
+    | '/products/$productId'
     | '/account'
+    | '/cart'
     | '/products'
     | '/support'
     | '/products/category/$categoryId'
@@ -231,17 +262,20 @@ export interface FileRouteTypes {
     | '/account/purchases'
     | '/account/reviews'
     | '/account/settings'
+    | '/cart/cancel'
+    | '/cart/success'
     | '/products/category'
     | '/products/platform'
     | '/products/type'
   id:
     | '__root__'
     | '/'
-    | '/cart'
     | '/login'
     | '/privacy-policy'
     | '/terms-of-service'
+    | '/products/$productId'
     | '/account/'
+    | '/cart/'
     | '/products/'
     | '/support/'
     | '/products/category/$categoryId'
@@ -252,6 +286,8 @@ export interface FileRouteTypes {
     | '/account/purchases/'
     | '/account/reviews/'
     | '/account/settings/'
+    | '/cart/cancel/'
+    | '/cart/success/'
     | '/products/category/'
     | '/products/platform/'
     | '/products/type/'
@@ -259,11 +295,12 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  CartRoute: typeof CartRoute
   LoginRoute: typeof LoginRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   TermsOfServiceRoute: typeof TermsOfServiceRoute
+  ProductsProductIdRoute: typeof ProductsProductIdRoute
   AccountIndexRoute: typeof AccountIndexRoute
+  CartIndexRoute: typeof CartIndexRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
   SupportIndexRoute: typeof SupportIndexRoute
   ProductsCategoryCategoryIdRoute: typeof ProductsCategoryCategoryIdRoute
@@ -274,6 +311,8 @@ export interface RootRouteChildren {
   AccountPurchasesIndexRoute: typeof AccountPurchasesIndexRoute
   AccountReviewsIndexRoute: typeof AccountReviewsIndexRoute
   AccountSettingsIndexRoute: typeof AccountSettingsIndexRoute
+  CartCancelIndexRoute: typeof CartCancelIndexRoute
+  CartSuccessIndexRoute: typeof CartSuccessIndexRoute
   ProductsCategoryIndexRoute: typeof ProductsCategoryIndexRoute
   ProductsPlatformIndexRoute: typeof ProductsPlatformIndexRoute
   ProductsTypeIndexRoute: typeof ProductsTypeIndexRoute
@@ -302,13 +341,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/cart': {
-      id: '/cart'
-      path: '/cart'
-      fullPath: '/cart'
-      preLoaderRoute: typeof CartRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -330,11 +362,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cart/': {
+      id: '/cart/'
+      path: '/cart'
+      fullPath: '/cart'
+      preLoaderRoute: typeof CartIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account/': {
       id: '/account/'
       path: '/account'
       fullPath: '/account'
       preLoaderRoute: typeof AccountIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/products/$productId': {
+      id: '/products/$productId'
+      path: '/products/$productId'
+      fullPath: '/products/$productId'
+      preLoaderRoute: typeof ProductsProductIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/products/type/': {
@@ -356,6 +402,20 @@ declare module '@tanstack/react-router' {
       path: '/products/category'
       fullPath: '/products/category'
       preLoaderRoute: typeof ProductsCategoryIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cart/success/': {
+      id: '/cart/success/'
+      path: '/cart/success'
+      fullPath: '/cart/success'
+      preLoaderRoute: typeof CartSuccessIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cart/cancel/': {
+      id: '/cart/cancel/'
+      path: '/cart/cancel'
+      fullPath: '/cart/cancel'
+      preLoaderRoute: typeof CartCancelIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/account/settings/': {
@@ -419,11 +479,12 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  CartRoute: CartRoute,
   LoginRoute: LoginRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   TermsOfServiceRoute: TermsOfServiceRoute,
+  ProductsProductIdRoute: ProductsProductIdRoute,
   AccountIndexRoute: AccountIndexRoute,
+  CartIndexRoute: CartIndexRoute,
   ProductsIndexRoute: ProductsIndexRoute,
   SupportIndexRoute: SupportIndexRoute,
   ProductsCategoryCategoryIdRoute: ProductsCategoryCategoryIdRoute,
@@ -434,6 +495,8 @@ const rootRouteChildren: RootRouteChildren = {
   AccountPurchasesIndexRoute: AccountPurchasesIndexRoute,
   AccountReviewsIndexRoute: AccountReviewsIndexRoute,
   AccountSettingsIndexRoute: AccountSettingsIndexRoute,
+  CartCancelIndexRoute: CartCancelIndexRoute,
+  CartSuccessIndexRoute: CartSuccessIndexRoute,
   ProductsCategoryIndexRoute: ProductsCategoryIndexRoute,
   ProductsPlatformIndexRoute: ProductsPlatformIndexRoute,
   ProductsTypeIndexRoute: ProductsTypeIndexRoute,
