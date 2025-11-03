@@ -17,9 +17,6 @@ import type { CartItem } from "@/components/GameCard";
 import { toast } from "sonner";
 import { ReviewsAPI, type Review } from "@/api/reviewsApi";
 
-//TODO: GET summary from AI-service
-const aiSummary =
-    "Gra otrzymuje bardzo pozytywne oceny od graczy. Użytkownicy szczególnie chwalą grafikę najnowszej generacji, rozbudowaną rozgrywkę oraz możliwość zabawy zarówno w trybie single jak i multiplayer. Niektórzy wskazują na wysokie wymagania sprzętowe.";
 
 const getCartQuantity = (productId: number): number => {
     const cartData = localStorage.getItem("gameCart");
@@ -39,6 +36,10 @@ export function ProductPage() {
     const [reviews, setReviews] = useState<Review[]>([]);
     const [totalReviews, setTotalReviews] = useState(0);
     const [reviewsLoading, setReviewsLoading] = useState(true);
+
+    const [AISummaryLoading, setAISummaryLoading] = useState(true);
+    const [AISummary, setAISummary] = useState("");
+
     const [isLoading, setIsLoading] = useState(true);
     const [averageRating, setAverageRating] = useState(0);
     const [addedToCart, setAddedToCart] = useState(false);
@@ -58,6 +59,21 @@ export function ProductPage() {
             setIsLoading(false);
         }
     }, [productId]);
+
+    const loadAISummary = useCallback(async () => {
+        if (!productId) return;
+
+        try {
+            const summaryData = await ReviewsAPI.getAISummary(Number(productId));
+            if(summaryData != null)
+            setAISummary(summaryData.content);
+        } catch (error) {
+            console.error("Błąd podczas pobierania skróconej opinii:", error);
+            toast.warning("Nie udało się wczytać opinii wygenerowanej przez AI");
+        } finally {
+            setAISummaryLoading(false);
+        }
+    }, [productId])
 
     const loadReviews = useCallback(async () => {
         if (!productId) return;
@@ -82,6 +98,10 @@ export function ProductPage() {
     useEffect(() => {
         loadReviews();
     }, [loadReviews]);
+
+    useEffect(() => {
+        loadAISummary();
+    }, [loadAISummary]);
 
     useEffect(() => {
         const avg = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
@@ -340,25 +360,25 @@ export function ProductPage() {
                                 </p>
                             </CardContent>
                         </Card>
-
-                        <Card className="bg-gradient-to-br from-[#D4A44A]/10 to-[#2A2A2A] border-[#D4A44A]/30">
-                            <CardHeader>
-                                <div className="flex items-center gap-2">
-                                    <div className="bg-[#D4A44A]/20 p-2 rounded-lg">
-                                        <Star className="h-5 w-5 text-[#D4A44A]" />
+                        {!AISummaryLoading && AISummary.trim() !== '' && (
+                            <Card className="bg-gradient-to-br from-[#D4A44A]/10 to-[#2A2A2A] border-[#D4A44A]/30">
+                                <CardHeader>
+                                    <div className="flex items-center gap-2">
+                                        <div className="bg-[#D4A44A]/20 p-2 rounded-lg">
+                                            <Star className="h-5 w-5 text-[#D4A44A]" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-[#F8F8F8]">
+                                            Podsumowanie opinii AI
+                                        </h3>
                                     </div>
-                                    <h3 className="text-lg font-semibold text-[#F8F8F8]">
-                                        Podsumowanie opinii AI
-                                    </h3>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-[#F8F8F8] leading-relaxed italic">
-                                    "{aiSummary}"
-                                </p>
-                            </CardContent>
-                        </Card>
-
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-[#F8F8F8] leading-relaxed italic">
+                                        "{AISummary}"
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        )}
                         <Card className="bg-[#2A2A2A] border-[#3A3A3A]">
                             <CardHeader>
                                 <h3 className="text-xl font-bold text-[#F8F8F8]">

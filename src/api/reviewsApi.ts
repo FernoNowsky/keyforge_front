@@ -12,6 +12,14 @@ export interface Review {
   updatedAt: Date
 }
 
+export interface AISummaryReview {
+    id: string
+    productId: number
+    content: string
+    avgRating: number
+    updatedAt: Date
+}
+
 export interface ReviewCreateDto {
   productId: number;
   userId: number;
@@ -32,6 +40,9 @@ export const ReviewsAPI = {
 
     getByUserId: (userId: number, params?: PaginationDto) =>
         apiRequest<PaginatedResponse<Review>>(`reviews?userId=${userId}`, {params}),
+
+    getAISummary: (productId: number) =>
+        apiRequest<AISummaryReview>(`reviews/main/product/${productId}`),
 
     createReview: (review: ReviewCreateDto) =>
         apiRequest<PaginatedResponse<ReviewsCreateResponse>>('reviews', {method: 'POST', data: review})
