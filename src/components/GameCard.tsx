@@ -39,18 +39,16 @@ export function GameCard({ name, platform, price, imgId, id }: GameCardProps) {
 
     const handleAddToCart = () => {
         try {
-            // Odczyt aktualnego koszyka z localStorage
+            // get products from localStorage if exists
             const cartData = localStorage.getItem('gameCart');
             const cart = cartData ? JSON.parse(cartData) : [];
 
-            // Sprawdzenie czy produkt już istnieje
             const existingItemIndex = cart.findIndex((item: CartItem) => item.id === id);
 
             if (existingItemIndex !== -1) {
-                // Zwiększ ilość jeśli produkt już istnieje
                 cart[existingItemIndex].quantity += 1;
             } else {
-                // Dodaj nowy produkt
+                // add new product
                 cart.push({
                     id: id,
                     imgId: imgId,
@@ -61,7 +59,6 @@ export function GameCard({ name, platform, price, imgId, id }: GameCardProps) {
                 });
             }
 
-            // Zapis do localStorage
             localStorage.setItem('gameCart', JSON.stringify(cart));
             window.dispatchEvent(new Event('cartUpdated'));
             toast.success(`Dodano produkt ${name} do koszyka`)
@@ -106,7 +103,7 @@ export function GameCard({ name, platform, price, imgId, id }: GameCardProps) {
             >
                 <div className={`transition-all duration-500 ${isMobile ? "-translate-y-2" : "group-hover:-translate-y-2"}`}>
                     <h3 className="text-base font-semibold text-[#F8F8F8] mb-1 line-clamp-2">{name}</h3>
-                    <span className="text-lg font-bold text-[#D4A44A]">${price}</span>
+                    <span className="text-lg font-bold text-[#D4A44A]">{price.toFixed(2)} PLN</span>
                 </div>
 
                 <div className={`mt-3 flex flex-col gap-2 z-40 transition-all duration-500

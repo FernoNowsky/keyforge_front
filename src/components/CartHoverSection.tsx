@@ -115,7 +115,7 @@ export function CartHoverSection() {
                                             </div>
                                         </div>
                                         <p className="text-[#D4A44A] font-semibold whitespace-nowrap">
-                                            ${(item.price * item.quantity).toFixed(2)}
+                                            {(item.price * item.quantity).toFixed(2)} PLN
                                         </p>
                                     </div>
                                 ))}
@@ -123,7 +123,7 @@ export function CartHoverSection() {
 
                             <div className="border-t border-[#3A3A3A] pt-3 flex justify-between items-center">
                                 <span className="text-white font-semibold">Razem:</span>
-                                <span className="text-[#D4A44A] font-bold text-lg">${totalPrice.toFixed(2)}</span>
+                                <span className="text-[#D4A44A] font-bold text-lg">{totalPrice.toFixed(2)} PLN</span>
                             </div>
 
                             <Button

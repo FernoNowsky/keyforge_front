@@ -297,15 +297,15 @@ const validateStock = (currentCart: CartItem[]) => {
                               {(product?.discountPercentage ?? 0) > 0 ? (
                                 <>
                                   <div className="text-[#D4A44A] font-bold text-lg">
-                                    ${(discounted * item.quantity).toFixed(2)}
+                                    {(discounted * item.quantity).toFixed(2)} PLN
                                   </div>
                                   <div className="text-[#A0A0A0] text-sm line-through">
-                                    ${(item.price * item.quantity).toFixed(2)}
+                                    {(item.price * item.quantity).toFixed(2)} PLN
                                   </div>
                                 </>
                               ) : (
                                 <div className="text-[#D4A44A] font-bold text-lg">
-                                  ${(item.price * item.quantity).toFixed(2)}
+                                  {(item.price * item.quantity).toFixed(2)} PLN
                                 </div>
                               )}
                             </div>
@@ -391,20 +391,20 @@ const validateStock = (currentCart: CartItem[]) => {
                                 {(product?.discountPercentage ?? 0) > 0 ? (
                                   <>
                                     <div className="text-[#D4A44A] font-bold">
-                                      ${discounted.toFixed(2)}
+                                      {discounted.toFixed(2)} PLN
                                     </div>
                                     <div className="text-[#A0A0A0] text-sm line-through">
-                                      ${item.price.toFixed(2)}
+                                      {item.price.toFixed(2)} PLN
                                     </div>
                                   </>
                                 ) : (
                                   <div className="text-[#D4A44A] font-bold">
-                                    ${item.price.toFixed(2)}
+                                    {item.price.toFixed(2)} PLN
                                   </div>
                                 )}
                               </TableCell>
                               <TableCell className="text-[#D4A44A] font-bold text-right">
-                                ${(discounted * item.quantity).toFixed(2)}
+                                {(discounted * item.quantity).toFixed(2)} PLN
                               </TableCell>
                               <TableCell>
                                 <button
@@ -435,15 +435,15 @@ const validateStock = (currentCart: CartItem[]) => {
                   <div className="border-t border-[#3A3A3A] pt-4 space-y-3">
                     <div className="flex justify-between text-[#A0A0A0]">
                       <span>Produkty</span>
-                      <span>${getTotalPrice().toFixed(2)}</span>
+                      <span>{getTotalPrice().toFixed(2)} PLN</span>
                     </div>
                     <div className="flex justify-between text-[#A0A0A0]">
                       <span>Rabat</span>
-                      <span>-${getTotalDiscount().toFixed(2)}</span>
+                      <span>-{getTotalDiscount().toFixed(2)} PLN</span>
                     </div>
                     <div className="border-t border-[#3A3A3A] pt-3 flex justify-between text-[#F8F8F8] text-xl font-bold">
                       <span>Suma</span>
-                      <span className="text-[#D4A44A]">${(getTotalPrice() - getTotalDiscount()).toFixed(2)}</span>
+                      <span className="text-[#D4A44A]">{(getTotalPrice() - getTotalDiscount()).toFixed(2)} PLN</span>
                     </div>
                   </div>
 
