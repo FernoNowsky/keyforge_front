@@ -8,6 +8,7 @@ interface Game {
     price: number
     logoId: string
     platform: { id: number; name: string }
+    discountPercentage: number
 }
 
 interface NewGamesSectionProps {
@@ -31,6 +32,7 @@ export function NewGamesSection({ games }: NewGamesSectionProps) {
                                 platform={game.platform.name}
                                 price={game.price}
                                 imgId={game.logoId}
+                                discountPercentage={game.discountPercentage}
                             />
                         </div>
                     </div>

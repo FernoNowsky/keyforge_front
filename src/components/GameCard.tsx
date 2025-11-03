@@ -22,13 +22,15 @@ export type GameCardProps = {
     platform: string
     price: number
     imgId: string
+    discountPercentage?: number
 }
 
-export function GameCard({ name, platform, price, imgId, id }: GameCardProps) {
+export function GameCard({ name, platform, price, imgId, id, discountPercentage = 0 }: GameCardProps) {
     const [isMobile, setIsMobile] = React.useState(
         typeof window !== "undefined" ? window.innerWidth < 768 : false
     );
     const navigate = useNavigate()
+    
     React.useEffect(() => {
         const handleResize = () => {
             setIsMobile(window.innerWidth < 768);
@@ -70,8 +72,12 @@ export function GameCard({ name, platform, price, imgId, id }: GameCardProps) {
     };
 
     const handleCheckProduct = (productId: number) => {
-        navigate({to: `/products/${productId}`})
+        navigate({ to: `/products/${productId}` })
     }
+
+    const discountedPrice = discountPercentage > 0 
+        ? price * (1 - discountPercentage / 100)
+        : price;
 
     return (
         <Card
@@ -79,7 +85,7 @@ export function GameCard({ name, platform, price, imgId, id }: GameCardProps) {
                        shadow-md group transition-all duration-500
                        hover:-translate-y-1
                        bg-gradient-to-b from-[#1A1A1A] via-[#1E1E1E] to-[#2A2A2A]
-                       h-[360px] w-full`}
+                       h-[400px] w-full`}
             style={{
                 boxShadow: "0 0 5px rgba(212,164,74,0.15)",
             }}
@@ -91,9 +97,14 @@ export function GameCard({ name, platform, price, imgId, id }: GameCardProps) {
                     className={`w-full h-44 object-cover opacity-95 transition-opacity duration-500
                                 ${isMobile ? "opacity-100" : "group-hover:opacity-100"}`}
                 />
-                <div className="absolute top-2 right-2 z-20">
+                <div className="absolute top-2 right-2 z-20 mt-1.5">
                     <PlatformBadge platform={platform} />
                 </div>
+                {discountPercentage > 0 && (
+                    <div className="absolute top-2 left-2 bg-[#D4A44A]/80 border border-black/20 text-black px-3 py-1 rounded-md font-bold text-sm shadow-lg z-30">
+                        -{discountPercentage}%
+                    </div>
+                )}
             </div>
 
             <CardContent
@@ -103,7 +114,20 @@ export function GameCard({ name, platform, price, imgId, id }: GameCardProps) {
             >
                 <div className={`transition-all duration-500 ${isMobile ? "-translate-y-2" : "group-hover:-translate-y-2"}`}>
                     <h3 className="text-base font-semibold text-[#F8F8F8] mb-1 line-clamp-2">{name}</h3>
-                    <span className="text-lg font-bold text-[#D4A44A]">{price.toFixed(2)} PLN</span>
+                    {discountPercentage > 0 ? (
+                        <div className="flex flex-col">
+                            <span className="text-sm text-gray-400 line-through">
+                                {price.toFixed(2)} PLN
+                            </span>
+                            <span className="text-lg font-bold text-[#D4A44A]">
+                                {discountedPrice.toFixed(2)} PLN
+                            </span>
+                        </div>
+                    ) : (
+                        <span className="text-lg font-bold text-[#D4A44A]">
+                            {price.toFixed(2)} PLN
+                        </span>
+                    )}
                 </div>
 
                 <div className={`mt-3 flex flex-col gap-2 z-40 transition-all duration-500

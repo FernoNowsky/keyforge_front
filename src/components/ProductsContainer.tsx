@@ -77,6 +77,7 @@ export function ProductsContainer({ filters }: { filters: Filters | null }) {
                             platform={game.platform.name}
                             price={game.price}
                             imgId={game.logoId}
+                            discountPercentage={game.discountPercentage}
                         />
                     </div>
                 ))}

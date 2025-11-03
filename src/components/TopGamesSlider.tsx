@@ -17,6 +17,7 @@ interface Game {
     price: number
     logoId: string
     platform: { id: number; name: string }
+    discountPercentage: number
 }
 
 interface TopGamesCarouselProps {
@@ -52,6 +53,7 @@ export function TopGamesCarousel({ games }: TopGamesCarouselProps) {
                                     platform={game.platform.name}
                                     price={game.price}
                                     imgId={game.logoId}
+                                    discountPercentage={game.discountPercentage}
                                 />
                             </div>
                         </CarouselItem>
