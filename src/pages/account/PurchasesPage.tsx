@@ -17,19 +17,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Star, Key, Check, X } from "lucide-react";
+import { Star, Key, X } from "lucide-react";
 import { PlatformBadge } from "@/components/PlatformBadge";
 import { OrdersApi, ProductsApi, type Product } from "@/api";
 import type { Order, OrdersResponse } from "@/api/ordersApi";
-
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { toast } from "sonner";
 
 import {
   Dialog,
@@ -40,6 +32,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useNavigate } from "@tanstack/react-router";
+import { ReviewDialog } from "@/components/ReviewDialog";
 
 const statusMap: Record<string, { label: string; className: string }> = {
   READY_FOR_PAYMENT: {
@@ -67,14 +60,20 @@ const statusMap: Record<string, { label: string; className: string }> = {
 export default function PurchasesPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
-  const [orderProducts, setOrderProducts] = useState<Record<number, Product[]>>(
-    {},
-  );
+  const [orderProducts, setOrderProducts] = useState<Record<number, Product[]>>({});
+  
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showReturnDialog, setShowReturnDialog] = useState(false);
+  const [showReviewDialog, setShowReviewDialog] = useState(false);
+  
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  const [reviewProducts, setReviewProducts] = useState<Product[]>([]);
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+
   const navigate = useNavigate();
+
   useEffect(() => {
     // TODO: token/get user id from global state
     const userId = 1;
@@ -84,29 +83,31 @@ export default function PurchasesPage() {
         const data: OrdersResponse = await OrdersApi.getByUserId(userId);
         const ordersList = data.content;
         setOrders(ordersList);
-        // unikalne productIds
+        
+        // Get unique productIds from all orders
         const allProductIds = Array.from(
           new Set(
             ordersList.flatMap((order) =>
-              order.orderItems.map((i) => i.productId),
-            ),
-          ),
+              order.orderItems.map((i) => i.productId)
+            )
+          )
         );
 
         const allProducts = await ProductsApi.getByIds(allProductIds, false);
 
-        // przypisz produkty do odpowiednich zamówień
+        // Map products to their orders
         const productsByOrder: Record<number, Product[]> = {};
         for (const order of ordersList) {
           const orderProductIds = order.orderItems.map((i) => i.productId);
           productsByOrder[order.id] = allProducts.filter((p) =>
-            orderProductIds.includes(p.id),
+            orderProductIds.includes(p.id)
           );
         }
 
         setOrderProducts(productsByOrder);
       } catch (error) {
         console.error("Błąd pobierania zamówień lub produktów:", error);
+        toast.error("Nie udało się pobrać zamówień");
       }
     };
 
@@ -138,15 +139,16 @@ export default function PurchasesPage() {
 
       setOrders((prev) =>
         prev.map((o) =>
-          o.id === selectedOrder.id ? { ...o, status: "COMPLETED" } : o,
-        ),
+          o.id === selectedOrder.id ? { ...o, status: "COMPLETED" } : o
+        )
       );
 
       setShowConfirmDialog(false);
-
       navigateToKeysPage(selectedOrder);
+      toast.success("Klucze zostały odebrane!");
     } catch (error) {
       console.error("Błąd podczas odbierania kluczy:", error);
+      toast.error("Nie udało się odebrać kluczy");
     } finally {
       setIsProcessing(false);
       setSelectedOrder(null);
@@ -167,16 +169,17 @@ export default function PurchasesPage() {
         status: "CANCELLED",
       });
 
-      // Aktualizujemy lokalny stan, by nie wymagać reloadu
       setOrders((prev) =>
         prev.map((o) =>
-          o.id === selectedOrder.id ? { ...o, status: "CANCELLED" } : o,
-        ),
+          o.id === selectedOrder.id ? { ...o, status: "CANCELLED" } : o
+        )
       );
 
       setShowReturnDialog(false);
+      toast.success("Zamówienie zostało zwrócone");
     } catch (error) {
       console.error("Błąd podczas zwracania zamówienia:", error);
+      toast.error("Nie udało się zwrócić zamówienia");
     } finally {
       setIsProcessing(false);
       setSelectedOrder(null);
@@ -188,7 +191,7 @@ export default function PurchasesPage() {
 
     const productsWithQuantity = products.map((product) => {
       const matchingItem = order.orderItems.find(
-        (item) => item.productId === product.id,
+        (item) => item.productId === product.id
       );
       return {
         ...product,
@@ -202,10 +205,47 @@ export default function PurchasesPage() {
         orderId: order.id,
         products: productsWithQuantity,
         date: order.createdAt,
-      }),
+      })
     );
 
     navigate({ to: "/account/keys" });
+  };
+
+  const handleOpenReviewDialog = (order: Order) => {
+    const products = orderProducts[order.id];
+    if (!products) return;
+
+    // Get unique products (in case user bought multiple copies of the same game)
+    const uniqueProducts = products.filter(
+      (p, index, self) => index === self.findIndex((x) => x.id === p.id)
+    );
+
+    setSelectedOrderId(order.id);
+    setReviewProducts(uniqueProducts);
+    setShowReviewDialog(true);
+  };
+
+  const handleReviewsCompleted = async () => {
+    if (selectedOrderId === null) return;
+
+    // Mark order as reviewed
+    setOrders((prev) =>
+      prev.map((o) =>
+        o.id === selectedOrderId ? { ...o, hasReview: true } : o
+      )
+    );
+  };
+
+  const getGameWord = (count: number) => {
+    if (count === 1) return "gra";
+    if (count >= 2 && count <= 4) return "gry";
+    return "gier";
+  };
+
+  const getKeyWord = (keyCount: number) => {
+    if (keyCount === 1) return "klucz";
+    if (keyCount >= 2 && keyCount <= 4) return "klucze";
+    return "kluczy";
   };
 
   return (
@@ -227,21 +267,9 @@ export default function PurchasesPage() {
                 const count = order.orderItems.length;
                 const keyCount = order.orderItems.reduce(
                   (total, item) => total + item.quantity,
-                  0,
+                  0
                 );
                 const products = orderProducts[order.id];
-
-                const getGameWord = (count: number) => {
-                  if (count === 1) return "gra";
-                  if (count >= 2 && count <= 4) return "gry";
-                  return "gier";
-                };
-
-                const getKeyWord = (keyCount: number) => {
-                  if (keyCount === 1) return "klucz";
-                  if (keyCount >= 2 && keyCount <= 4) return "klucze";
-                  return "kluczy";
-                };
 
                 return (
                   <AccordionItem
@@ -292,129 +320,50 @@ export default function PurchasesPage() {
 
                         <Separator className="bg-[#3A3A3A]" />
 
-                        {expandedOrderId === order.id && (
-                          <>
-                            {/*Mobile layout*/}
-                            <div className="space-y-3 sm:hidden mt-4">
-                              {order.orderItems.map((item) => {
-                                const product = products?.find(
-                                  (p) => p.id === item.productId,
-                                );
-                                return (
-                                  <div
-                                    key={item.id}
-                                    className="bg-[#1F1F1F] rounded-xl p-3 border border-[#333]"
-                                  >
-                                    <div className="flex justify-between items-start">
-                                      <div>
-                                        <p className="text-white font-semibold break-words leading-tight">
-                                          {product?.name ?? "Ładowanie..."}
-                                        </p>
-                                        <div className="mt-1 w-[75px]">
-                                          {product?.platform && (
-                                            <PlatformBadge
-                                              platform={product.platform.name}
-                                            />
-                                          )}
-                                        </div>
-                                      </div>
-                                      <p className="text-[#D4A44A] font-semibold">
-                                        {item.totalPrice.toFixed(2)} PLN
-                                      </p>
-                                    </div>
-                                    <div className="flex justify-between text-gray-400 text-xs mt-2">
-                                      <span>
-                                        Cena: {item.unitPrice.toFixed(2)} PLN
+                        {expandedOrderId === order.id && products && (
+                          <div className="space-y-3 mt-4">
+                            {order.orderItems.map((item) => {
+                              const product = products.find(
+                                (p) => p.id === item.productId
+                              );
+                              return (
+                                <div
+                                  key={item.id}
+                                  className="bg-[#1F1F1F] rounded-xl p-3 border border-[#333] flex justify-between items-center"
+                                >
+                                  <div className="flex-1">
+                                    <p className="text-white font-semibold break-words">
+                                      {product?.name ?? "Ładowanie..."}
+                                    </p>
+                                    <div className="flex items-center gap-3 mt-2">
+                                      {product?.platform && (
+                                        <PlatformBadge
+                                          platform={product.platform.name}
+                                        />
+                                      )}
+                                      <span className="text-gray-400 text-xs">
+                                        {item.unitPrice.toFixed(2)} PLN × {item.quantity}
                                       </span>
-                                      <span>Ilość: {item.quantity}</span>
                                     </div>
                                   </div>
-                                );
-                              })}
+                                  <p className="text-[#D4A44A] font-semibold ml-4">
+                                    {item.totalPrice.toFixed(2)} PLN
+                                  </p>
+                                </div>
+                              );
+                            })}
+                            <div className="bg-[#1F1F1F]/70 rounded-xl p-3 border-2 border-[#3A3A3A] flex justify-between items-center">
+                              <span className="text-gray-200 font-semibold">
+                                Razem:
+                              </span>
+                              <span className="text-[#FFD166] font-bold text-lg">
+                                {order.totalPrice.toFixed(2)} PLN
+                              </span>
                             </div>
-
-                            {/*Desktop layout*/}
-                            <div className="hidden sm:block mt-4 overflow-x-auto">
-                              {products ? (
-                                <Table className="min-w-[600px] sm:min-w-full">
-                                  <TableHeader className="bg-[#1F1F1F]">
-                                    <TableRow className="border-[#3A3A3A]">
-                                      <TableHead className="text-gray-400 w-[220px] sm:w-[260px]">
-                                        Nazwa
-                                      </TableHead>
-                                      <TableHead className="text-gray-400 w-[100px] text-center">
-                                        Platforma
-                                      </TableHead>
-                                      <TableHead className="text-gray-400 text-center">
-                                        Cena
-                                      </TableHead>
-                                      <TableHead className="text-gray-400 text-center">
-                                        Ilość
-                                      </TableHead>
-                                      <TableHead className="text-gray-400 text-right">
-                                        Suma
-                                      </TableHead>
-                                    </TableRow>
-                                  </TableHeader>
-
-                                  <TableBody>
-                                    {order.orderItems.map((item) => {
-                                      const product = products.find(
-                                        (p) => p.id === item.productId,
-                                      );
-                                      return (
-                                        <TableRow
-                                          key={item.id}
-                                          className="border-[#3A3A3A] hover:!bg-[#333333]/40 transition-colors"
-                                        >
-                                          <TableCell className="font-medium text-white w-[220px] sm:w-[260px] whitespace-normal break-words">
-                                            {product?.name ?? "Ładowanie..."}
-                                          </TableCell>
-                                          <TableCell className="text-white w-[100px]">
-                                            {product?.platform ? (
-                                              <PlatformBadge
-                                                platform={product.platform.name}
-                                              />
-                                            ) : (
-                                              "-"
-                                            )}
-                                          </TableCell>
-                                          <TableCell className="text-center text-gray-300">
-                                            {item.unitPrice.toFixed(2)} PLN
-                                          </TableCell>
-                                          <TableCell className="text-center text-gray-300">
-                                            {item.quantity}
-                                          </TableCell>
-                                          <TableCell className="text-right text-[#D4A44A] font-semibold">
-                                            {item.totalPrice.toFixed(2)} PLN
-                                          </TableCell>
-                                        </TableRow>
-                                      );
-                                    })}
-
-                                    <TableRow className="border-t-2 border-[#3A3A3A] bg-[#1F1F1F]/70">
-                                      <TableCell
-                                        colSpan={4}
-                                        className="text-right font-semibold text-gray-200"
-                                      >
-                                        Razem:
-                                      </TableCell>
-                                      <TableCell className="text-right text-[#FFD166] font-bold">
-                                        {order.totalPrice.toFixed(2)} PLN
-                                      </TableCell>
-                                    </TableRow>
-                                  </TableBody>
-                                </Table>
-                              ) : (
-                                <p className="text-gray-500 text-sm italic">
-                                  Ładowanie produktów...
-                                </p>
-                              )}
-                            </div>
-                          </>
+                          </div>
                         )}
 
-                        <div className="flex flex-wrap items-center justify-between mt-4">
+                        <div className="flex flex-wrap items-center justify-between mt-4 gap-3">
                           <div className="flex items-center">
                             {order.status === "PAID" && (
                               <Button
@@ -429,20 +378,15 @@ export default function PurchasesPage() {
                             )}
                           </div>
                           <div className="flex flex-wrap items-center gap-3">
-                            {![
-                              "PAYMENT_FAILED",
-                              "CANCELLED",
-                              "READY_FOR_PAYMENT",
-                              "PAID",
-                            ].includes(order.status) &&
+                            {order.status === "COMPLETED" &&
                               (!order.hasReview ? (
                                 <Button
                                   size="sm"
-                                  className="bg-[#D4A44A] text-black hover:!bg-[#B8873D]/30 text-xs sm:text-sm border-[#D4A44A]"
+                                  className="bg-[#D4A44A] text-black hover:!bg-[#B8873D] text-xs sm:text-sm border-[#D4A44A]"
                                   variant="outline"
+                                  onClick={() => handleOpenReviewDialog(order)}
                                 >
-                                  <Star className="h-4 w-4 mr-2" /> Wystaw
-                                  opinię
+                                  <Star className="h-4 w-4 mr-2" /> Wystaw opinię
                                 </Button>
                               ) : (
                                 <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/50 px-2 py-0.5 text-xs">
@@ -453,7 +397,7 @@ export default function PurchasesPage() {
                               order.status === "COMPLETED") && (
                               <Button
                                 size="sm"
-                                className="bg-[#D4A44A] text-black hover:!bg-[#B8873D]/30 text-xs sm:text-sm border-[#D4A44A]"
+                                className="bg-[#D4A44A] text-black hover:!bg-[#B8873D] text-xs sm:text-sm border-[#D4A44A]"
                                 variant="outline"
                                 onClick={() => handleClaimKeys(order)}
                               >
@@ -492,15 +436,15 @@ export default function PurchasesPage() {
 
             <div className="space-y-3 my-4">
               <div className="flex items-start gap-2 text-sm text-gray-300">
-                <Check className="h-5 w-5 text-[#D4A44A] flex-shrink-0 mt-0.5" />
+                <span className="text-[#D4A44A] mt-0.5">✓</span>
                 <span>Zakupione gry są zgodne z Twoimi oczekiwaniami</span>
               </div>
               <div className="flex items-start gap-2 text-sm text-gray-300">
-                <Check className="h-5 w-5 text-[#D4A44A] flex-shrink-0 mt-0.5" />
+                <span className="text-[#D4A44A] mt-0.5">✓</span>
                 <span>Platformy gier są odpowiednie dla Twojego systemu</span>
               </div>
               <div className="flex items-start gap-2 text-sm text-gray-300">
-                <Check className="h-5 w-5 text-[#D4A44A] flex-shrink-0 mt-0.5" />
+                <span className="text-[#D4A44A] mt-0.5">✓</span>
                 <span>
                   Posiadasz konta na platformach, do których zakupiłeś gry
                 </span>
@@ -524,7 +468,7 @@ export default function PurchasesPage() {
               <Button
                 onClick={confirmClaimKeys}
                 disabled={isProcessing}
-                className="bg-[#D4A44A] text-black hover:!bg-[#B8873D]/30"
+                className="bg-[#D4A44A] text-black hover:!bg-[#B8873D]"
               >
                 {isProcessing ? "Przetwarzanie..." : "Tak, są zgodne"}
               </Button>
@@ -563,6 +507,14 @@ export default function PurchasesPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        <ReviewDialog
+          open={showReviewDialog}
+          onOpenChange={setShowReviewDialog}
+          products={reviewProducts}
+          orderId={selectedOrderId ?? 0}
+          userId={1}
+          onReviewsCompleted={handleReviewsCompleted}
+        />
       </div>
     </div>
   );

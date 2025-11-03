@@ -12,6 +12,19 @@ export interface Review {
   updatedAt: Date
 }
 
+export interface ReviewCreateDto {
+  productId: number;
+  userId: number;
+  rating: number;
+  content: string;
+  valid: boolean;
+}
+
+export interface ReviewsCreateResponse {
+  content: Review[];
+  totalElements: number;
+}
+
 export const ReviewsAPI = {
 
     getByProductId: (productId: number) =>
@@ -19,4 +32,7 @@ export const ReviewsAPI = {
 
     getByUserId: (userId: number, params?: PaginationDto) =>
         apiRequest<PaginatedResponse<Review>>(`reviews?userId=${userId}`, {params}),
+
+    createReview: (review: ReviewCreateDto) =>
+        apiRequest<PaginatedResponse<ReviewsCreateResponse>>('reviews', {method: 'POST', data: review})
 };
