@@ -1,4 +1,4 @@
-import { apiRequest } from "@/lib/apiRequest";
+import { apiRequest, type PaginationDto } from "@/lib/apiRequest";
 import type { PaginatedResponse } from "./types/common.types";
 
 export interface Review {
@@ -15,8 +15,8 @@ export interface Review {
 export const ReviewsAPI = {
 
     getByProductId: (productId: number) =>
-        apiRequest<PaginatedResponse<Review>>(`/reviews?productId=${productId}`),
+        apiRequest<PaginatedResponse<Review>>(`/reviews?productId=${productId}&status=APPROVED`),
 
-    getByUserId: (userId: number) =>
-        apiRequest<PaginatedResponse<Review>>(`reviews?userId=${userId}`),
+    getByUserId: (userId: number, params?: PaginationDto) =>
+        apiRequest<PaginatedResponse<Review>>(`reviews?userId=${userId}`, {params}),
 };
