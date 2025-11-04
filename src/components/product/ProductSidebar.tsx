@@ -33,16 +33,24 @@ export const ProductSidebar = ({ product, cartStock }: Props) => {
         if (!cartData) return;
 
         const cart = JSON.parse(cartData) as CartItem[];
-        const item = cart.find((i) => i.id === product.id);
-        if (item && item.quantity > product.stock) {
-            item.quantity = product.stock;
-            localStorage.setItem("gameCart", JSON.stringify(cart));
-            window.dispatchEvent(new Event("cartUpdated"));
-            toast.info(
-                `Dostosowano ilość produktu ${product.name} w koszyku do aktualnego stanu magazynowego (${product.stock} szt.)`
-            );
-            setAvailableStock(0);
-            setMaxAdded(true);
+        const itemIndex = cart.findIndex((i) => i.id === product.id);
+
+        if (itemIndex !== -1) {
+            const item = cart[itemIndex];
+
+            if (product.stock === 0) {
+                cart.splice(itemIndex, 1);
+                localStorage.setItem("gameCart", JSON.stringify(cart));
+                window.dispatchEvent(new Event("cartUpdated"));
+                toast.info(`Produkt ${product.name} został usunięty z koszyka, ponieważ jest niedostępny w magazynie.`);
+            } else if (item.quantity > product.stock) {
+                item.quantity = product.stock;
+                localStorage.setItem("gameCart", JSON.stringify(cart));
+                window.dispatchEvent(new Event("cartUpdated"));
+                toast.info(`Dostosowano ilość produktu ${product.name} w koszyku do aktualnego stanu magazynowego (${product.stock} szt.)`);
+                setAvailableStock(0);
+                setMaxAdded(true);
+            }
         }
     }, [product.id, product.stock, product.name, setAvailableStock, setMaxAdded]);
 
@@ -78,7 +86,7 @@ export const ProductSidebar = ({ product, cartStock }: Props) => {
         if (buttonDisabled) return;
         setButtonDisabled(true);
 
-        setTimeout(() => setButtonDisabled(false), 1500); // 🔸 Blokada kliknięcia na 1.5 sekundy
+        setTimeout(() => setButtonDisabled(false), 1500);
 
         try {
             const cartData = localStorage.getItem("gameCart");

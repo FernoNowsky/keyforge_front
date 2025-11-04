@@ -7,6 +7,17 @@ export const ProductsApi = {
     getAll: (params?: PaginationDto) =>
         apiRequest<PaginatedResponse<Product>>("/products", { params }),
 
+    getNewest: (params?: PaginationDto) =>
+    apiRequest<PaginatedResponse<Product>>("/products", { 
+        params: {
+            ...params, 
+            sortBy: 'releaseDate',
+            sortDirection: 'DESC',
+            size: 4,
+        } 
+    }),
+
+
     getById: (id: number) =>
         apiRequest<DetailedProduct>(`/products/${id}`),
 
