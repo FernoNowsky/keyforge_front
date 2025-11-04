@@ -17,7 +17,7 @@ export interface Order {
   totalPrice: number
   createdAt: string
   orderItems: OrderItem[]
-  hasReview?: boolean
+  reviewed?: boolean
 }
 
 export type OrderResponse = {
@@ -35,6 +35,10 @@ export interface OrdersResponse {
 export interface CreateOrderRequest {
     userId?: number; // User id is not required, we will get it from token on backend which should be sent in headers
     products: { productId: number; quantity: number }[];
+}
+
+export interface SetReviewedRequest {
+  orderId: number;
 }
 
 export interface UpdateOrderRequest {
@@ -56,6 +60,11 @@ export const OrdersApi = {
     create: (data: CreateOrderRequest) => {
         const obj = {items: data.products}; //TODO: adjust to backend dto
         return apiRequest<OrderResponse>("/orders", { method: "post", data: obj });
+    },
+
+    setReviewed: (data: SetReviewedRequest) => {
+        const obj = {orderId: data.orderId};
+        return apiRequest<OrderResponse>(`/orders/${data.orderId}/reviewed`, { method: "PUT", data: obj });
     },
 
     updateOrderById: (data: UpdateOrderRequest) => {

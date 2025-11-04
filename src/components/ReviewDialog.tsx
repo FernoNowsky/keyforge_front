@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { Star, AlertCircle } from "lucide-react";
-import { ReviewsAPI } from "@/api";
+import { OrdersApi, ReviewsAPI } from "@/api";
 import type { Product } from "@/api";
 import { toast } from "sonner";
 
@@ -50,7 +50,6 @@ export function ReviewDialog({
       products.map((p) => [p.id, { rating: 0, content: "" }])
     );
     setReviewData(initialData);
-    // Auto-expand first item
     if (products.length > 0) {
       setExpandedItem(products[0].id.toString());
     }
@@ -99,9 +98,9 @@ export function ReviewDialog({
     setIsSubmitting(true);
 
     try {
-      // Submit all reviews in parallel
       const reviewPromises = products.map((product) => {
         const review = reviewData[product.id];
+        OrdersApi.setReviewed({ orderId })
         return ReviewsAPI.createReview({
           productId: product.id,
           userId,

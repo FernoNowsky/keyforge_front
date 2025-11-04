@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Star, Key, X } from "lucide-react";
+import { Star, Key, X, Check } from "lucide-react";
 import { PlatformBadge } from "@/components/PlatformBadge";
 import { OrdersApi, ProductsApi, type Product } from "@/api";
 import type { Order, OrdersResponse } from "@/api/ordersApi";
@@ -78,6 +78,7 @@ export default function PurchasesPage() {
     // TODO: token/get user id from global state
     const userId = 1;
 
+    // TODO: Pagination and spinner
     const fetchOrdersAndProducts = async () => {
       try {
         const data: OrdersResponse = await OrdersApi.getByUserId(userId);
@@ -231,7 +232,7 @@ export default function PurchasesPage() {
     // Mark order as reviewed
     setOrders((prev) =>
       prev.map((o) =>
-        o.id === selectedOrderId ? { ...o, hasReview: true } : o
+        o.id === selectedOrderId ? { ...o, reviewed: true } : o
       )
     );
   };
@@ -379,7 +380,7 @@ export default function PurchasesPage() {
                           </div>
                           <div className="flex flex-wrap items-center gap-3">
                             {order.status === "COMPLETED" &&
-                              (!order.hasReview ? (
+                              (!order.reviewed ? (
                                 <Button
                                   size="sm"
                                   className="bg-[#D4A44A] text-black hover:!bg-[#B8873D] text-xs sm:text-sm border-[#D4A44A]"
@@ -389,7 +390,8 @@ export default function PurchasesPage() {
                                   <Star className="h-4 w-4 mr-2" /> Wystaw opinię
                                 </Button>
                               ) : (
-                                <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/50 px-2 py-0.5 text-xs">
+                                <Badge className="!bg-transparent text-green-400 border-green-500/50 px-2 py-1.25 text-xs sm:text-sm">
+                                  <Check className="h-4 w-4 text-green-400 scale-105 mr-2" />
                                   Opinia wystawiona
                                 </Badge>
                               ))}
