@@ -11,8 +11,10 @@ export function useReviews(productId?: number) {
         if (!productId) return;
         try {
             const data = await ReviewsAPI.getByProductId(productId);
-            setReviews(data.content);
-            setTotalReviews(data.totalElements);
+            if (data) {
+                setReviews(data.content);
+                setTotalReviews(data.totalElements);
+            }
         } catch {
             toast.warning("Nie udało się wczytać opinii produktu");
         } finally {

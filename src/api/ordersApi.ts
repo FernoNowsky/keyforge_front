@@ -1,5 +1,6 @@
 import { apiRequest } from "@/lib/apiRequest";
 import type { PaginationDto } from "@/lib/apiRequest";
+import type { PaginatedResponse } from "./types/common.types";
 
 export interface OrderItem {
   id: number
@@ -53,9 +54,9 @@ export const OrdersApi = {
     getById: (id: number) =>
         apiRequest<Order>(`/orders/${id}`),
 
-    getByUserId: (userId: number) =>
+    getByUserId: (userId: number, params?: PaginationDto) =>
         // TODO: for now sorting by id and desc to get the newest. maybe add this to params, not in api structure
-        apiRequest<OrdersResponse>(`/orders?userId=${userId}&sortBy=id&sortDirection=DESC`),
+        apiRequest<PaginatedResponse<OrdersResponse>>(`/orders?userId=${userId}&sortBy=id&sortDirection=DESC`, {params}),
 
     create: (data: CreateOrderRequest) => {
         const obj = {items: data.products}; //TODO: adjust to backend dto

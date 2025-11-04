@@ -18,7 +18,7 @@ export function HomeBanner() {
 
         <div className="relative z-10 h-full flex flex-col justify-end items-center text-center px-6 pb-10 md:pb-16">
             <motion.h1
-            className="text-3xl md:text-6xl font-extrabold text-[#D4A44A] mb-3 drop-shadow-md [text-stroke:_2px_black] [webkit-text-stroke:_2px_black]"
+            className="!text-2xl md:text-6xl font-extrabold text-[#D4A44A] mb-3 drop-shadow-md [text-stroke:_2px_black] [webkit-text-stroke:_2px_black]"
             style={{
                 WebkitTextStroke: "2px black",
                 color: "#D4A44A",
@@ -29,11 +29,11 @@ export function HomeBanner() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             >
-            WYKUJ SWÓJ KLUCZ JUŻ DZIŚ
+            WYKUJ SWÓJ KLUCZ { window.innerWidth < 960 ? "" : "JUŻ DZIŚ"}
             </motion.h1>
 
             <motion.p
-            className="text-[#D4A44A] text-lg md:text-xl mb-5 drop-shadow-md"
+            className="text-[#D4A44A] !text-sm md:!text-xl mb-5 drop-shadow-md"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.8 }}
