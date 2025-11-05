@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as SupportIndexRouteImport } from './routes/support/index'
 import { Route as ProductsIndexRouteImport } from './routes/products/index'
 import { Route as CartIndexRouteImport } from './routes/cart/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AccountIndexRouteImport } from './routes/account/index'
 import { Route as ProductsProductIdRouteImport } from './routes/products/$productId'
 import { Route as ProductsTypeIndexRouteImport } from './routes/products/type/index'
@@ -65,6 +66,11 @@ const ProductsIndexRoute = ProductsIndexRouteImport.update({
 const CartIndexRoute = CartIndexRouteImport.update({
   id: '/cart/',
   path: '/cart/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccountIndexRoute = AccountIndexRouteImport.update({
@@ -152,6 +158,7 @@ export interface FileRoutesByFullPath {
   '/terms-of-service': typeof TermsOfServiceRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/account': typeof AccountIndexRoute
+  '/admin': typeof AdminIndexRoute
   '/cart': typeof CartIndexRoute
   '/products': typeof ProductsIndexRoute
   '/support': typeof SupportIndexRoute
@@ -176,6 +183,7 @@ export interface FileRoutesByTo {
   '/terms-of-service': typeof TermsOfServiceRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/account': typeof AccountIndexRoute
+  '/admin': typeof AdminIndexRoute
   '/cart': typeof CartIndexRoute
   '/products': typeof ProductsIndexRoute
   '/support': typeof SupportIndexRoute
@@ -201,6 +209,7 @@ export interface FileRoutesById {
   '/terms-of-service': typeof TermsOfServiceRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/account/': typeof AccountIndexRoute
+  '/admin/': typeof AdminIndexRoute
   '/cart/': typeof CartIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/support/': typeof SupportIndexRoute
@@ -227,6 +236,7 @@ export interface FileRouteTypes {
     | '/terms-of-service'
     | '/products/$productId'
     | '/account'
+    | '/admin'
     | '/cart'
     | '/products'
     | '/support'
@@ -251,6 +261,7 @@ export interface FileRouteTypes {
     | '/terms-of-service'
     | '/products/$productId'
     | '/account'
+    | '/admin'
     | '/cart'
     | '/products'
     | '/support'
@@ -275,6 +286,7 @@ export interface FileRouteTypes {
     | '/terms-of-service'
     | '/products/$productId'
     | '/account/'
+    | '/admin/'
     | '/cart/'
     | '/products/'
     | '/support/'
@@ -300,6 +312,7 @@ export interface RootRouteChildren {
   TermsOfServiceRoute: typeof TermsOfServiceRoute
   ProductsProductIdRoute: typeof ProductsProductIdRoute
   AccountIndexRoute: typeof AccountIndexRoute
+  AdminIndexRoute: typeof AdminIndexRoute
   CartIndexRoute: typeof CartIndexRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
   SupportIndexRoute: typeof SupportIndexRoute
@@ -367,6 +380,13 @@ declare module '@tanstack/react-router' {
       path: '/cart'
       fullPath: '/cart'
       preLoaderRoute: typeof CartIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/account/': {
@@ -484,6 +504,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsOfServiceRoute: TermsOfServiceRoute,
   ProductsProductIdRoute: ProductsProductIdRoute,
   AccountIndexRoute: AccountIndexRoute,
+  AdminIndexRoute: AdminIndexRoute,
   CartIndexRoute: CartIndexRoute,
   ProductsIndexRoute: ProductsIndexRoute,
   SupportIndexRoute: SupportIndexRoute,
