@@ -2,10 +2,10 @@ import type { DetailedProduct, Review } from "@/api";
 
 export const mockProducts: DetailedProduct[] = [
   {
-    id: 1,
+    id: 2,
     name: "Cyberpunk 2077",
     price: 199.99,
-    logoId: "logo-cyberpunk",
+    logoId: "1091500",
     platform: { id: 1, name: "Steam" },
     stock: 150,
     discountPercentage: 20,
@@ -14,15 +14,14 @@ export const mockProducts: DetailedProduct[] = [
     descriptionEn: "A futuristic open-world RPG set in Night City.",
     visible: true,
     deleted: null,
-    producent: { id: 1, name: "CD Projekt RED" },
+    producent: { id: 12, name: "CD Projekt RED" },
     type: { id: 1, name: "RPG" },
     categories: [
-      { id: 1, name: "Action" },
-      { id: 2, name: "Open World" },
+      { id: 12, name: "Action" },
     ],
   },
   {
-    id: 2,
+    id: 3,
     name: "The Witcher 3: Wild Hunt",
     price: 89.99,
     logoId: "logo-witcher3",
@@ -42,7 +41,7 @@ export const mockProducts: DetailedProduct[] = [
     ],
   },
   {
-    id: 3,
+    id: 4,
     name: "Elden Ring",
     price: 249.99,
     logoId: "logo-eldenring",
@@ -62,7 +61,7 @@ export const mockProducts: DetailedProduct[] = [
     ],
   },
   {
-    id: 4,
+    id: 5,
     name: "Baldur's Gate 3",
     price: 229.99,
     logoId: "logo-bg3",

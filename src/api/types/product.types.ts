@@ -38,3 +38,18 @@ export interface DetailedProduct extends Product {
   type: ProductType;
   categories: Category[];
 }
+
+export interface UpdateProductRequest {
+    name: string;
+    descriptionPl: string;
+    descriptionEn: string;
+    price: number;
+    stock: number;
+    releaseDate: string;
+    logoId: string;
+    discountPercentage: number;
+    categoriesId: number[];
+    platformId: number;
+    typeId: number;
+    producentId: number;
+}

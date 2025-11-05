@@ -28,14 +28,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -44,12 +36,13 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
-import type { DetailedProduct, Review } from '@/api';
+import {type DetailedProduct, type Review} from '@/api';
 import { mockProducts, mockReviews } from '@/assets/adminData';
+
+import {ProductEditDialog} from "@/components/admin/ProductEditDialog.tsx";
 // Mock data
 const mockChartData = [
   { date: 'Nov 1', revenue: 850, orders: 12 },
@@ -84,13 +77,6 @@ const handleEditProduct = (product: DetailedProduct) => {
   setEditDialogOpen(true);
 };
 
-const handleSaveProduct = () => {
-  if (selectedProductItem) {
-    setProducts(products.map(p => p.id === selectedProductItem.id ? selectedProductItem : p));
-    setEditDialogOpen(false);
-  }
-};
-
  const handleDeleteProduct = (id: number) => {
   setProducts(products.filter(p => p.id !== id));
 };
@@ -107,15 +93,11 @@ const handleDeleteReview = (id: number) => {
 
   return (
     <div className="flex min-h-screen bg-[#1C1C1C]">
-        
-      {/* Sidebar */}
       <AdminSidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         pendingReviews={pendingReviews}
         />
-
-      {/* Main Content */}
       <main className="flex-1 py-4 mr-14">
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
@@ -123,8 +105,6 @@ const handleDeleteReview = (id: number) => {
               <h2 className="text-3xl font-bold text-[#F8F8F8]">Dashboard</h2>
               <p className="text-[#A0A0A0] mt-1">Przegląd statystyk i aktywności</p>
             </div>
-
-            {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Card className="bg-[#2A2A2A] border-[#3A3A3A]">
                 <CardHeader className="pb-2">
@@ -215,7 +195,6 @@ const handleDeleteReview = (id: number) => {
               </Card>
             </div>
 
-            {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card className="bg-[#2A2A2A] border-[#3A3A3A]">
                 <CardHeader>
@@ -305,7 +284,6 @@ const handleDeleteReview = (id: number) => {
                 Dodaj produkt
               </Button>
             </div>
-
             <Card className="bg-[#2A2A2A] border-[#3A3A3A]">
               <CardContent className="p-6">
                 <div className="overflow-x-auto">
@@ -482,91 +460,14 @@ const handleDeleteReview = (id: number) => {
           </div>
         )}
       </main>
-
-      {/* Product Edit Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="bg-[#2A2A2A] border-[#3A3A3A] text-[#F8F8F8]">
-          <DialogHeader>
-            <DialogTitle className="text-[#F8F8F8]">Edytuj produkt</DialogTitle>
-            <DialogDescription className="text-[#A0A0A0]">
-              Wprowadź zmiany w produkcie
-            </DialogDescription>
-          </DialogHeader>
-          {selectedProductItem && (
-            <div className="space-y-4">
-              <div>
-                <Label className="text-[#A0A0A0]">Nazwa</Label>
-                <Input
-                  value={selectedProductItem.name}
-                  onChange={(e) => setSelectedProductItem({...selectedProductItem, name: e.target.value})}
-                  className="bg-[#1C1C1C] border-[#3A3A3A] text-[#F8F8F8]"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-[#A0A0A0]">Cena (PLN)</Label>
-                  <Input
-                    type="number"
-                    value={selectedProductItem.price}
-                    onChange={(e) => setSelectedProductItem({...selectedProductItem, price: parseFloat(e.target.value)})}
-                    className="bg-[#1C1C1C] border-[#3A3A3A] text-[#F8F8F8]"
-                  />
-                </div>
-                <div>
-                  <Label className="text-[#A0A0A0]">Stan magazynowy</Label>
-                  <Input
-                    type="number"
-                    value={selectedProductItem.stock}
-                    onChange={(e) => setSelectedProductItem({...selectedProductItem, stock: parseInt(e.target.value)})}
-                    className="bg-[#1C1C1C] border-[#3A3A3A] text-[#F8F8F8]"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-[#A0A0A0]">Rabat (%)</Label>
-                  <Input
-                    type="number"
-                    value={selectedProductItem.discountPercentage}
-                    onChange={(e) => setSelectedProductItem({...selectedProductItem, discountPercentage: parseInt(e.target.value)})}
-                    className="bg-[#1C1C1C] border-[#3A3A3A] text-[#F8F8F8]"
-                  />
-                </div>
-                <div>
-                  <Label className="text-[#A0A0A0]">Status</Label>
-                  <Select 
-                    value={selectedProductItem.visible ? 'visible' : 'hidden'}
-                    onValueChange={(value) => setSelectedProductItem({...selectedProductItem, visible: value === 'visible'})}
-                  >
-                    <SelectTrigger className="bg-[#1C1C1C] border-[#3A3A3A] text-[#F8F8F8]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-[#2A2A2A] border-[#3A3A3A]">
-                      <SelectItem value="visible" className="text-[#F8F8F8]">Widoczny</SelectItem>
-                      <SelectItem value="hidden" className="text-[#F8F8F8]">Ukryty</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setEditDialogOpen(false)}
-              className="border-[#3A3A3A] text-[#F8F8F8] hover:bg-[#3A3A3A]"
-            >
-              Anuluj
-            </Button>
-            <Button
-              onClick={handleSaveProduct}
-              className="bg-[#D4A44A] text-black hover:bg-[#f1c562]"
-            >
-              Zapisz zmiany
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        <ProductEditDialog
+            editDialogOpen={editDialogOpen}
+            setEditDialogOpen={setEditDialogOpen}
+            selectedProductItem={selectedProductItem}
+            setSelectedProductItem={setSelectedProductItem}
+            products={products}
+            setProducts={setProducts}
+        />
     </div>
   );
 }
