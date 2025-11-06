@@ -4,11 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, Loader2 } from "lucide-react";
 import { type DetailedProduct } from "@/api";
+import {PlatformBadge} from "@/components/PlatformBadge.tsx";
 
 interface ProductRowProps {
   product: DetailedProduct;
   onEdit: (product: DetailedProduct) => void;
-  onDelete: (id: number) => void;
+  onDelete: (product: DetailedProduct) => void;
   onToggleVisibility: (product: DetailedProduct) => Promise<void>;
 }
 
@@ -32,10 +33,10 @@ export const ProductRow = ({
     <TableRow className="border-[#3A3A3A] hover:bg-[#1C1C1C]">
       <TableCell className="text-[#F8F8F8] font-medium">{product.name}</TableCell>
       <TableCell className="text-[#D4A44A]">{product.price.toFixed(2)} PLN</TableCell>
-      <TableCell>
-        <Badge className="bg-[#3A3A3A] text-[#F8F8F8]">{product.platform.name}</Badge>
-      </TableCell>
-      <TableCell className="text-[#F8F8F8]">{product.stock} szt.</TableCell>
+        <TableCell className="w-[50px]">
+            <PlatformBadge platform={product.platform.name} />
+        </TableCell>
+      <TableCell className="text-[#F8F8F8] text-center w-1/6">{product.stock}</TableCell>
       <TableCell className="text-[#F8F8F8]">
         {product.discountPercentage > 0 ? `${product.discountPercentage}%` : "-"}
       </TableCell>
@@ -73,7 +74,7 @@ export const ProductRow = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => onDelete(product.id)}
+            onClick={() => onDelete(product)}
             className="text-red-400 hover:text-red-300 hover:bg-[#3A3A3A]"
           >
             <Trash2 className="w-4 h-4" />

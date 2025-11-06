@@ -45,6 +45,16 @@ import {ProductEditDialog} from "@/components/admin/ProductEditDialog.tsx";
 import { toast } from 'sonner';
 import { ProductTable } from '@/components/admin/ProductTable';
 import { ProductCreateDialog } from '@/components/admin/ProductCreateDialog';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 // Mock data
 const mockChartData = [
   { date: 'Nov 1', revenue: 850, orders: 12 },
@@ -65,6 +75,9 @@ export function AdminPanelPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [loadingProducts, setLoadingProducts] = useState(true);
   const pendingReviews = reviews.filter((r) => r.status === 'PENDING').length
+
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<DetailedProduct | null>(null);
   const stats = {
     todayRevenue: 1250.00,
     todayOrders: 19,
@@ -76,7 +89,7 @@ export function AdminPanelPage() {
     growthRate: 4.5
   };
 
-  
+
 useEffect(() => {
   const fetchGames = async () => {
     try {
@@ -96,7 +109,7 @@ useEffect(() => {
 
       await ProductsApi.setVisible(product.id);
 
-      const updatedProducts = products.map(p => 
+      const updatedProducts = products.map(p =>
         p.id === product.id ? { ...p, visible: !p.visible } : p
       );
       setProducts(updatedProducts);
@@ -116,8 +129,32 @@ const handleEditProduct = (product: DetailedProduct) => {
   setEditDialogOpen(true);
 };
 
- const handleDeleteProduct = (id: number) => {
-  setProducts(products.filter(p => p.id !== id));
+    const handleDeleteProduct = (product: DetailedProduct) => {
+        setProductToDelete(product);
+        setConfirmDeleteOpen(true);
+    };
+
+ const confirmDelete = async () => {
+     if (!productToDelete) return;
+
+     try {
+
+         await ProductsApi.setDeleted(productToDelete.id);
+
+         const updatedProducts = products.map(p =>
+             p.id === productToDelete.id ? { ...p, visible: !p.visible } : p
+         );
+         setProducts(updatedProducts);
+         setTimeout(() => {
+             toast.success(`Pomyślnie usunięto produkt: ${productToDelete.name}`)
+             setProducts(products.filter(p => p.id !== productToDelete.id));
+         }, 500);
+     } catch (error) {
+         console.error('Error deleting product:', error);
+         setTimeout(() => {
+             toast.error("Usuwanie produktu nie powiodło się");
+         }, 500);
+     }
 };
 
 const handleDeleteReview = (id: number) => {
@@ -385,13 +422,13 @@ const handleDeleteReview = (id: number) => {
                           </TableCell>
                           <TableCell>
                             <Badge className={
-                              review.status === 'APPROVED' 
+                              review.status === 'APPROVED'
                                 ? 'bg-green-500/20 text-green-500'
                                 : review.status === 'REJECTED'
                                 ? 'bg-red-500/20 text-red-500'
                                 : 'bg-yellow-500/20 text-yellow-500'
                             }>
-                              {review.status === 'APPROVED' ? 'Zatwierdzono' : 
+                              {review.status === 'APPROVED' ? 'Zatwierdzono' :
                                review.status === 'REJECTED' ? 'Odrzucono' : 'Oczekuje'}
                             </Badge>
                           </TableCell>
@@ -428,6 +465,30 @@ const handleDeleteReview = (id: number) => {
           </div>
         )}
       </main>
+
+        <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+            <AlertDialogContent className="bg-[#2A2A2A] border-[#3A3A3A] text-[#F8F8F8]">
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Czy na pewno chcesz usunąć produkt?</AlertDialogTitle>
+                    <AlertDialogDescription className="text-[#A0A0A0]">
+                        Produkt <span className="text-[#D4A44A] font-semibold">
+                {productToDelete?.name}
+              </span>{" "}
+                        zostanie trwale usunięty z listy. Tej operacji nie można cofnąć.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Nie, anuluj</AlertDialogCancel>
+                    <AlertDialogAction
+                        onClick={confirmDelete}
+                        className="!bg-red-600/40 hover:!bg-red-800 !text-white"
+                    >
+                        Tak, usuń
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+
         <ProductCreateDialog
           createDialogOpen={createDialogOpen}
           setCreateDialogOpen={setCreateDialogOpen}

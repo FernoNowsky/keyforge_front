@@ -30,6 +30,9 @@ export const ProductsApi = {
     setVisible: (id: number) =>
         apiRequest<DetailedProduct>(`/products/${id}/visible`, { method: "PUT" }),
 
+    setDeleted: (id: number) =>
+        apiRequest<DetailedProduct>(`/products/${id}`, { method: "DELETE" }),
+
     getById: (id: number) =>
         apiRequest<DetailedProduct>(`/products/${id}`),
 

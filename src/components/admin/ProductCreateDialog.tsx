@@ -1,197 +1,187 @@
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useState, useEffect, type Dispatch, type SetStateAction } from "react";
-import { type Category, type DetailedProduct, type Platform, type Producent, ProductsApi, type ProductType } from "@/api";
+import {
+    type Category,
+    type DetailedProduct,
+    type Platform,
+    type Producent,
+    type ProductType,
+    ProductsApi,
+} from "@/api";
 
-// --- dane statyczne (można współdzielić z ProductEditDialog) ---
-const platformy = [
-  { id: 1, name: "Steam" },
-  { id: 2, name: "Epic Games" },
-  { id: 3, name: "GOG" },
-  { id: 4, name: "PlayStation" },
-  { id: 5, name: "Xbox" },
-  { id: 6, name: "Nintendo Switch" },
-  { id: 7, name: "Origin" },
-  { id: 8, name: "Ubisoft Connect" }
-];
+import {ProductTypeApi} from "@/api/productTypeApi.ts";
+import {CategoriesApi} from "@/api/categoriesApi.ts";
+import {PlatformsApi} from "@/api/platformsApi.ts";
+import {ProducentsApi} from "@/api/producentsApi.ts";
 
-const producenci = [
-  { id: 1, name: "Sony" },
-  { id: 2, name: "Microsoft" },
-  { id: 3, name: "Nintendo" },
-  { id: 4, name: "Ubisoft" },
-  { id: 5, name: "Electronic Arts" },
-  { id: 6, name: "Xbox Game Studios" },
-  { id: 7, name: "Valve" },
-  { id: 8, name: "CD Projekt" },
-  { id: 9, name: "Square Enix" },
-  { id: 10, name: "Activision" },
-  { id: 11, name: "Rockstar Games" },
-  { id: 12, name: "CD Project Red" },
-  { id: 13, name: "FromSoftware, Inc." }
-];
-
-const typy = [
-  { id: 1, name: "Gry" },
-  { id: 2, name: "Dodatki (DLC)" },
-  { id: 3, name: "Waluty" },
-  { id: 4, name: "Subskrypcje" }
-];
-
-const kategorie = [
-  { id: 1, name: "SinglePlayer" },
-  { id: 2, name: "MultiPlayer" },
-  { id: 3, name: "Gry akcji" },
-  { id: 4, name: "Perspektywa pierwszej osoby" },
-  { id: 5, name: "Perspektywa trzeciej osoby" },
-  { id: 6, name: "Symulatory" },
-  { id: 7, name: "Sportowe" },
-  { id: 8, name: "FPS / TPS" },
-  { id: 9, name: "Przygodówki" },
-  { id: 10, name: "Strategie" },
-  { id: 11, name: "Wyścigi" },
-  { id: 12, name: "RPG" },
-  { id: 13, name: "Horror" },
-  { id: 14, name: "Łamigłówki" },
-  { id: 15, name: "Arcade" }
-];
 
 interface ProductCreateDialogProps {
-  createDialogOpen: boolean;
-  setCreateDialogOpen: (open: boolean) => void;
-  products: DetailedProduct[];
-  setProducts: Dispatch<SetStateAction<DetailedProduct[]>>;
+    createDialogOpen: boolean;
+    setCreateDialogOpen: (open: boolean) => void;
+    products: DetailedProduct[];
+    setProducts: Dispatch<SetStateAction<DetailedProduct[]>>;
 }
 
 export function ProductCreateDialog({
-  createDialogOpen,
-  setCreateDialogOpen,
-  products,
-  setProducts
-}: ProductCreateDialogProps) {
-  const [activeTab, setActiveTab] = useState("info");
-  const [errors, setErrors] = useState<Record<string, boolean>>({});
-  // domyślny pusty produkt
-  const [newProduct, setNewProduct] = useState<DetailedProduct>({
-    id: 0,
-    name: "",
-    descriptionPl: "",
-    descriptionEn: "",
-    price: 0,
-    stock: 0,
-    releaseDate: "",
-    logoId: "",
-    discountPercentage: 0,
-    visible: false,
-    deleted: false,
-    categories: [],
-    platform: platformy[0],
-    type: typy[0],
-    producent: producenci[0]
-  });
+                                        createDialogOpen,
+                                        setCreateDialogOpen,
+                                        products,
+                                        setProducts
+                                    }: ProductCreateDialogProps) {
+    const [activeTab, setActiveTab] = useState("info");
+    const [errors, setErrors] = useState<Record<string, boolean>>({});
+    const [loading, setLoading] = useState(true);
 
-  const validateForm = () => {
-    const newErrors: Record<string, boolean> = {};
+    const [platforms, setPlatforms] = useState<Platform[]>([]);
+    const [productTypes, setProductTypes] = useState<ProductType[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [producents, setProducents] = useState<Producent[]>([]);
 
-    newErrors.name = newProduct.name.trim() === "";
-    newErrors.price = newProduct.price <= 0;
-    newErrors.stock = newProduct.stock < 0;
-    newErrors.discountPercentage = newProduct.discountPercentage < 0;
-    newErrors.releaseDate = newProduct.releaseDate.trim() === "";
-    newErrors.logoId = newProduct.logoId.trim() === "";
-    newErrors.descriptionPl = newProduct.descriptionPl.trim() === "";
-    newErrors.descriptionEn = newProduct.descriptionEn.trim() === "";
-    newErrors.categories = newProduct.categories.length === 0;
-    newErrors.platform = !newProduct.platform?.id;
-    newErrors.type = !newProduct.type?.id;
-    newErrors.producent = !newProduct.producent?.id;
+    const [newProduct, setNewProduct] = useState<DetailedProduct | null>(null);
 
-    setErrors(newErrors);
+    useEffect(() => {
+        const fetchMenuData = async () => {
+            try {
+                const [typesRes, categoriesRes, platformsRes, producentsRes] =
+                    await Promise.all([
+                        ProductTypeApi.getAll(),
+                        CategoriesApi.getAll(),
+                        PlatformsApi.getAll(),
+                        ProducentsApi.getAll()
+                    ]);
 
-    return Object.values(newErrors).every(v => v === false);
-  };
+                setProductTypes(typesRes.content ?? typesRes);
+                setCategories(categoriesRes.content ?? categoriesRes);
+                setPlatforms(platformsRes.content ?? platformsRes);
+                setProducents(producentsRes.content ?? producentsRes);
+            } catch (err) {
+                console.error("Błąd pobierania danych do tworzenia produktu:", err);
+                toast.error("Nie udało się pobrać danych z serwera.");
+            } finally {
+                setLoading(false);
+            }
+        };
 
-  const clearError = (field: string) => {
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: false }));
+        fetchMenuData();
+    }, []);
+
+    useEffect(() => {
+        if (createDialogOpen && !loading && platforms.length && productTypes.length && producents.length) {
+            setActiveTab("info");
+            setErrors({});
+            setNewProduct({
+                id: 0,
+                name: "",
+                descriptionPl: "",
+                descriptionEn: "",
+                price: 0,
+                stock: 0,
+                releaseDate: "",
+                logoId: "",
+                discountPercentage: 0,
+                visible: false,
+                deleted: false,
+                categories: [],
+                platform: platforms[0],
+                type: productTypes[0],
+                producent: producents[0]
+            });
+        }
+    }, [createDialogOpen, loading, platforms, productTypes, producents]);
+
+    const validateForm = () => {
+        if (!newProduct) return false;
+        const newErrors: Record<string, boolean> = {};
+
+        newErrors.name = newProduct.name.trim() === "";
+        newErrors.price = newProduct.price <= 0;
+        newErrors.stock = newProduct.stock < 0;
+        newErrors.discountPercentage = newProduct.discountPercentage < 0;
+        newErrors.releaseDate = newProduct.releaseDate.trim() === "";
+        newErrors.logoId = newProduct.logoId.trim() === "";
+        newErrors.descriptionPl = newProduct.descriptionPl.trim() === "";
+        newErrors.descriptionEn = newProduct.descriptionEn.trim() === "";
+        newErrors.categories = newProduct.categories.length === 0;
+        newErrors.platform = !newProduct.platform?.id;
+        newErrors.type = !newProduct.type?.id;
+        newErrors.producent = !newProduct.producent?.id;
+
+        setErrors(newErrors);
+        return Object.values(newErrors).every(v => v === false);
+    };
+
+    const clearError = (field: string) => {
+        if (errors[field]) {
+            setErrors(prev => ({ ...prev, [field]: false }));
+        }
+    };
+
+    const handleCreateProduct = async () => {
+        if (!newProduct) return;
+        if (!validateForm()) {
+            toast.error("Uzupełnij poprawnie wszystkie wymagane pola!");
+            return;
+        }
+
+        try {
+            const createRequest = {
+                name: newProduct.name,
+                descriptionPl: newProduct.descriptionPl,
+                descriptionEn: newProduct.descriptionEn,
+                price: newProduct.price,
+                stock: newProduct.stock,
+                releaseDate: newProduct.releaseDate,
+                logoId: newProduct.logoId,
+                discountPercentage: newProduct.discountPercentage,
+                categoriesId: newProduct.categories.map(c => c.id),
+                platformId: newProduct.platform.id,
+                typeId: newProduct.type.id,
+                producentId: newProduct.producent.id
+            };
+
+            const createdProduct = await ProductsApi.create(createRequest);
+            setProducts([...products, createdProduct]);
+            setCreateDialogOpen(false);
+            toast.success("Produkt został pomyślnie utworzony!");
+        } catch (error) {
+            console.error("Błąd podczas tworzenia produktu:", error);
+            toast.error("Nie udało się dodać produktu.");
+        }
+    };
+
+    if (loading || !newProduct) {
+        return (
+            <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+                <DialogContent className="bg-[#1E1E1E] border-[#333] text-[#F8F8F8] rounded-2xl shadow-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Ładowanie danych...</DialogTitle>
+                    </DialogHeader>
+                    <div className="p-6 text-center text-[#AAA]">Proszę czekać...</div>
+                </DialogContent>
+            </Dialog>
+        );
     }
-  };
-
-  useEffect(() => {
-    if (createDialogOpen) {
-      setActiveTab("info");
-      setErrors({});
-      setNewProduct({
-        id: 0,
-        name: "",
-        descriptionPl: "",
-        descriptionEn: "",
-        price: 0,
-        stock: 0,
-        releaseDate: "",
-        logoId: "",
-        discountPercentage: 0,
-        visible: false,
-        deleted: false,
-        categories: [],
-        platform: platformy[0],
-        type: typy[0],
-        producent: producenci[0]
-      });
-    }
-  }, [createDialogOpen]);
-
-  const handleCreateProduct = async () => {
-    if (!validateForm()) {
-      toast.error("Uzupełnij poprawnie wszystkie wymagane pola!");
-      return;
-    }
-
-    try {
-      const createRequest = {
-        name: newProduct.name,
-        descriptionPl: newProduct.descriptionPl,
-        descriptionEn: newProduct.descriptionEn,
-        price: newProduct.price,
-        stock: newProduct.stock,
-        releaseDate: newProduct.releaseDate,
-        logoId: newProduct.logoId,
-        discountPercentage: newProduct.discountPercentage,
-        categoriesId: newProduct.categories.map(c => c.id),
-        platformId: newProduct.platform.id,
-        typeId: newProduct.type.id,
-        producentId: newProduct.producent.id
-      };
-
-      const createdProduct = await ProductsApi.create(createRequest);
-      setProducts([...products, createdProduct]);
-      setCreateDialogOpen(false);
-      toast.success("Produkt został pomyślnie utworzony!");
-    } catch (error) {
-      console.error("Błąd podczas tworzenia produktu:", error);
-      toast.error("Nie udało się dodać produktu.");
-    }
-  };
 
   return (
     <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
@@ -267,6 +257,7 @@ export function ProductCreateDialog({
                         });
                         if (e.target.value.trim() !== "") clearError("releaseDate");
                       }}
+                      onKeyDown={(e) => e.preventDefault()}
                       className={`bg-[#2A2A2A] border h-11 ${
                         errors.releaseDate ? "border-red-500" : "border-[#3A3A3A]"
                       } focus:ring-[#D4A44A]`}
@@ -283,6 +274,7 @@ export function ProductCreateDialog({
                         });
                         if (e.target.value.trim() !== "") clearError("logoId");
                       }}
+
                       className={`bg-[#2A2A2A] border h-11 ${
                         errors.logoId ? "border-red-500" : "border-[#3A3A3A]"
                       } focus:ring-[#D4A44A]`}
@@ -375,7 +367,7 @@ export function ProductCreateDialog({
                       onValueChange={(value) => {
                         setNewProduct({
                           ...newProduct,
-                          platform: platformy.find((p: Platform) => p.id === Number(value))!
+                          platform: platforms.find((p: Platform) => p.id === Number(value))!
                         });
                         clearError("platform");
                       }}
@@ -386,7 +378,7 @@ export function ProductCreateDialog({
                         <SelectValue placeholder="Wybierz platformę" />
                       </SelectTrigger>
                       <SelectContent className="bg-[#2A2A2A] border-[#3A3A3A]">
-                        {platformy.map((p: Platform) => (
+                        {platforms.map((p: Platform) => (
                           <SelectItem key={p.id} value={p.id.toString()}>
                             {p.name}
                           </SelectItem>
@@ -401,7 +393,7 @@ export function ProductCreateDialog({
                       onValueChange={(value) => {
                         setNewProduct({
                           ...newProduct,
-                          type: typy.find((t: ProductType) => t.id === Number(value))!
+                          type: productTypes.find((t: ProductType) => t.id === Number(value))!
                         });
                         clearError("type");
                       }}
@@ -412,7 +404,7 @@ export function ProductCreateDialog({
                         <SelectValue placeholder="Wybierz typ" />
                       </SelectTrigger>
                       <SelectContent className="bg-[#2A2A2A] border-[#3A3A3A]">
-                        {typy.map((t: ProductType) => (
+                        {productTypes.map((t: ProductType) => (
                           <SelectItem key={t.id} value={t.id.toString()}>
                             {t.name}
                           </SelectItem>
@@ -427,7 +419,7 @@ export function ProductCreateDialog({
                       onValueChange={(value) => {
                         setNewProduct({
                           ...newProduct,
-                          producent: producenci.find((p: Producent) => p.id === Number(value))!
+                          producent: producents.find((p: Producent) => p.id === Number(value))!
                         });
                         clearError("producent");
                       }}
@@ -438,7 +430,7 @@ export function ProductCreateDialog({
                         <SelectValue placeholder="Wybierz producenta" />
                       </SelectTrigger>
                       <SelectContent className="bg-[#2A2A2A] border-[#3A3A3A]">
-                        {producenci.map((p: Producent) => (
+                        {producents.map((p: Producent) => (
                           <SelectItem key={p.id} value={p.id.toString()}>
                             {p.name}
                           </SelectItem>
@@ -499,11 +491,11 @@ export function ProductCreateDialog({
               <div className="mb-4">
                 <Label className="text-sm text-[#C0C0C0]">Wybrane kategorie</Label>
                 <p className="text-xs text-[#808080] mt-1">
-                  Wybrano: {newProduct.categories.length} kategorii
+                    Wybrano: {newProduct?.categories.length} {newProduct?.categories.length === 1 ? 'kategorię' : newProduct?.categories.length >= 2 && newProduct?.categories.length <= 4 ? 'kategorie' : 'kategorii'}
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">
-                {kategorie.map((cat: Category) => {
+                {categories.map((cat: Category) => {
                   const selected = newProduct.categories.some((c: Category) => c.id === cat.id);
                   return (
                     <Button

@@ -8,7 +8,7 @@ import { type DetailedProduct } from "@/api";
 interface ProductTableProps {
   products: DetailedProduct[];
   onEdit: (product: DetailedProduct) => void;
-  onDelete: (id: number) => void;
+  onDelete: (product: DetailedProduct) => void;
   onToggleVisibility: (product: DetailedProduct) => Promise<void>;
   loading: boolean;
   onAddProduct: () => void;
@@ -51,11 +51,10 @@ export const ProductTable = ({
                   <TableRow className="border-[#3A3A3A] hover:bg-transparent">
                     <TableHead className="text-[#A0A0A0]">Nazwa</TableHead>
                     <TableHead className="text-[#A0A0A0]">Cena</TableHead>
-                    <TableHead className="text-[#A0A0A0]">Platforma</TableHead>
-                    <TableHead className="text-[#A0A0A0]">Stan</TableHead>
+                    <TableHead className="text-[#A0A0A0] text-center">Platforma</TableHead>
+                    <TableHead className="text-[#A0A0A0] text-center">Stan</TableHead>
                     <TableHead className="text-[#A0A0A0]">Rabat</TableHead>
                     <TableHead className="text-[#A0A0A0] text-center">Status</TableHead>
-                    <TableHead className="text-[#A0A0A0] text-right">Akcje</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

@@ -21,81 +21,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import {useState, useEffect, type SetStateAction, type Dispatch} from "react";
-import {type DetailedProduct, ProductsApi} from "@/api";
+import {
+    type Category,
+    type DetailedProduct,
+    type Platform,
+    type Producent,
+    type ProductType,
+    ProductsApi,
+} from "@/api";
 
-// --- typy ---
-interface Platform {
-    id: number;
-    name: string;
-}
-
-interface Producent {
-    id: number;
-    name: string;
-}
-
-interface Type {
-    id: number;
-    name: string;
-}
-
-interface Category {
-    id: number;
-    name: string;
-}
-
-// --- dane statyczne ---
-const platformy: Platform[] = [
-    { id: 1, name: "Steam" },
-    { id: 2, name: "Epic Games" },
-    { id: 3, name: "GOG" },
-    { id: 4, name: "PlayStation" },
-    { id: 5, name: "Xbox" },
-    { id: 6, name: "Nintendo Switch" },
-    { id: 7, name: "Origin" },
-    { id: 8, name: "Ubisoft Connect" }
-];
-
-const producenci: Producent[] = [
-    { id: 1, name: "Sony" },
-    { id: 2, name: "Microsoft" },
-    { id: 3, name: "Nintendo" },
-    { id: 4, name: "Ubisoft" },
-    { id: 5, name: "Electronic Arts" },
-    { id: 6, name: "Xbox Game Studios" },
-    { id: 7, name: "Valve" },
-    { id: 8, name: "CD Projekt" },
-    { id: 9, name: "Square Enix" },
-    { id: 10, name: "Activision" },
-    { id: 11, name: "Rockstar Games" },
-    { id: 12, name: "CD Project Red" },
-    { id: 13, name: "FromSoftware, Inc." }
-];
-
-const typy: Type[] = [
-    { id: 1, name: "Gry" },
-    { id: 2, name: "Dodatki (DLC)" },
-    { id: 3, name: "Waluty" },
-    { id: 4, name: "Subskrypcje" }
-];
-
-const kategorie: Category[] = [
-    { id: 1, name: "SinglePlayer" },
-    { id: 2, name: "MultiPlayer" },
-    { id: 3, name: "Gry akcji" },
-    { id: 4, name: "Perspektywa pierwszej osoby" },
-    { id: 5, name: "Perspektywa trzeciej osoby" },
-    { id: 6, name: "Symulatory" },
-    { id: 7, name: "Sportowe" },
-    { id: 8, name: "FPS / TPS" },
-    { id: 9, name: "Przygodówki" },
-    { id: 10, name: "Strategie" },
-    { id: 11, name: "Wyścigi" },
-    { id: 12, name: "RPG" },
-    { id: 13, name: "Horror" },
-    { id: 14, name: "Łamigłówki" },
-    { id: 15, name: "Arcade" }
-];
+import {ProductTypeApi} from "@/api/productTypeApi.ts";
+import {CategoriesApi} from "@/api/categoriesApi.ts";
+import {PlatformsApi} from "@/api/platformsApi.ts";
+import {ProducentsApi} from "@/api/producentsApi.ts";
 
 interface ProductEditDialogProps {
     editDialogOpen: boolean;
@@ -115,7 +53,39 @@ export function ProductEditDialog({
                                       setProducts
                                   }: ProductEditDialogProps) {
     const [activeTab, setActiveTab] = useState("info");
+    const [loading, setLoading] = useState(true);
 
+    const [platforms, setPlatforms] = useState<Platform[]>([]);
+    const [productTypes, setProductTypes] = useState<ProductType[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [producents, setProducents] = useState<Producent[]>([]);
+
+    useEffect(() => {
+        const fetchMenuData = async () => {
+            try {
+                const [typesRes, categoriesRes, platformsRes, producentsRes] =
+                    await Promise.all([
+                        ProductTypeApi.getAll(),
+                        CategoriesApi.getAll(),
+                        PlatformsApi.getAll(),
+                        ProducentsApi.getAll()
+                    ]);
+
+                setProductTypes(typesRes.content ?? typesRes);
+                setCategories(categoriesRes.content ?? categoriesRes);
+                setPlatforms(platformsRes.content ?? platformsRes);
+                setProducents(producentsRes.content ?? producentsRes);
+            } catch (err) {
+                console.error("Błąd pobierania danych do tworzenia produktu:", err);
+                toast.error("Nie udało się pobrać danych z serwera.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchMenuData();
+    }, []);
+    
     // Reset tab to "info" when dialog opens
     useEffect(() => {
         if (editDialogOpen) {
@@ -153,6 +123,19 @@ export function ProductEditDialog({
         }
     };
 
+    if (loading) {
+        return (
+            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+                <DialogContent className="bg-[#1E1E1E] border-[#333] text-[#F8F8F8] rounded-2xl shadow-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Ładowanie danych...</DialogTitle>
+                    </DialogHeader>
+                    <div className="p-6 text-center text-[#AAA]">Proszę czekać...</div>
+                </DialogContent>
+            </Dialog>
+        );
+    }
+    
     return (
         <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
             <DialogContent className="bg-[#1E1E1E] border-[#333] text-[#F8F8F8] !max-w-6xl w-full h-[90vh] flex flex-col rounded-2xl shadow-2xl">
@@ -311,7 +294,7 @@ export function ProductEditDialog({
                                                 onValueChange={(value) =>
                                                     setSelectedProductItem({
                                                         ...selectedProductItem,
-                                                        platform: platformy.find((p: Platform) => p.id === Number(value))!
+                                                        platform: platforms.find((p: Platform) => p.id === Number(value))!
                                                     })
                                                 }
                                             >
@@ -319,7 +302,7 @@ export function ProductEditDialog({
                                                     <SelectValue placeholder="Wybierz platformę" />
                                                 </SelectTrigger>
                                                 <SelectContent className="bg-[#2A2A2A] border-[#3A3A3A]">
-                                                    {platformy.map((p: Platform) => (
+                                                    {platforms.map((p: Platform) => (
                                                         <SelectItem key={p.id} value={p.id.toString()}>
                                                             {p.name}
                                                         </SelectItem>
@@ -334,7 +317,7 @@ export function ProductEditDialog({
                                                 onValueChange={(value) =>
                                                     setSelectedProductItem({
                                                         ...selectedProductItem,
-                                                        type: typy.find((t: Type) => t.id === Number(value))!
+                                                        type: productTypes.find((t: ProductType) => t.id === Number(value))!
                                                     })
                                                 }
                                             >
@@ -342,7 +325,7 @@ export function ProductEditDialog({
                                                     <SelectValue placeholder="Wybierz typ" />
                                                 </SelectTrigger>
                                                 <SelectContent className="bg-[#2A2A2A] border-[#3A3A3A]">
-                                                    {typy.map((t: Type) => (
+                                                    {productTypes.map((t: ProductType) => (
                                                         <SelectItem key={t.id} value={t.id.toString()}>
                                                             {t.name}
                                                         </SelectItem>
@@ -357,7 +340,7 @@ export function ProductEditDialog({
                                                 onValueChange={(value) =>
                                                     setSelectedProductItem({
                                                         ...selectedProductItem,
-                                                        producent: producenci.find((p: Producent) => p.id === Number(value))!
+                                                        producent: producents.find((p: Producent) => p.id === Number(value))!
                                                     })
                                                 }
                                             >
@@ -365,7 +348,7 @@ export function ProductEditDialog({
                                                     <SelectValue placeholder="Wybierz producenta" />
                                                 </SelectTrigger>
                                                 <SelectContent className="bg-[#2A2A2A] border-[#3A3A3A]">
-                                                    {producenci.map((p: Producent) => (
+                                                    {producents.map((p: Producent) => (
                                                         <SelectItem key={p.id} value={p.id.toString()}>
                                                             {p.name}
                                                         </SelectItem>
@@ -414,17 +397,17 @@ export function ProductEditDialog({
                             </div>
                         </TabsContent>
 
-                        {/* --- Kategorie --- */}
+                        {/* --- categories --- */}
                         <TabsContent value="cats" className="flex-1 overflow-y-auto pr-2">
                             <div className="bg-[#252525] rounded-lg p-6">
                                 <div className="mb-4">
                                     <Label className="text-sm text-[#C0C0C0]">Wybrane kategorie</Label>
                                     <p className="text-xs text-[#808080] mt-1">
-                                        Wybrano: {selectedProductItem.categories.length} kategorii
+                                        Wybrano: {selectedProductItem?.categories.length} {selectedProductItem?.categories.length === 1 ? 'kategorię' : selectedProductItem?.categories.length >= 2 && selectedProductItem?.categories.length <= 4 ? 'kategorie' : 'kategorii'}
                                     </p>
                                 </div>
                                 <div className="flex flex-wrap gap-3">
-                                    {kategorie.map((cat: Category) => {
+                                    {categories.map((cat: Category) => {
                                         const selected = selectedProductItem.categories.some((c: Category) => c.id === cat.id);
                                         return (
                                             <Button
