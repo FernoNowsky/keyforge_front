@@ -7,6 +7,9 @@ export const ProductsApi = {
     getAll: (params?: PaginationDto) =>
         apiRequest<PaginatedResponse<Product>>("/products", { params }),
 
+    getAllDetailed: (params?: PaginationDto) =>
+        apiRequest<PaginatedResponse<DetailedProduct>>("/products?size=50", { params }),
+
     getNewest: (params?: PaginationDto) =>
     apiRequest<PaginatedResponse<Product>>("/products", { 
         params: {
@@ -17,9 +20,15 @@ export const ProductsApi = {
         } 
     }),
 
+    create: (data: UpdateProductRequest) => 
+        apiRequest<DetailedProduct>(`/products`, { method: "POST", data: data}),
+
     updateById: (id: number, data: UpdateProductRequest) => {
         return apiRequest<DetailedProduct>(`/products/${id}`, { method: "PUT", data: data})
     },
+
+    setVisible: (id: number) =>
+        apiRequest<DetailedProduct>(`/products/${id}/visible`, { method: "PUT" }),
 
     getById: (id: number) =>
         apiRequest<DetailedProduct>(`/products/${id}`),

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ChevronRight,
   TrendingUp,
@@ -8,7 +8,6 @@ import {
   Users,
   Edit,
   Trash2,
-  Plus,
   Search,
   Star,
 } from 'lucide-react';
@@ -39,10 +38,13 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
-import {type DetailedProduct, type Review} from '@/api';
-import { mockProducts, mockReviews } from '@/assets/adminData';
+import {ProductsApi, type DetailedProduct, type Review} from '@/api';
+import { mockReviews } from '@/assets/adminData';
 
 import {ProductEditDialog} from "@/components/admin/ProductEditDialog.tsx";
+import { toast } from 'sonner';
+import { ProductTable } from '@/components/admin/ProductTable';
+import { ProductCreateDialog } from '@/components/admin/ProductCreateDialog';
 // Mock data
 const mockChartData = [
   { date: 'Nov 1', revenue: 850, orders: 12 },
@@ -54,12 +56,14 @@ const mockChartData = [
 
 export function AdminPanelPage() {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [products, setProducts] = useState<DetailedProduct[]>(mockProducts);
+  const [products, setProducts] = useState<DetailedProduct[]>([]);
   const [reviews, setReviews] = useState<Review[]>(mockReviews);
   const [selectedProductItem, setSelectedProductItem] = useState<DetailedProduct | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [loadingProducts, setLoadingProducts] = useState(true);
   const pendingReviews = reviews.filter((r) => r.status === 'PENDING').length
   const stats = {
     todayRevenue: 1250.00,
@@ -70,6 +74,41 @@ export function AdminPanelPage() {
     monthOrders: 234,
     activeUsers: 45678,
     growthRate: 4.5
+  };
+
+  
+useEffect(() => {
+  const fetchGames = async () => {
+    try {
+      const productsData = await ProductsApi.getAllDetailed();
+      setProducts(productsData.content);
+    } catch (err) {
+      console.error("Błąd pobierania gier:", err);
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
+  fetchGames();
+}, []);
+
+  const handleVisibilityChange = async (product: DetailedProduct) => {
+    try {
+
+      await ProductsApi.setVisible(product.id);
+
+      const updatedProducts = products.map(p => 
+        p.id === product.id ? { ...p, visible: !p.visible } : p
+      );
+      setProducts(updatedProducts);
+      setTimeout(() => {
+      toast.success(`Pomyślnie zmieniono status produktu: ${product.name}`)
+      }, 500);
+    } catch (error) {
+      console.error('Error changing product visibility:', error);
+      setTimeout(() => {
+      toast.error("Zmiana statusu produktu nie powiodła się");
+      }, 500);
+    }
   };
 
 const handleEditProduct = (product: DetailedProduct) => {
@@ -272,86 +311,15 @@ const handleDeleteReview = (id: number) => {
           </div>
         )}
 
-        {activeTab === 'products' && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-3xl font-bold text-[#F8F8F8]">Produkty</h2>
-                <p className="text-[#A0A0A0] mt-1">Zarządzaj produktami w sklepie</p>
-              </div>
-              <Button className="bg-[#D4A44A] text-black hover:bg-[#f1c562]">
-                <Plus className="w-4 h-4 mr-2" />
-                Dodaj produkt
-              </Button>
-            </div>
-            <Card className="bg-[#2A2A2A] border-[#3A3A3A]">
-              <CardContent className="p-6">
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="border-[#3A3A3A] hover:bg-transparent">
-                        <TableHead className="text-[#A0A0A0]">Nazwa</TableHead>
-                        <TableHead className="text-[#A0A0A0]">Cena</TableHead>
-                        <TableHead className="text-[#A0A0A0]">Platforma</TableHead>
-                        <TableHead className="text-[#A0A0A0]">Stan</TableHead>
-                        <TableHead className="text-[#A0A0A0]">Rabat</TableHead>
-                        <TableHead className="text-[#A0A0A0]">Status</TableHead>
-                        <TableHead className="text-[#A0A0A0] text-right">Akcje</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {products.map((product) => (
-                        <TableRow key={product.id} className="border-[#3A3A3A] hover:bg-[#1C1C1C]">
-                          <TableCell className="text-[#F8F8F8] font-medium">
-                            {product.name}
-                          </TableCell>
-                          <TableCell className="text-[#D4A44A]">
-                            {product.price.toFixed(2)} PLN
-                          </TableCell>
-                          <TableCell>
-                            <Badge className="bg-[#3A3A3A] text-[#F8F8F8]">
-                              {product.platform.name}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-[#F8F8F8]">
-                            {product.stock} szt.
-                          </TableCell>
-                          <TableCell className="text-[#F8F8F8]">
-                            {product.discountPercentage > 0 ? `${product.discountPercentage}%` : '-'}
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={product.visible ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}>
-                              {product.visible ? 'Widoczny' : 'Ukryty'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleEditProduct(product)}
-                                className="text-[#D4A44A] hover:text-[#f1c562] hover:bg-[#3A3A3A]"
-                              >
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDeleteProduct(product.id)}
-                                className="text-red-400 hover:text-red-300 hover:bg-[#3A3A3A]"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+        {activeTab === "products" && (
+          <ProductTable
+            products={products}
+            onEdit={handleEditProduct}
+            onDelete={handleDeleteProduct}
+            onToggleVisibility={handleVisibilityChange}
+            loading={loadingProducts}
+            onAddProduct={() => setCreateDialogOpen(true)}
+          />
         )}
 
         {activeTab === 'reviews' && (
@@ -460,6 +428,13 @@ const handleDeleteReview = (id: number) => {
           </div>
         )}
       </main>
+        <ProductCreateDialog
+          createDialogOpen={createDialogOpen}
+          setCreateDialogOpen={setCreateDialogOpen}
+          products={products}
+          setProducts={setProducts}
+        />
+
         <ProductEditDialog
             editDialogOpen={editDialogOpen}
             setEditDialogOpen={setEditDialogOpen}

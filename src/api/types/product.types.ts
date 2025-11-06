@@ -33,7 +33,7 @@ export interface DetailedProduct extends Product {
   descriptionPl: string;
   descriptionEn: string;
   visible: boolean;
-  deleted: null | string;
+  deleted: null | boolean;
   producent: Producent;
   type: ProductType;
   categories: Category[];
