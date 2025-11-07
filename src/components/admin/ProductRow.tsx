@@ -31,7 +31,7 @@ export const ProductRow = ({
 
   return (
     <TableRow className="border-[#3A3A3A] hover:bg-[#1C1C1C]">
-      <TableCell className="text-[#F8F8F8] font-medium">{product.name}</TableCell>
+      <TableCell className="text-[#F8F8F8] font-medium w-[400px]">{product.name}</TableCell>
       <TableCell className="text-[#D4A44A]">{product.price.toFixed(2)} PLN</TableCell>
         <TableCell className="w-[50px]">
             <PlatformBadge platform={product.platform.name} />

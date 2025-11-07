@@ -68,6 +68,11 @@ export const ProductTable = ({
 }: ProductTableProps) => {
   const [products, setProducts] = useState<DetailedProduct[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(50);
+  const [totalPages, setTotalPages] = useState(1);
+
   const [filters, setFilters] = useState<ProductFilters>({
     name: "",
     platforms: [],
@@ -84,7 +89,7 @@ export const ProductTable = ({
   const prevFiltersRef = useRef<string>("");
 
   useEffect(() => {
-    const filtersString = JSON.stringify(filters);
+    const filtersString = JSON.stringify(filters) + page + pageSize;
     if (prevFiltersRef.current === filtersString) return;
     prevFiltersRef.current = filtersString;
 
@@ -92,8 +97,8 @@ export const ProductTable = ({
       setLoading(true);
       try {
         const params: ProductQueryParams = {
-          page: 0,
-          size: 50,
+          page,
+          size: pageSize,
           ...(filters.platforms?.length ? { platformIds: filters.platforms } : {}),
           ...(filters.categories?.length ? { categoryIds: filters.categories } : {}),
           ...(filters.types?.length ? { typeIds: filters.types } : {}),
@@ -108,8 +113,8 @@ export const ProductTable = ({
 
         const data = await ProductsApi.getAllDetailed(params);
         setProducts(data.content);
-        
-        // Opcjonalnie: powiadom rodzica o zmianie produktów
+        setTotalPages(data.totalPages ?? 1);
+
         if (onProductsChange) {
           onProductsChange(data.content);
         }
@@ -122,16 +127,24 @@ export const ProductTable = ({
     };
 
     fetchProducts();
-  }, [filters, onProductsChange]);
+  }, [filters, onProductsChange, page, pageSize]);
 
   const handleFilterChange = (newFilters: ProductFilters) => {
+    setPage(0);
     setFilters(newFilters);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 0 && newPage < totalPages) {
+      setPage(newPage);
+    }
   };
 
   const handleSortChange = <K extends keyof ProductFilters>(
    key: K,
    value: ProductFilters[K]
   ) => {
+    setPage(0);
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -179,34 +192,54 @@ export const ProductTable = ({
         onFilterChange={handleFilterChange}
       />
 
-      <div className="flex items-center gap-4">
-        <div>
-          <label className="text-[#A0A0A0] mr-2">Sortuj według:</label>
-          <select
-            value={filters.sortBy}
-            onChange={(e) => handleSortChange("sortBy", e.target.value)}
-            className="bg-[#2A2A2A] border border-[#3A3A3A] text-white rounded-xl px-3 py-1"
-          >
-            <option value="name">Nazwa</option>
-            <option value="price">Cena</option>
-            <option value="stock">Stan</option>
-            {/* TODO: Think about release Date as a data in a row. If yes, then add this below */}
-            {/* <option value="releaseDate">Data wydania</option> */}
-            <option value="discountPercentage">Rabat</option>
-          </select>
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-4">
+          <div>
+            <label className="text-[#A0A0A0] mr-2">Sortuj według:</label>
+            <select
+              value={filters.sortBy}
+              onChange={(e) => handleSortChange("sortBy", e.target.value)}
+              className="bg-[#2A2A2A] border border-[#3A3A3A] text-white rounded-xl px-3 py-1"
+            >
+              <option value="name">Nazwa</option>
+              <option value="price">Cena</option>
+              <option value="stock">Stan</option>
+              {/* TODO: Think about release Date as a data in a row. If yes, then add this below */}
+              {/* <option value="discountPercentage">Rabat</option> */}
+              <option value="releaseDate">Data wydania</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="text-[#A0A0A0] mr-2">Kierunek:</label>
+            <select
+              value={filters.sortDirection}
+              onChange={(e) =>
+                handleSortChange("sortDirection", e.target.value as "ASC" | "DESC")
+              }
+              className="bg-[#2A2A2A] border border-[#3A3A3A] text-white rounded-xl px-3 py-1"
+            >
+              <option value="ASC">Rosnąco</option>
+              <option value="DESC">Malejąco</option>
+            </select>
+          </div>
         </div>
 
+        {/* 🆕 Page size selector */}
         <div>
-          <label className="text-[#A0A0A0] mr-2">Kierunek:</label>
+          <label className="text-[#A0A0A0] mr-2">Liczba na stronę:</label>
           <select
-            value={filters.sortDirection}
-            onChange={(e) =>
-              handleSortChange("sortDirection", e.target.value as "ASC" | "DESC")
-            }
+            value={pageSize}
+            onChange={(e) => {
+              setPageSize(Number(e.target.value));
+              setPage(0);
+            }}
             className="bg-[#2A2A2A] border border-[#3A3A3A] text-white rounded-xl px-3 py-1"
           >
-            <option value="ASC">Rosnąco</option>
-            <option value="DESC">Malejąco</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
           </select>
         </div>
       </div>
@@ -225,6 +258,7 @@ export const ProductTable = ({
               </p>
             </div>
           ) : (
+            <>
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -250,6 +284,40 @@ export const ProductTable = ({
                 </TableBody>
               </Table>
             </div>
+             <div className="flex justify-center items-center gap-2 mt-6">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page === 0}
+                  onClick={() => handlePageChange(page - 1)}
+                >
+                  Poprzednia
+                </Button>
+
+                {[...Array(totalPages)].map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handlePageChange(index)}
+                    className={`px-3 py-1 rounded-lg text-sm ${
+                      page === index
+                        ? "bg-[#D4A44A] text-black"
+                        : "bg-[#2A2A2A] text-[#A0A0A0] border border-[#3A3A3A]"
+                    }`}
+                  >
+                    {index + 1}
+                  </button>
+                ))}
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page >= totalPages - 1}
+                  onClick={() => handlePageChange(page + 1)}
+                >
+                  Następna
+                </Button>
+              </div>
+              </>
           )}
         </CardContent>
       </Card>
