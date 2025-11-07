@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, Filter, X } from "lucide-react";
+import { Search, Filter, X, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -79,7 +79,6 @@ export const ProductFilter = ({ onFilterChange }: ProductFiltersProps) => {
   const [producents, setProducents] = useState<Producent[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 🆕 Stan do obsługi dialogu
   const [openDialogKey, setOpenDialogKey] = useState<
     "platforms" | "categories" | "types" | "manufacturers" | null
   >(null);
@@ -137,7 +136,7 @@ export const ProductFilter = ({ onFilterChange }: ProductFiltersProps) => {
 ) => {
   setLocalFilters((prev) => {
     const updated = { ...prev, [key]: [] };
-    onFilterChange(updated); // ← natychmiastowe odświeżenie widoku produktów
+    onFilterChange(updated);
     setAppliedFilters(updated)
     setInitialDialogFilters(updated)
     return updated;
@@ -167,18 +166,15 @@ export const ProductFilter = ({ onFilterChange }: ProductFiltersProps) => {
     localFilters.priceRange.min !== null ||
     localFilters.priceRange.max !== null;
 
-  // 🧠 Nowa logika: przy zamknięciu dialogu bez kliknięcia "Zastosuj" → przywróć poprzednie filtry
   const handleDialogOpenChange = (
   isOpen: boolean,
   key: "platforms" | "categories" | "types" | "manufacturers"
 ) => {
   if (isOpen) {
-    // Przy otwarciu: ładujemy aktualnie zastosowane filtry
     setLocalFilters(appliedFilters);
     setInitialDialogFilters(appliedFilters);
     setOpenDialogKey(key);
   } else {
-    // Przy zamknięciu: jeśli coś zmieniono, przywróć stare
     if (openDialogKey === key) {
       const before = initialDialogFilters[key];
       const after = localFilters[key];
@@ -187,16 +183,12 @@ export const ProductFilter = ({ onFilterChange }: ProductFiltersProps) => {
         before.some((id) => !after.includes(id));
 
       if (changed) {
-        // cofamy lokalne zmiany, jeśli nie kliknięto "Zastosuj"
         setLocalFilters(appliedFilters);
       }
       setOpenDialogKey(null);
     }
   }
 };
-
-
-  if (loading) return <div></div>;
 
   type FilterItem = { id: number; name: string };
 
@@ -225,6 +217,21 @@ export const ProductFilter = ({ onFilterChange }: ProductFiltersProps) => {
     }));
   };
 
+ if (loading) {
+  return (
+    <Card className="bg-[#2A2A2A] border-[#3A3A3A] !p-0 min-h-[60px] max-h-[60px]">
+      <CardContent className="flex items-center justify-center py-4 px-4">
+        <div className="flex items-center space-x-2 justify-center mt-0.5">
+          <Loader2 className="w-4 h-4 text-[#D4A44A] animate-spin" />
+          <span className="text-[#A0A0A0] text-sm">Ładowanie...</span>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+
+
   return (
     <Card className="bg-[#2A2A2A] border-[#3A3A3A] !p-0">
       <CardContent>
@@ -250,7 +257,6 @@ export const ProductFilter = ({ onFilterChange }: ProductFiltersProps) => {
             </div>
 
             <AccordionContent className="pt-4 space-y-6">
-              {/* Wyszukiwanie */}
               <div>
                 <Label htmlFor="search" className="text-[#F8F8F8] mb-2 block">
                   Wyszukaj po nazwie
@@ -272,7 +278,6 @@ export const ProductFilter = ({ onFilterChange }: ProductFiltersProps) => {
                 </div>
               </div>
 
-              {/* Sekcje z dialogami */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filterSections.map(({ key, label, data }) => {
                   const activeCount = appliedFilters[key].length;
@@ -351,7 +356,6 @@ export const ProductFilter = ({ onFilterChange }: ProductFiltersProps) => {
                   );
                 })}
 
-                {/* Widoczność */}
                 <div>
                   <Label className="text-[#F8F8F8] mb-3 block text-center">
                     Status widoczności
@@ -382,7 +386,6 @@ export const ProductFilter = ({ onFilterChange }: ProductFiltersProps) => {
                   </Select>
                 </div>
 
-                {/* Zakres cenowy */}
                 <div>
                   <Label className="text-[#F8F8F8] mb-3 block text-center">
                     Zakres cenowy (zł)
@@ -409,7 +412,6 @@ export const ProductFilter = ({ onFilterChange }: ProductFiltersProps) => {
                 </div>
               </div>
 
-              {/* Przyciski */}
               <div className="flex justify-end gap-3 pt-4">
                 <Button
                   onClick={handleApplyFilters}

@@ -225,7 +225,6 @@ export const ProductTable = ({
           </div>
         </div>
 
-        {/* 🆕 Page size selector */}
         <div>
           <label className="text-[#A0A0A0] mr-2">Liczba na stronę:</label>
           <select
