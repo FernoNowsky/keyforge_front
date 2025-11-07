@@ -8,7 +8,7 @@ export const ProductsApi = {
         apiRequest<PaginatedResponse<Product>>("/products", { params }),
 
     getAllDetailed: (params?: PaginationDto) =>
-        apiRequest<PaginatedResponse<DetailedProduct>>("/products?size=50", { params }),
+        apiRequest<PaginatedResponse<DetailedProduct>>("/products", { params }),
 
     getNewest: (params?: PaginationDto) =>
     apiRequest<PaginatedResponse<Product>>("/products", { 

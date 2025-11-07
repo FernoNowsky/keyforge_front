@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   ChevronRight,
   TrendingUp,
@@ -38,24 +38,23 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
-import {ProductsApi, type DetailedProduct, type Review} from '@/api';
+import { ProductsApi, type DetailedProduct, type Review } from '@/api';
 import { mockReviews } from '@/assets/adminData';
-
-import {ProductEditDialog} from "@/components/admin/ProductEditDialog.tsx";
+import { ProductEditDialog } from "@/components/admin/ProductEditDialog.tsx";
 import { toast } from 'sonner';
 import { ProductTable } from '@/components/admin/ProductTable';
 import { ProductCreateDialog } from '@/components/admin/ProductCreateDialog';
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-// Mock data
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
 const mockChartData = [
   { date: 'Nov 1', revenue: 850, orders: 12 },
   { date: 'Nov 2', revenue: 1200, orders: 18 },
@@ -66,18 +65,20 @@ const mockChartData = [
 
 export function AdminPanelPage() {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [products, setProducts] = useState<DetailedProduct[]>([]);
   const [reviews, setReviews] = useState<Review[]>(mockReviews);
   const [selectedProductItem, setSelectedProductItem] = useState<DetailedProduct | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [loadingProducts, setLoadingProducts] = useState(true);
-  const pendingReviews = reviews.filter((r) => r.status === 'PENDING').length
-
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<DetailedProduct | null>(null);
+  
+  // Stan produktów - synchronizowany z ProductTable (opcjonalnie)
+  const [products, setProducts] = useState<DetailedProduct[]>([]);
+
+  const pendingReviews = reviews.filter((r) => r.status === 'PENDING').length;
+
   const stats = {
     todayRevenue: 1250.00,
     todayOrders: 19,
@@ -89,80 +90,45 @@ export function AdminPanelPage() {
     growthRate: 4.5
   };
 
-
-useEffect(() => {
-  const fetchGames = async () => {
-    try {
-      const productsData = await ProductsApi.getAllDetailed();
-      setProducts(productsData.content);
-    } catch (err) {
-      console.error("Błąd pobierania gier:", err);
-    } finally {
-      setLoadingProducts(false);
-    }
+  const handleEditProduct = (product: DetailedProduct) => {
+    setSelectedProductItem(product);
+    setEditDialogOpen(true);
   };
-  fetchGames();
-}, []);
 
-  const handleVisibilityChange = async (product: DetailedProduct) => {
+  const handleDeleteProduct = (product: DetailedProduct) => {
+    setProductToDelete(product);
+    setConfirmDeleteOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!productToDelete) return;
+
     try {
+      await ProductsApi.setDeleted(productToDelete.id);
 
-      await ProductsApi.setVisible(product.id);
-
-      const updatedProducts = products.map(p =>
-        p.id === product.id ? { ...p, visible: !p.visible } : p
-      );
-      setProducts(updatedProducts);
+      // Aktualizuj stan produktów
+      setProducts(products.filter(p => p.id !== productToDelete.id));
+      
       setTimeout(() => {
-      toast.success(`Pomyślnie zmieniono status produktu: ${product.name}`)
+        toast.success(`Pomyślnie usunięto produkt: ${productToDelete.name}`);
       }, 500);
     } catch (error) {
-      console.error('Error changing product visibility:', error);
+      console.error('Error deleting product:', error);
       setTimeout(() => {
-      toast.error("Zmiana statusu produktu nie powiodła się");
+        toast.error("Usuwanie produktu nie powiodło się");
       }, 500);
+    } finally {
+      setConfirmDeleteOpen(false);
+      setProductToDelete(null);
     }
   };
 
-const handleEditProduct = (product: DetailedProduct) => {
-  setSelectedProductItem(product);
-  setEditDialogOpen(true);
-};
-
-    const handleDeleteProduct = (product: DetailedProduct) => {
-        setProductToDelete(product);
-        setConfirmDeleteOpen(true);
-    };
-
- const confirmDelete = async () => {
-     if (!productToDelete) return;
-
-     try {
-
-         await ProductsApi.setDeleted(productToDelete.id);
-
-         const updatedProducts = products.map(p =>
-             p.id === productToDelete.id ? { ...p, visible: !p.visible } : p
-         );
-         setProducts(updatedProducts);
-         setTimeout(() => {
-             toast.success(`Pomyślnie usunięto produkt: ${productToDelete.name}`)
-             setProducts(products.filter(p => p.id !== productToDelete.id));
-         }, 500);
-     } catch (error) {
-         console.error('Error deleting product:', error);
-         setTimeout(() => {
-             toast.error("Usuwanie produktu nie powiodło się");
-         }, 500);
-     }
-};
-
-const handleDeleteReview = (id: number) => {
-  setReviews(reviews.filter(r => r.id !== id));
-};
+  const handleDeleteReview = (id: number) => {
+    setReviews(reviews.filter(r => r.id !== id));
+  };
 
   const filteredReviews = reviews.filter(review => {
-    const matchesSearch = review.content.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = review.content.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || review.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -173,7 +139,7 @@ const handleDeleteReview = (id: number) => {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         pendingReviews={pendingReviews}
-        />
+      />
       <main className="flex-1 py-4 mr-14">
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
@@ -350,13 +316,11 @@ const handleDeleteReview = (id: number) => {
 
         {activeTab === "products" && (
           <ProductTable
-            products={products}
             onEdit={handleEditProduct}
             onDelete={handleDeleteProduct}
-            onToggleVisibility={handleVisibilityChange}
-            loading={loadingProducts}
             onAddProduct={() => setCreateDialogOpen(true)}
-          />
+            onProductsChange={setProducts} 
+            loading={true}          />
         )}
 
         {activeTab === 'reviews' && (
@@ -440,7 +404,6 @@ const handleDeleteReview = (id: number) => {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                // onClick={() => handleEditReview(review)}
                                 className="text-[#D4A44A] hover:text-[#f1c562] hover:bg-[#3A3A3A]"
                               >
                                 <Edit className="w-4 h-4" />
@@ -466,44 +429,44 @@ const handleDeleteReview = (id: number) => {
         )}
       </main>
 
-        <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
-            <AlertDialogContent className="bg-[#2A2A2A] border-[#3A3A3A] text-[#F8F8F8]">
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Czy na pewno chcesz usunąć produkt?</AlertDialogTitle>
-                    <AlertDialogDescription className="text-[#A0A0A0]">
-                        Produkt <span className="text-[#D4A44A] font-semibold">
+      <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+        <AlertDialogContent className="bg-[#2A2A2A] border-[#3A3A3A] text-[#F8F8F8]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Czy na pewno chcesz usunąć produkt?</AlertDialogTitle>
+            <AlertDialogDescription className="text-[#A0A0A0]">
+              Produkt <span className="text-[#D4A44A] font-semibold">
                 {productToDelete?.name}
               </span>{" "}
-                        zostanie trwale usunięty z listy. Tej operacji nie można cofnąć.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel>Nie, anuluj</AlertDialogCancel>
-                    <AlertDialogAction
-                        onClick={confirmDelete}
-                        className="!bg-red-600/40 hover:!bg-red-800 !text-white"
-                    >
-                        Tak, usuń
-                    </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
+              zostanie trwale usunięty z listy. Tej operacji nie można cofnąć.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Nie, anuluj</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="!bg-red-600/40 hover:!bg-red-800 !text-white"
+            >
+              Tak, usuń
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-        <ProductCreateDialog
-          createDialogOpen={createDialogOpen}
-          setCreateDialogOpen={setCreateDialogOpen}
-          products={products}
-          setProducts={setProducts}
-        />
+      <ProductCreateDialog
+        createDialogOpen={createDialogOpen}
+        setCreateDialogOpen={setCreateDialogOpen}
+        products={products}
+        setProducts={setProducts}
+      />
 
-        <ProductEditDialog
-            editDialogOpen={editDialogOpen}
-            setEditDialogOpen={setEditDialogOpen}
-            selectedProductItem={selectedProductItem}
-            setSelectedProductItem={setSelectedProductItem}
-            products={products}
-            setProducts={setProducts}
-        />
+      <ProductEditDialog
+        editDialogOpen={editDialogOpen}
+        setEditDialogOpen={setEditDialogOpen}
+        selectedProductItem={selectedProductItem}
+        setSelectedProductItem={setSelectedProductItem}
+        products={products}
+        setProducts={setProducts}
+      />
     </div>
   );
 }
