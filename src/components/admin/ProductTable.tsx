@@ -27,6 +27,8 @@ export interface ProductFilters {
     min: number | null;
     max: number | null;
   };
+  sortBy?: string;
+  sortDirection?: "ASC" | "DESC";
 }
 
 interface ProductQueryParams {
@@ -40,6 +42,8 @@ interface ProductQueryParams {
   priceMax?: number;
   filter?: string;
   visible?: boolean;
+  sortBy?: string;
+  sortDirection?: "ASC" | "DESC";
 }
 
 export interface FilterOption {
@@ -72,6 +76,8 @@ export const ProductTable = ({
     manufacturers: [],
     visible: null,
     priceRange: { min: null, max: null },
+    sortBy: "name",
+    sortDirection: "ASC",
   });
 
 
@@ -96,6 +102,8 @@ export const ProductTable = ({
           ...(filters.priceRange.max !== null ? { priceMax: filters.priceRange.max } : {}),
           ...(filters.name ? { filter: filters.name } : {}),
           ...(filters.visible !== null ? { visible: filters.visible } : {}),
+          ...(filters.sortBy ? { sortBy: filters.sortBy } : {}),
+          ...(filters.sortDirection ? { sortDirection: filters.sortDirection } : {}),
         };
 
         const data = await ProductsApi.getAllDetailed(params);
@@ -118,6 +126,13 @@ export const ProductTable = ({
 
   const handleFilterChange = (newFilters: ProductFilters) => {
     setFilters(newFilters);
+  };
+
+  const handleSortChange = <K extends keyof ProductFilters>(
+   key: K,
+   value: ProductFilters[K]
+  ) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleVisibilityChange = async (product: DetailedProduct) => {
@@ -163,6 +178,38 @@ export const ProductTable = ({
       <ProductFilter
         onFilterChange={handleFilterChange}
       />
+
+      <div className="flex items-center gap-4">
+        <div>
+          <label className="text-[#A0A0A0] mr-2">Sortuj według:</label>
+          <select
+            value={filters.sortBy}
+            onChange={(e) => handleSortChange("sortBy", e.target.value)}
+            className="bg-[#2A2A2A] border border-[#3A3A3A] text-white rounded-xl px-3 py-1"
+          >
+            <option value="name">Nazwa</option>
+            <option value="price">Cena</option>
+            <option value="stock">Stan</option>
+            {/* TODO: Think about release Date as a data in a row. If yes, then add this below */}
+            {/* <option value="releaseDate">Data wydania</option> */}
+            <option value="discountPercentage">Rabat</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="text-[#A0A0A0] mr-2">Kierunek:</label>
+          <select
+            value={filters.sortDirection}
+            onChange={(e) =>
+              handleSortChange("sortDirection", e.target.value as "ASC" | "DESC")
+            }
+            className="bg-[#2A2A2A] border border-[#3A3A3A] text-white rounded-xl px-3 py-1"
+          >
+            <option value="ASC">Rosnąco</option>
+            <option value="DESC">Malejąco</option>
+          </select>
+        </div>
+      </div>
 
       <Card className="bg-[#2A2A2A] border-[#3A3A3A]">
         <CardContent className="p-6">
