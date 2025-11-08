@@ -1,19 +1,32 @@
 import axios from "axios";
+import {toast} from "sonner";
+import {getValidToken} from "@/hooks/useAuthToken.ts";
 
 export const $axios = axios.create({
     baseURL: import.meta.env.VITE_BASE_API_URL || "http://localhost:8090",
-    // withCredentials: true, // wywala corsy
-    timeout: 10000, // 10s
+    withCredentials: true,
+    timeout: 10000,
 });
 
 // Interceptor – dodaje token do nagłówków
 $axios.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem("token"); // lub inna logika
-        if (token) {
-            config.headers = config.headers || {};
-            config.headers.Authorization = `Bearer ${token}`;
+    async (config) => {
+
+        const requiresAuth = config.headers?.['X-Requires-Auth'] !== 'false';
+
+        if (config.headers) {
+            delete config.headers['X-Requires-Auth'];
         }
+
+        if (requiresAuth) {
+            const token = await getValidToken();
+            if (token) {
+                config.headers = config.headers || {};
+                config.headers.Authorization = `Bearer ${token}`;
+            }
+            console.log(config.headers)
+        }
+
         return config;
     },
     (error) => Promise.reject(error)
@@ -24,8 +37,15 @@ $axios.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-            console.warn("Nieautoryzowany – być może token wygasł?");
-            // tu możesz np. wyczyścić token lub przekierować na login
+            localStorage.removeItem("userSession")
+            localStorage.removeItem("kc-token")
+            localStorage.removeItem("kc-refreshToken")
+
+            toast.error("Twoja sesja wygasła. Zaloguj się ponownie")
+
+            setTimeout(() => {
+                window.location.href = "/"
+            },3500)
         }
         return Promise.reject(error);
     }

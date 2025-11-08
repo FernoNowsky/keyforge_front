@@ -4,11 +4,10 @@ import * as React from "react"
 import { Link } from "@tanstack/react-router"
 import { UserIcon, SearchIcon } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { AuthDialog } from "@/components/AuthDialog"
 import { UserAccount } from "@/components/UserAccount"
 import { CartHoverSection } from "@/components/CartHoverSection";
 import { useNavigate } from "@tanstack/react-router";
-
+import { useKeycloak } from '@react-keycloak/web'
 
 
 import Logo from "@/assets/logo_keyforge.png"
@@ -25,25 +24,34 @@ import {type Category, type Platform, type ProductType} from "@/api";
 import {ProductTypeApi} from "@/api/productTypeApi.ts";
 import {CategoriesApi} from "@/api/categoriesApi.ts";
 import {PlatformsApi} from "@/api/platformsApi.ts";
+import {getUserEmail, getUsername, isTokenExpired} from "@/hooks/useUserSession.ts";
 
-interface NavigationBarProps {
-    isLoggedIn: boolean
-    username?: string
-}
-
-export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
+export function NavigationBar() {
     const [categories, setCategories] = useState<Category[]>([])
     const [platforms, setPlatforms] = useState<Platform[]>([])
     const [productTypes, setProductTypes] = useState<ProductType[]>([])
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState("")
     const navigate = useNavigate()
+    const { keycloak } = useKeycloak()
+    const [tokenValid, setTokenValid] = useState(false);
+
+    useEffect(() => {
+        if (keycloak.authenticated) {
+            saveUserSession();
+        }
+        const checkToken = async () => {
+            const expired = await isTokenExpired();
+            setTokenValid(!expired);
+        };
+        checkToken();
+    }, [keycloak.authenticated]);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault()
         navigate({
                 to: "/products",
-                search: { name: searchTerm.trim() }  // przekazanie parametru do URL
+                search: { name: searchTerm.trim() }
         })
         setSearchOpen(false)
     }
@@ -72,12 +80,35 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
     }, [])
 
     const [searchOpen, setSearchOpen] = React.useState(false)
-    const [authOpen, setAuthOpen] = React.useState(false)
     const [userAccountOpen, setUserAccountOpen] = React.useState(false)
 
     const handleUserIconClick = () => {
-        if (isLoggedIn) setUserAccountOpen(true)
-        else setAuthOpen(true)
+        if (tokenValid) {
+            setUserAccountOpen(true)
+        }
+        else {
+            keycloak.login()
+        }
+    }
+
+    function saveUserSession() {
+        if (!keycloak?.token) return;
+
+        const userData = {
+            token: keycloak.token,
+            refreshToken: keycloak.refreshToken,
+            tokenExpiry: keycloak.tokenParsed?.exp ? new Date(keycloak.tokenParsed.exp * 1000).toISOString() : null,
+            userId: keycloak.idTokenParsed?.sub,
+            username: keycloak.idTokenParsed?.preferred_username,
+            email: keycloak.idTokenParsed?.email,
+            roles: keycloak.tokenParsed?.realm_access?.roles || []
+        };
+
+        localStorage.setItem('userSession', JSON.stringify(userData));
+        localStorage.setItem('kc_token', keycloak.token);
+        if (keycloak.refreshToken) {
+            localStorage.setItem('kc_refreshToken', keycloak.refreshToken);
+        }
     }
 
     return (
@@ -147,11 +178,12 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
                         onClick={handleUserIconClick}
                     >
                         <UserIcon className="h-5 w-5" />
-                        {isLoggedIn ? (
-                            <span className="font-medium text-sm">{username}</span>
+                        {tokenValid ? (
+                            <span className="font-medium text-sm">{getUsername()}</span>
                         ) : (
                             <span className="font-medium text-sm hidden md:inline">Zaloguj się</span>
                         )}
+
                     </div>
                 </div>
             </div>
@@ -205,15 +237,16 @@ export function NavigationBar({ isLoggedIn, username }: NavigationBarProps) {
                     </NavigationMenuList>
                 </NavigationMenu>
             </div>
-            <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
             <UserAccount
                 open={userAccountOpen}
                 onOpenChange={setUserAccountOpen}
-                user={username ?? "Użytkownik"}
-                email="user@example.com"
+                user={getUsername()}
+                email={getUserEmail()}
                 onLogout={() => {
                     setUserAccountOpen(false)
-                    console.log("Wylogowano")
+                    keycloak.logout({
+                        redirectUri: "http://localhost:5173"
+                    })
                 }}
             />
         </header>
@@ -228,8 +261,8 @@ function ListItem({
     const navigate = useNavigate();
 
     const handleClick = (e: React.MouseEvent) => {
-        e.preventDefault(); // zapobiega domyślnemu zachowaniu linku
-        navigate({ to: `/${href}` }); // absolutna ścieżka
+        e.preventDefault();
+        navigate({ to: `/${href}` });
     }
     return (
         <li {...props}>

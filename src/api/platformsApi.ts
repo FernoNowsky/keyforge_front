@@ -5,5 +5,5 @@ import type { PaginatedResponse } from "@/api/types/common.types";
 
 export const PlatformsApi = {
     getAll: (params?: PaginationDto) =>
-        apiRequest<PaginatedResponse<Platform>>("/platforms", { params }),
+        apiRequest<PaginatedResponse<Platform>>("/platforms", { params, requiresAuth: false }),
 };

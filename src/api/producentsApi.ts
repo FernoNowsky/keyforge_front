@@ -5,5 +5,5 @@ import type { PaginatedResponse } from "@/api/types/common.types";
 
 export const ProducentsApi = {
     getAll: (params?: PaginationDto) =>
-        apiRequest<PaginatedResponse<Producent>>("/producents", { params }),
+        apiRequest<PaginatedResponse<Producent>>("/producents", { params, requiresAuth: false}),
 };

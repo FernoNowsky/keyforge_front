@@ -9,7 +9,7 @@ const Layout = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {!isAdminRoute && <NavigationBar isLoggedIn={true} username={"Frontend"} />}
+      {!isAdminRoute && <NavigationBar/>}
       <main className="flex-1 pt-4 bg-[#1C1C1C] text-white">
         <Outlet />
       </main>

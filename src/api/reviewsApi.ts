@@ -36,13 +36,13 @@ export interface ReviewsCreateResponse {
 export const ReviewsAPI = {
 
     getByProductId: (productId: number) =>
-        apiRequest<PaginatedResponse<Review>>(`/reviews?productId=${productId}&status=APPROVED`),
+        apiRequest<PaginatedResponse<Review>>(`/reviews?productId=${productId}&status=APPROVED`, {requiresAuth: false}),
 
     getByUserId: (userId: number, params?: PaginationDto) =>
         apiRequest<PaginatedResponse<Review>>(`reviews?userId=${userId}`, {params}),
 
     getAISummary: (productId: number) =>
-        apiRequest<AISummaryReview>(`reviews/main/product/${productId}`),
+        apiRequest<AISummaryReview>(`reviews/main/product/${productId}`, {requiresAuth: false}),
 
     createReview: (review: ReviewCreateDto) =>
         apiRequest<PaginatedResponse<ReviewsCreateResponse>>('reviews', {method: 'POST', data: review})

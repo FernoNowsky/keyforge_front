@@ -20,6 +20,7 @@ export interface ApiRequestOptions {
     params?: Record<string, unknown> | PaginationDto;
     method?: Method;
     data?: unknown;
+    requiresAuth?: boolean;
 }
 
 /**
@@ -27,7 +28,7 @@ export interface ApiRequestOptions {
  */
 export async function apiRequest<T = unknown>(
     path: string,
-    { params = {}, method = "get", data }: ApiRequestOptions = {}
+    { params = {}, method = "get", data, requiresAuth = true}: ApiRequestOptions = {}
 ): Promise<T> {
     let baseUrl: string;
 
@@ -52,6 +53,10 @@ export async function apiRequest<T = unknown>(
         method,
         params,
         data,
+        headers: {
+            ...($axios.defaults.headers.common),
+            'X-Requires-Auth': requiresAuth.toString()
+        }
     };
 
     const response = await $axios.request<T>(config);

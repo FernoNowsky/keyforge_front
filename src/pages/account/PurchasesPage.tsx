@@ -33,6 +33,8 @@ import {
 } from "@/components/ui/dialog";
 import { useNavigate } from "@tanstack/react-router";
 import { ReviewDialog } from "@/components/ReviewDialog";
+import {getUserId, isTokenExpired} from "@/hooks/useUserSession.ts";
+import keycloak from "@/keycloak.ts";
 
 const statusMap: Record<string, { label: string; className: string }> = {
   READY_FOR_PAYMENT: {
@@ -80,7 +82,7 @@ export default function PurchasesPage() {
   const [autoLoadEnabled, setAutoLoadEnabled] = useState(true);
 
   const PAGE_SIZE = 10;
-  const userId = 1; // TODO: token/get user id from global state
+  const userId = getUserId(); // TODO: token/get user id from global state
 
   const orderProductsRef = useRef<Record<number, Product[]>>({});
   const loadedProductIdsRef = useRef<Set<number>>(new Set());
@@ -89,8 +91,16 @@ export default function PurchasesPage() {
   const observerRef = useRef<HTMLDivElement | null>(null);
   const productCacheRef = useRef<Map<number, Product>>(new Map());
   const navigate = useNavigate();
+  const [tokenValid, setTokenValid] = useState(false);
+  //TODO: try to get validation info from keycloak
+    useEffect(() => {
+        const checkToken = async () => {
+            const expired = await isTokenExpired();
+            setTokenValid(!expired);
+        };
+        if (keycloak) checkToken();
+    }, []);
 
-  
 const fetchOrdersPage = useCallback(
   async (pageToLoad: number) => {
     if (isFetchingRef.current[pageToLoad]) return;
@@ -162,7 +172,9 @@ const fetchOrdersPage = useCallback(
       });
     } catch (err) {
       console.error("Błąd pobierania zamówień lub produktów:", err);
-      toast.error("Nie udało się pobrać zamówień");
+      if(tokenValid) {
+          toast.error("Nie udało się pobrać zamówień");
+      }
       setError(true);
     } finally {
       isFetchingRef.current[pageToLoad] = false;

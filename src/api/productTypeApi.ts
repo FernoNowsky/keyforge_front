@@ -5,5 +5,5 @@ import type { PaginatedResponse } from "@/api/types/common.types";
 
 export const ProductTypeApi = {
     getAll: (params?: PaginationDto) =>
-        apiRequest<PaginatedResponse<ProductType>>("/types", { params }),
+        apiRequest<PaginatedResponse<ProductType>>("/types", { params, requiresAuth: false}),
 };

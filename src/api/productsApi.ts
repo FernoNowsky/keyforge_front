@@ -5,10 +5,10 @@ import type { PaginatedResponse } from "@/api/types/common.types";
 
 export const ProductsApi = {
     getAll: (params?: PaginationDto) =>
-        apiRequest<PaginatedResponse<Product>>("/products", { params }),
+        apiRequest<PaginatedResponse<Product>>("/products", { params, requiresAuth: false  }),
 
     getAllDetailed: (params?: PaginationDto) =>
-        apiRequest<PaginatedResponse<DetailedProduct>>("/products", { params }),
+        apiRequest<PaginatedResponse<DetailedProduct>>("/products", { params, requiresAuth: false  }),
 
     getNewest: (params?: PaginationDto) =>
     apiRequest<PaginatedResponse<Product>>("/products", { 
@@ -17,7 +17,8 @@ export const ProductsApi = {
             sortBy: 'releaseDate',
             sortDirection: 'DESC',
             size: 4,
-        } 
+        },
+        requiresAuth: false
     }),
 
     create: (data: UpdateProductRequest) => 
@@ -34,13 +35,14 @@ export const ProductsApi = {
         apiRequest<DetailedProduct>(`/products/${id}`, { method: "DELETE" }),
 
     getById: (id: number) =>
-        apiRequest<DetailedProduct>(`/products/${id}`),
+        apiRequest<DetailedProduct>(`/products/${id}`, {requiresAuth: false}),
 
     getByIds: (ids: number[], onlyAvailable: boolean) =>
     apiRequest<Product[]>('/products/specific', {
       params: {
         productIds: ids.join(','),
         onlyAvailable: onlyAvailable.toString(),
+        requiresAuth: false
       },
     }),
 };
