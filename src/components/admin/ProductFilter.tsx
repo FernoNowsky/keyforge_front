@@ -39,7 +39,7 @@ export interface ProductFilters {
   platforms: number[];
   categories: number[];
   types: number[];
-  manufacturers: number[];
+  producentIds: number[];
   visible?: boolean | null;
   priceRange: {
     min: number | null;
@@ -57,7 +57,7 @@ export const ProductFilter = ({ onFilterChange }: ProductFiltersProps) => {
     platforms: [],
     categories: [],
     types: [],
-    manufacturers: [],
+    producentIds: [],
     visible: null,
     priceRange: { min: null, max: null },
   });
@@ -68,7 +68,7 @@ export const ProductFilter = ({ onFilterChange }: ProductFiltersProps) => {
     platforms: [],
     categories: [],
     types: [],
-    manufacturers: [],
+    producentIds: [],
     visible: null,
     priceRange: { min: null, max: null },
   });
@@ -80,7 +80,7 @@ export const ProductFilter = ({ onFilterChange }: ProductFiltersProps) => {
   const [loading, setLoading] = useState(true);
 
   const [openDialogKey, setOpenDialogKey] = useState<
-    "platforms" | "categories" | "types" | "manufacturers" | null
+    "platforms" | "categories" | "types" | "producentIds" | null
   >(null);
   const [initialDialogFilters, setInitialDialogFilters] =
     useState<ProductFilters>(localFilters);
@@ -122,7 +122,7 @@ export const ProductFilter = ({ onFilterChange }: ProductFiltersProps) => {
       platforms: [],
       categories: [],
       types: [],
-      manufacturers: [],
+      producentIds: [],
       visible: null,
       priceRange: { min: null, max: null },
     };
@@ -132,7 +132,7 @@ export const ProductFilter = ({ onFilterChange }: ProductFiltersProps) => {
   };
 
  const handleClearSingleFilter = (
-  key: "platforms" | "categories" | "types" | "manufacturers"
+  key: "platforms" | "categories" | "types" | "producentIds"
 ) => {
   setLocalFilters((prev) => {
     const updated = { ...prev, [key]: [] };
@@ -144,7 +144,7 @@ export const ProductFilter = ({ onFilterChange }: ProductFiltersProps) => {
 };
 
   const toggleArrayFilter = (
-    filterKey: "platforms" | "categories" | "types" | "manufacturers",
+    filterKey: "platforms" | "categories" | "types" | "producentIds",
     value: number
   ) => {
     setLocalFilters((prev) => {
@@ -161,14 +161,14 @@ export const ProductFilter = ({ onFilterChange }: ProductFiltersProps) => {
     localFilters.platforms.length > 0 ||
     localFilters.categories.length > 0 ||
     localFilters.types.length > 0 ||
-    localFilters.manufacturers.length > 0 ||
+    localFilters.producentIds.length > 0 ||
     localFilters.visible !== null ||
     localFilters.priceRange.min !== null ||
     localFilters.priceRange.max !== null;
 
   const handleDialogOpenChange = (
   isOpen: boolean,
-  key: "platforms" | "categories" | "types" | "manufacturers"
+  key: "platforms" | "categories" | "types" | "producentIds"
 ) => {
   if (isOpen) {
     setLocalFilters(appliedFilters);
@@ -193,14 +193,14 @@ export const ProductFilter = ({ onFilterChange }: ProductFiltersProps) => {
   type FilterItem = { id: number; name: string };
 
   const filterSections: {
-    key: "platforms" | "categories" | "types" | "manufacturers";
+    key: "platforms" | "categories" | "types" | "producentIds";
     label: string;
     data: FilterItem[];
   }[] = [
     { key: "platforms", label: "Platformy", data: platforms },
     { key: "categories", label: "Kategorie", data: categories },
     { key: "types", label: "Typy", data: productTypes },
-    { key: "manufacturers", label: "Producenci", data: producents },
+    { key: "producentIds", label: "Producenci", data: producents },
   ];
 
   const handleNumberInput = (

@@ -21,7 +21,7 @@ export interface ProductFilters {
   platforms: number[];
   categories: number[];
   types: number[];
-  manufacturers: number[];
+  producentIds: number[];
   visible?: boolean | null;
   priceRange: {
     min: number | null;
@@ -37,11 +37,11 @@ interface ProductQueryParams {
   platformIds?: number[];
   categoryIds?: number[];
   typeIds?: number[];
-  manufacturerIds?: number[];
+  producentIds?: number[];
   priceMin?: number;
   priceMax?: number;
   filter?: string;
-  visible?: boolean;
+  onlyVisible?: boolean;
   sortBy?: string;
   sortDirection?: "ASC" | "DESC";
 }
@@ -56,7 +56,7 @@ export interface ProductFiltersComponentProps {
   platforms: FilterOption[];
   categories: FilterOption[];
   types: FilterOption[];
-  manufacturers: FilterOption[];
+  producentIds: FilterOption[];
 }
 
 
@@ -78,7 +78,7 @@ export const ProductTable = ({
     platforms: [],
     categories: [],
     types: [],
-    manufacturers: [],
+    producentIds: [],
     visible: null,
     priceRange: { min: null, max: null },
     sortBy: "name",
@@ -102,11 +102,11 @@ export const ProductTable = ({
           ...(filters.platforms?.length ? { platformIds: filters.platforms } : {}),
           ...(filters.categories?.length ? { categoryIds: filters.categories } : {}),
           ...(filters.types?.length ? { typeIds: filters.types } : {}),
-          ...(filters.manufacturers?.length ? { manufacturerIds: filters.manufacturers } : {}),
+          ...(filters.producentIds?.length ? { manufacturerIds: filters.producentIds } : {}),
           ...(filters.priceRange.min !== null ? { priceMin: filters.priceRange.min } : {}),
           ...(filters.priceRange.max !== null ? { priceMax: filters.priceRange.max } : {}),
           ...(filters.name ? { filter: filters.name } : {}),
-          ...(filters.visible !== null ? { visible: filters.visible } : {}),
+          ...(filters.visible !== null ? { onlyVisible: filters.visible } : {}),
           ...(filters.sortBy ? { sortBy: filters.sortBy } : {}),
           ...(filters.sortDirection ? { sortDirection: filters.sortDirection } : {}),
         };
