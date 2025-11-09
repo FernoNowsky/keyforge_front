@@ -5,10 +5,9 @@ import { Link } from "@tanstack/react-router"
 import { UserIcon, SearchIcon } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { UserAccount } from "@/components/UserAccount"
-import { CartHoverSection } from "@/components/CartHoverSection";
-import { useNavigate } from "@tanstack/react-router";
+import { CartHoverSection } from "@/components/CartHoverSection"
+import { useNavigate } from "@tanstack/react-router"
 import { useKeycloak } from '@react-keycloak/web'
-
 
 import Logo from "@/assets/logo_keyforge.png"
 import {
@@ -19,12 +18,13 @@ import {
     NavigationMenuList,
     NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu"
-import {useEffect, useState} from "react";
-import {type Category, type Platform, type ProductType} from "@/api";
-import {ProductTypeApi} from "@/api/productTypeApi.ts";
-import {CategoriesApi} from "@/api/categoriesApi.ts";
-import {PlatformsApi} from "@/api/platformsApi.ts";
-import {getUserEmail, getUsername, isTokenExpired} from "@/hooks/useUserSession.ts";
+import { useEffect, useState } from "react"
+import { type Category, type Platform, type ProductType } from "@/api"
+import { ProductTypeApi } from "@/api/productTypeApi.ts"
+import { CategoriesApi } from "@/api/categoriesApi.ts"
+import { PlatformsApi } from "@/api/platformsApi.ts"
+import { getUserEmail, getUsername, isTokenExpired } from "@/hooks/useUserSession.ts"
+import type Keycloak from "keycloak-js"
 
 export function NavigationBar() {
     const [categories, setCategories] = useState<Category[]>([])
@@ -33,29 +33,49 @@ export function NavigationBar() {
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState("")
     const navigate = useNavigate()
-    const { keycloak } = useKeycloak()
-    const [tokenValid, setTokenValid] = useState(false);
+
+    // Check if Keycloak is disabled
+    const isKeycloakDisabled = localStorage.getItem('keycloak_disabled') === 'true'
+
+    // Conditionally use Keycloak hook
+    let keycloak: Keycloak | null = null
+    try {
+        // Only use the hook if Keycloak is enabled
+        if (!isKeycloakDisabled) {
+            // eslint-disable-next-line react-hooks/rules-of-hooks
+            keycloak = useKeycloak().keycloak
+        }
+    } catch (error) {
+        console.warn('Keycloak not available:', error)
+    }
+
+    const [tokenValid, setTokenValid] = useState(false)
 
     useEffect(() => {
-        if (keycloak.authenticated) {
-            saveUserSession();
+        if (!isKeycloakDisabled && keycloak?.authenticated) {
+            saveUserSession()
         }
+
         const checkToken = async () => {
-            const expired = await isTokenExpired();
-            setTokenValid(!expired);
-        };
-        checkToken();
-    }, [keycloak.authenticated]);
+            if (isKeycloakDisabled) {
+                setTokenValid(false)
+                return
+            }
+            const expired = await isTokenExpired()
+            setTokenValid(!expired)
+        }
+
+        checkToken()
+    }, [keycloak?.authenticated, isKeycloakDisabled])
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault()
         navigate({
-                to: "/products",
-                search: { name: searchTerm.trim() }
+            to: "/products",
+            search: { name: searchTerm.trim() }
         })
         setSearchOpen(false)
     }
-
 
     useEffect(() => {
         const fetchMenuData = async () => {
@@ -83,16 +103,20 @@ export function NavigationBar() {
     const [userAccountOpen, setUserAccountOpen] = React.useState(false)
 
     const handleUserIconClick = () => {
+        if (isKeycloakDisabled) {
+            alert('System logowania jest obecnie niedostępny. Spróbuj ponownie później')
+            return
+        }
+
         if (tokenValid) {
             setUserAccountOpen(true)
-        }
-        else {
-            keycloak.login()
+        } else {
+            keycloak?.login()
         }
     }
 
     function saveUserSession() {
-        if (!keycloak?.token) return;
+        if (isKeycloakDisabled || !keycloak?.token) return
 
         const userData = {
             token: keycloak.token,
@@ -102,12 +126,12 @@ export function NavigationBar() {
             username: keycloak.idTokenParsed?.preferred_username,
             email: keycloak.idTokenParsed?.email,
             roles: keycloak.tokenParsed?.realm_access?.roles || []
-        };
+        }
 
-        localStorage.setItem('userSession', JSON.stringify(userData));
-        localStorage.setItem('kc_token', keycloak.token);
+        localStorage.setItem('userSession', JSON.stringify(userData))
+        localStorage.setItem('kc_token', keycloak.token)
         if (keycloak.refreshToken) {
-            localStorage.setItem('kc_refreshToken', keycloak.refreshToken);
+            localStorage.setItem('kc_refreshToken', keycloak.refreshToken)
         }
     }
 
@@ -178,12 +202,13 @@ export function NavigationBar() {
                         onClick={handleUserIconClick}
                     >
                         <UserIcon className="h-5 w-5" />
-                        {tokenValid ? (
+                        {tokenValid && !isKeycloakDisabled ? (
                             <span className="font-medium text-sm">{getUsername()}</span>
                         ) : (
-                            <span className="font-medium text-sm hidden md:inline">Zaloguj się</span>
+                            <span className="font-medium text-sm hidden md:inline">
+                                {'Zaloguj się'}
+                            </span>
                         )}
-
                     </div>
                 </div>
             </div>
@@ -197,7 +222,7 @@ export function NavigationBar() {
                             <NavigationMenuContent>
                                 <ul className="grid w-[340px] gap-3 p-4">
                                     {loading && <li>Ładowanie...</li>}
-                                    {!loading && categories.map((cat: { id: React.Key | null | undefined; name: string }) => (
+                                    {!loading && categories.map((cat) => (
                                         <ListItem
                                             key={cat.id}
                                             href={`products/category/${cat.id}`}
@@ -214,7 +239,7 @@ export function NavigationBar() {
                             <NavigationMenuContent>
                                 <ul className="grid w-[340px] gap-3 p-4">
                                     {loading && <li>Ładowanie...</li>}
-                                    {!loading && platforms.map((p: { id: React.Key | null | undefined; name: string }) => (
+                                    {!loading && platforms.map((p) => (
                                         <ListItem key={p.id} href={`products/platform/${p.id}`} title={p.name} />
                                     ))}
                                 </ul>
@@ -227,43 +252,46 @@ export function NavigationBar() {
                             <NavigationMenuContent>
                                 <ul className="grid w-[340px] gap-3 p-4">
                                     {loading && <li>Ładowanie...</li>}
-                                    {!loading && productTypes.map((t: { id: React.Key | null | undefined; name: string }) => (
+                                    {!loading && productTypes.map((t) => (
                                         <ListItem key={t.id} href={`products/type/${t.id}`} title={t.name} />
                                     ))}
                                 </ul>
                             </NavigationMenuContent>
                         </NavigationMenuItem>
-
                     </NavigationMenuList>
                 </NavigationMenu>
             </div>
-            <UserAccount
-                open={userAccountOpen}
-                onOpenChange={setUserAccountOpen}
-                user={getUsername()}
-                email={getUserEmail()}
-                onLogout={() => {
-                    setUserAccountOpen(false)
-                    keycloak.logout({
-                        redirectUri: "http://localhost:5173"
-                    })
-                }}
-            />
+            {!isKeycloakDisabled && (
+                <UserAccount
+                    open={userAccountOpen}
+                    onOpenChange={setUserAccountOpen}
+                    user={getUsername()}
+                    email={getUserEmail()}
+                    onLogout={() => {
+                        setUserAccountOpen(false)
+                        keycloak?.logout({
+                            redirectUri: "http://localhost:5173"
+                        })
+                    }}
+                />
+            )}
         </header>
     )
 }
+
 function ListItem({
                       title,
                       href,
                       children,
                       ...props
                   }: React.ComponentPropsWithoutRef<"li"> & { href: string; title: string }) {
-    const navigate = useNavigate();
+    const navigate = useNavigate()
 
     const handleClick = (e: React.MouseEvent) => {
-        e.preventDefault();
-        navigate({ to: `/${href}` });
+        e.preventDefault()
+        navigate({ to: `/${href}` })
     }
+
     return (
         <li {...props}>
             <NavigationMenuLink asChild>
@@ -281,4 +309,3 @@ function ListItem({
         </li>
     )
 }
-
