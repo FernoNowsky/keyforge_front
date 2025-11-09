@@ -1,4 +1,3 @@
-export * from './interceptors';
 export * from "./productsApi";
 export * from "./ordersApi";
 export * from "./client";

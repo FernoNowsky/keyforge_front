@@ -15,6 +15,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SupportIndexRouteImport } from './routes/support/index'
 import { Route as ProductsIndexRouteImport } from './routes/products/index'
+import { Route as ErrorIndexRouteImport } from './routes/error/index'
 import { Route as CartIndexRouteImport } from './routes/cart/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AccountIndexRouteImport } from './routes/account/index'
@@ -22,6 +23,8 @@ import { Route as ProductsProductIdRouteImport } from './routes/products/$produc
 import { Route as ProductsTypeIndexRouteImport } from './routes/products/type/index'
 import { Route as ProductsPlatformIndexRouteImport } from './routes/products/platform/index'
 import { Route as ProductsCategoryIndexRouteImport } from './routes/products/category/index'
+import { Route as ErrorRoleIndexRouteImport } from './routes/error/role/index'
+import { Route as ErrorLoginIndexRouteImport } from './routes/error/login/index'
 import { Route as CartSuccessIndexRouteImport } from './routes/cart/success/index'
 import { Route as CartCancelIndexRouteImport } from './routes/cart/cancel/index'
 import { Route as AccountSettingsIndexRouteImport } from './routes/account/settings/index'
@@ -63,6 +66,11 @@ const ProductsIndexRoute = ProductsIndexRouteImport.update({
   path: '/products/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ErrorIndexRoute = ErrorIndexRouteImport.update({
+  id: '/error/',
+  path: '/error/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CartIndexRoute = CartIndexRouteImport.update({
   id: '/cart/',
   path: '/cart/',
@@ -96,6 +104,16 @@ const ProductsPlatformIndexRoute = ProductsPlatformIndexRouteImport.update({
 const ProductsCategoryIndexRoute = ProductsCategoryIndexRouteImport.update({
   id: '/products/category/',
   path: '/products/category/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ErrorRoleIndexRoute = ErrorRoleIndexRouteImport.update({
+  id: '/error/role/',
+  path: '/error/role/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ErrorLoginIndexRoute = ErrorLoginIndexRouteImport.update({
+  id: '/error/login/',
+  path: '/error/login/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CartSuccessIndexRoute = CartSuccessIndexRouteImport.update({
@@ -160,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/account': typeof AccountIndexRoute
   '/admin': typeof AdminIndexRoute
   '/cart': typeof CartIndexRoute
+  '/error': typeof ErrorIndexRoute
   '/products': typeof ProductsIndexRoute
   '/support': typeof SupportIndexRoute
   '/products/category/$categoryId': typeof ProductsCategoryCategoryIdRoute
@@ -172,6 +191,8 @@ export interface FileRoutesByFullPath {
   '/account/settings': typeof AccountSettingsIndexRoute
   '/cart/cancel': typeof CartCancelIndexRoute
   '/cart/success': typeof CartSuccessIndexRoute
+  '/error/login': typeof ErrorLoginIndexRoute
+  '/error/role': typeof ErrorRoleIndexRoute
   '/products/category': typeof ProductsCategoryIndexRoute
   '/products/platform': typeof ProductsPlatformIndexRoute
   '/products/type': typeof ProductsTypeIndexRoute
@@ -185,6 +206,7 @@ export interface FileRoutesByTo {
   '/account': typeof AccountIndexRoute
   '/admin': typeof AdminIndexRoute
   '/cart': typeof CartIndexRoute
+  '/error': typeof ErrorIndexRoute
   '/products': typeof ProductsIndexRoute
   '/support': typeof SupportIndexRoute
   '/products/category/$categoryId': typeof ProductsCategoryCategoryIdRoute
@@ -197,6 +219,8 @@ export interface FileRoutesByTo {
   '/account/settings': typeof AccountSettingsIndexRoute
   '/cart/cancel': typeof CartCancelIndexRoute
   '/cart/success': typeof CartSuccessIndexRoute
+  '/error/login': typeof ErrorLoginIndexRoute
+  '/error/role': typeof ErrorRoleIndexRoute
   '/products/category': typeof ProductsCategoryIndexRoute
   '/products/platform': typeof ProductsPlatformIndexRoute
   '/products/type': typeof ProductsTypeIndexRoute
@@ -211,6 +235,7 @@ export interface FileRoutesById {
   '/account/': typeof AccountIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/cart/': typeof CartIndexRoute
+  '/error/': typeof ErrorIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/support/': typeof SupportIndexRoute
   '/products/category/$categoryId': typeof ProductsCategoryCategoryIdRoute
@@ -223,6 +248,8 @@ export interface FileRoutesById {
   '/account/settings/': typeof AccountSettingsIndexRoute
   '/cart/cancel/': typeof CartCancelIndexRoute
   '/cart/success/': typeof CartSuccessIndexRoute
+  '/error/login/': typeof ErrorLoginIndexRoute
+  '/error/role/': typeof ErrorRoleIndexRoute
   '/products/category/': typeof ProductsCategoryIndexRoute
   '/products/platform/': typeof ProductsPlatformIndexRoute
   '/products/type/': typeof ProductsTypeIndexRoute
@@ -238,6 +265,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/admin'
     | '/cart'
+    | '/error'
     | '/products'
     | '/support'
     | '/products/category/$categoryId'
@@ -250,6 +278,8 @@ export interface FileRouteTypes {
     | '/account/settings'
     | '/cart/cancel'
     | '/cart/success'
+    | '/error/login'
+    | '/error/role'
     | '/products/category'
     | '/products/platform'
     | '/products/type'
@@ -263,6 +293,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/admin'
     | '/cart'
+    | '/error'
     | '/products'
     | '/support'
     | '/products/category/$categoryId'
@@ -275,6 +306,8 @@ export interface FileRouteTypes {
     | '/account/settings'
     | '/cart/cancel'
     | '/cart/success'
+    | '/error/login'
+    | '/error/role'
     | '/products/category'
     | '/products/platform'
     | '/products/type'
@@ -288,6 +321,7 @@ export interface FileRouteTypes {
     | '/account/'
     | '/admin/'
     | '/cart/'
+    | '/error/'
     | '/products/'
     | '/support/'
     | '/products/category/$categoryId'
@@ -300,6 +334,8 @@ export interface FileRouteTypes {
     | '/account/settings/'
     | '/cart/cancel/'
     | '/cart/success/'
+    | '/error/login/'
+    | '/error/role/'
     | '/products/category/'
     | '/products/platform/'
     | '/products/type/'
@@ -314,6 +350,7 @@ export interface RootRouteChildren {
   AccountIndexRoute: typeof AccountIndexRoute
   AdminIndexRoute: typeof AdminIndexRoute
   CartIndexRoute: typeof CartIndexRoute
+  ErrorIndexRoute: typeof ErrorIndexRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
   SupportIndexRoute: typeof SupportIndexRoute
   ProductsCategoryCategoryIdRoute: typeof ProductsCategoryCategoryIdRoute
@@ -326,6 +363,8 @@ export interface RootRouteChildren {
   AccountSettingsIndexRoute: typeof AccountSettingsIndexRoute
   CartCancelIndexRoute: typeof CartCancelIndexRoute
   CartSuccessIndexRoute: typeof CartSuccessIndexRoute
+  ErrorLoginIndexRoute: typeof ErrorLoginIndexRoute
+  ErrorRoleIndexRoute: typeof ErrorRoleIndexRoute
   ProductsCategoryIndexRoute: typeof ProductsCategoryIndexRoute
   ProductsPlatformIndexRoute: typeof ProductsPlatformIndexRoute
   ProductsTypeIndexRoute: typeof ProductsTypeIndexRoute
@@ -375,6 +414,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/error/': {
+      id: '/error/'
+      path: '/error'
+      fullPath: '/error'
+      preLoaderRoute: typeof ErrorIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cart/': {
       id: '/cart/'
       path: '/cart'
@@ -422,6 +468,20 @@ declare module '@tanstack/react-router' {
       path: '/products/category'
       fullPath: '/products/category'
       preLoaderRoute: typeof ProductsCategoryIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/error/role/': {
+      id: '/error/role/'
+      path: '/error/role'
+      fullPath: '/error/role'
+      preLoaderRoute: typeof ErrorRoleIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/error/login/': {
+      id: '/error/login/'
+      path: '/error/login'
+      fullPath: '/error/login'
+      preLoaderRoute: typeof ErrorLoginIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cart/success/': {
@@ -506,6 +566,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountIndexRoute: AccountIndexRoute,
   AdminIndexRoute: AdminIndexRoute,
   CartIndexRoute: CartIndexRoute,
+  ErrorIndexRoute: ErrorIndexRoute,
   ProductsIndexRoute: ProductsIndexRoute,
   SupportIndexRoute: SupportIndexRoute,
   ProductsCategoryCategoryIdRoute: ProductsCategoryCategoryIdRoute,
@@ -518,6 +579,8 @@ const rootRouteChildren: RootRouteChildren = {
   AccountSettingsIndexRoute: AccountSettingsIndexRoute,
   CartCancelIndexRoute: CartCancelIndexRoute,
   CartSuccessIndexRoute: CartSuccessIndexRoute,
+  ErrorLoginIndexRoute: ErrorLoginIndexRoute,
+  ErrorRoleIndexRoute: ErrorRoleIndexRoute,
   ProductsCategoryIndexRoute: ProductsCategoryIndexRoute,
   ProductsPlatformIndexRoute: ProductsPlatformIndexRoute,
   ProductsTypeIndexRoute: ProductsTypeIndexRoute,

@@ -33,8 +33,7 @@ import {
 } from "@/components/ui/dialog";
 import { useNavigate } from "@tanstack/react-router";
 import { ReviewDialog } from "@/components/ReviewDialog";
-import {getUserId, isTokenExpired} from "@/hooks/useUserSession.ts";
-import keycloak from "@/keycloak.ts";
+import {useAuth} from "@/hooks/useAuthToken.ts";
 
 const statusMap: Record<string, { label: string; className: string }> = {
   READY_FOR_PAYMENT: {
@@ -82,8 +81,7 @@ export default function PurchasesPage() {
   const [autoLoadEnabled, setAutoLoadEnabled] = useState(true);
 
   const PAGE_SIZE = 10;
-  const userId = getUserId(); // TODO: token/get user id from global state
-
+  const {userId} = useAuth();
   const orderProductsRef = useRef<Record<number, Product[]>>({});
   const loadedProductIdsRef = useRef<Set<number>>(new Set());
   const isFetchingRef = useRef<Record<number, boolean>>({});
@@ -91,15 +89,6 @@ export default function PurchasesPage() {
   const observerRef = useRef<HTMLDivElement | null>(null);
   const productCacheRef = useRef<Map<number, Product>>(new Map());
   const navigate = useNavigate();
-  const [tokenValid, setTokenValid] = useState(false);
-  //TODO: try to get validation info from keycloak
-    useEffect(() => {
-        const checkToken = async () => {
-            const expired = await isTokenExpired();
-            setTokenValid(!expired);
-        };
-        if (keycloak) checkToken();
-    }, []);
 
 const fetchOrdersPage = useCallback(
   async (pageToLoad: number) => {
@@ -172,9 +161,6 @@ const fetchOrdersPage = useCallback(
       });
     } catch (err) {
       console.error("Błąd pobierania zamówień lub produktów:", err);
-      if(tokenValid) {
-          toast.error("Nie udało się pobrać zamówień");
-      }
       setError(true);
     } finally {
       isFetchingRef.current[pageToLoad] = false;
@@ -364,6 +350,7 @@ const fetchOrdersPage = useCallback(
     if (keyCount >= 2 && keyCount <= 4) return "klucze";
     return "kluczy";
   };
+
 
   return (
     <div className="flex justify-center px-4 sm:px-6 lg:px-8 py-10">

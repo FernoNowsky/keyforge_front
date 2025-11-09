@@ -1,36 +1,36 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { ReactKeycloakProvider } from '@react-keycloak/web'
 import Keycloak from 'keycloak-js'
-import { toast } from 'sonner'
+import { KeycloakContext, setKeycloakInstance } from './KeycloakContext'
+import {toast} from "sonner";
 
 interface KeycloakWrapperProps {
     children: React.ReactNode
     keycloakConfig: Keycloak.KeycloakConfig
 }
 
-// Simple network check - try to reach the server without initializing Keycloak
 async function isKeycloakReachable(url: string): Promise<boolean> {
     try {
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 2000)
+        const timeoutId = setTimeout(() => controller.abort(), 3000)
 
-        // Use fetch with no-cors mode to just check if server responds
-        await fetch(url, {
+        const response = await fetch(`${url}/realms/keyforge`, {
             method: 'GET',
-            mode: 'no-cors',
             signal: controller.signal,
             cache: 'no-cache'
         })
 
         clearTimeout(timeoutId)
-        return true
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        return response.ok || response.status === 404 || response.status < 500
     } catch (error) {
+        console.error('Keycloak reachability check failed:', error)
         return false
     }
 }
 
 export function KeycloakWrapper({ children, keycloakConfig }: KeycloakWrapperProps) {
+    const keycloakInstance = useMemo(() => new Keycloak(keycloakConfig), [])
+
     const [keycloakState, setKeycloakState] = useState<{
         available: boolean | null
         instance: Keycloak.KeycloakInstance | null
@@ -41,14 +41,13 @@ export function KeycloakWrapper({ children, keycloakConfig }: KeycloakWrapperPro
 
     useEffect(() => {
         const checkAndInitKeycloak = async () => {
-            // TODO: change hardcoded url
             const keycloakUrl = 'http://localhost:5000'
-
             const isReachable = await isKeycloakReachable(keycloakUrl)
 
             if (!isReachable) {
                 console.warn('Keycloak server is not reachable - running without authentication')
                 localStorage.setItem('keycloak_disabled', 'true')
+                setKeycloakInstance(null) // Set global instance
                 setKeycloakState({
                     available: false,
                     instance: null
@@ -56,11 +55,8 @@ export function KeycloakWrapper({ children, keycloakConfig }: KeycloakWrapperPro
                 return
             }
 
-            // Server is reachable, now try to initialize Keycloak
             try {
-                const kc = new Keycloak(keycloakConfig)
-
-                const initPromise = kc.init({
+                const initPromise = keycloakInstance.init({
                     onLoad: 'check-sso',
                     checkLoginIframe: false,
                     pkceMethod: 'S256',
@@ -75,13 +71,15 @@ export function KeycloakWrapper({ children, keycloakConfig }: KeycloakWrapperPro
                 await Promise.race([initPromise, timeoutPromise])
 
                 localStorage.removeItem('keycloak_disabled')
+                setKeycloakInstance(keycloakInstance) // Set global instance
                 setKeycloakState({
                     available: true,
-                    instance: kc
+                    instance: keycloakInstance
                 })
             } catch (error) {
                 console.warn('Keycloak initialization failed:', error)
                 localStorage.setItem('keycloak_disabled', 'true')
+                setKeycloakInstance(null) // Set global instance
                 setKeycloakState({
                     available: false,
                     instance: null
@@ -90,12 +88,12 @@ export function KeycloakWrapper({ children, keycloakConfig }: KeycloakWrapperPro
         }
 
         checkAndInitKeycloak()
-    }, [])
+    }, [keycloakInstance])
 
     const handleKeycloakEvent = (event: string) => {
         if (event === 'onAuthLogout') {
+            toast.error("Sesja zakończyła się")
             localStorage.clear()
-            toast.success('Pomyślnie wylogowano')
         }
     }
 
@@ -104,7 +102,6 @@ export function KeycloakWrapper({ children, keycloakConfig }: KeycloakWrapperPro
         if (tokens.refreshToken) localStorage.setItem('kc_refreshToken', tokens.refreshToken)
     }
 
-    // TODO: Below are elements that client sees before content. Edit if needed
     if (keycloakState.available === null) {
         return (
             <div className="flex items-center justify-center h-screen bg-gradient-to-b from-[#1C1C1C] to-[#2A2A2A]">
@@ -116,22 +113,23 @@ export function KeycloakWrapper({ children, keycloakConfig }: KeycloakWrapperPro
         )
     }
 
-    // Keycloak is not available - render without provider
     if (!keycloakState.available || !keycloakState.instance) {
-        return <>{children}</>
+        return (
+            <KeycloakContext.Provider value={null}>
+                {children}
+            </KeycloakContext.Provider>
+        )
     }
 
-    // Keycloak is available and already initialized
     return (
-        <ReactKeycloakProvider
-            authClient={keycloakState.instance}
-            initOptions={{
-                onLoad: 'check-sso',
-            }}
-            onTokens={handleTokens}
-            onEvent={handleKeycloakEvent}
-        >
-            {children}
-        </ReactKeycloakProvider>
+        <KeycloakContext.Provider value={keycloakState.instance}>
+            <ReactKeycloakProvider
+                authClient={keycloakState.instance}
+                onTokens={handleTokens}
+                onEvent={handleKeycloakEvent}
+            >
+                {children}
+            </ReactKeycloakProvider>
+        </KeycloakContext.Provider>
     )
 }

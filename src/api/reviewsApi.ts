@@ -38,7 +38,7 @@ export const ReviewsAPI = {
     getByProductId: (productId: number) =>
         apiRequest<PaginatedResponse<Review>>(`/reviews?productId=${productId}&status=APPROVED`, {requiresAuth: false}),
 
-    getByUserId: (userId: number, params?: PaginationDto) =>
+    getByUserId: (userId?: string, params?: PaginationDto) =>
         apiRequest<PaginatedResponse<Review>>(`reviews?userId=${userId}`, {params}),
 
     getAISummary: (productId: number) =>

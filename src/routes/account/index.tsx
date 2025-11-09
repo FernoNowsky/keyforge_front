@@ -1,8 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { ProductsPage } from "@/pages/ProductsPage.tsx";
+import {requireAuth} from "@/lib/authGuard.ts";
+import PurchasesPage from "@/pages/account/PurchasesPage.tsx";
 
 
 // TODO add accountPage?
 export const Route  = createFileRoute('/account/')({
-  component: ProductsPage,
+  beforeLoad: requireAuth,
+  component: PurchasesPage,
 })

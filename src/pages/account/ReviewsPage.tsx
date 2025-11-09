@@ -4,6 +4,7 @@ import { Star, Loader2, AlertTriangle } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type Product, ProductsApi, type Review, ReviewsAPI } from "@/api";
 import { toast } from "sonner";
+import {useAuth} from "@/hooks/useAuthToken.ts";
 
 export default function ReviewsPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -15,7 +16,7 @@ export default function ReviewsPage() {
   const [hasMore, setHasMore] = useState(true);
 
   const PAGE_SIZE = 10;
-  const userId = 1; // TODO: get userid or use token later
+  const {userId} = useAuth();
 
   // Refs to avoid unnecessary deps and race conditions
   const productsMapRef = useRef<Record<number, Product>>({});

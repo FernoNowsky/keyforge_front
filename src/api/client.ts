@@ -1,6 +1,6 @@
 import axios from "axios";
-import {toast} from "sonner";
 import {getValidToken} from "@/hooks/useAuthToken.ts";
+import {toast} from "sonner";
 
 export const $axios = axios.create({
     baseURL: import.meta.env.VITE_BASE_API_URL || "http://localhost:8090",
@@ -24,9 +24,7 @@ $axios.interceptors.request.use(
                 config.headers = config.headers || {};
                 config.headers.Authorization = `Bearer ${token}`;
             }
-            console.log(config.headers)
         }
-
         return config;
     },
     (error) => Promise.reject(error)
@@ -40,8 +38,7 @@ $axios.interceptors.response.use(
             localStorage.removeItem("userSession")
             localStorage.removeItem("kc-token")
             localStorage.removeItem("kc-refreshToken")
-
-            toast.error("Twoja sesja wygasła. Zaloguj się ponownie")
+            toast.error("Twoja sesja wygasła. Zaloguj się ponownie. Trwa przekierowanie do strony głównej");
 
             setTimeout(() => {
                 window.location.href = "/"

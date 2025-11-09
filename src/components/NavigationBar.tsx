@@ -7,8 +7,7 @@ import { Input } from "@/components/ui/input"
 import { UserAccount } from "@/components/UserAccount"
 import { CartHoverSection } from "@/components/CartHoverSection"
 import { useNavigate } from "@tanstack/react-router"
-import { useKeycloak } from '@react-keycloak/web'
-
+import {useAuth} from "@/hooks/useAuthToken.ts";
 import Logo from "@/assets/logo_keyforge.png"
 import {
     NavigationMenu,
@@ -23,8 +22,7 @@ import { type Category, type Platform, type ProductType } from "@/api"
 import { ProductTypeApi } from "@/api/productTypeApi.ts"
 import { CategoriesApi } from "@/api/categoriesApi.ts"
 import { PlatformsApi } from "@/api/platformsApi.ts"
-import { getUserEmail, getUsername, isTokenExpired } from "@/hooks/useUserSession.ts"
-import type Keycloak from "keycloak-js"
+import {getKeycloakInstance} from "@/KeycloakContext.tsx";
 
 export function NavigationBar() {
     const [categories, setCategories] = useState<Category[]>([])
@@ -33,41 +31,9 @@ export function NavigationBar() {
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState("")
     const navigate = useNavigate()
-
-    // Check if Keycloak is disabled
+    const {username, email, isAuthenticated} = useAuth()
     const isKeycloakDisabled = localStorage.getItem('keycloak_disabled') === 'true'
-
-    // Conditionally use Keycloak hook
-    let keycloak: Keycloak | null = null
-    try {
-        // Only use the hook if Keycloak is enabled
-        if (!isKeycloakDisabled) {
-            // eslint-disable-next-line react-hooks/rules-of-hooks
-            keycloak = useKeycloak().keycloak
-        }
-    } catch (error) {
-        console.warn('Keycloak not available:', error)
-    }
-
-    const [tokenValid, setTokenValid] = useState(false)
-
-    useEffect(() => {
-        if (!isKeycloakDisabled && keycloak?.authenticated) {
-            saveUserSession()
-        }
-
-        const checkToken = async () => {
-            if (isKeycloakDisabled) {
-                setTokenValid(false)
-                return
-            }
-            const expired = await isTokenExpired()
-            setTokenValid(!expired)
-        }
-
-        checkToken()
-    }, [keycloak?.authenticated, isKeycloakDisabled])
-
+    const keycloak = getKeycloakInstance()
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault()
         navigate({
@@ -108,30 +74,16 @@ export function NavigationBar() {
             return
         }
 
-        if (tokenValid) {
+        if (isAuthenticated) {
             setUserAccountOpen(true)
         } else {
-            keycloak?.login()
-        }
-    }
+            const currentUrl = window.location.href;
 
-    function saveUserSession() {
-        if (isKeycloakDisabled || !keycloak?.token) return
+            const redirectUri = currentUrl.includes("error")
+                ? window.location.origin
+                : window.location.href;
 
-        const userData = {
-            token: keycloak.token,
-            refreshToken: keycloak.refreshToken,
-            tokenExpiry: keycloak.tokenParsed?.exp ? new Date(keycloak.tokenParsed.exp * 1000).toISOString() : null,
-            userId: keycloak.idTokenParsed?.sub,
-            username: keycloak.idTokenParsed?.preferred_username,
-            email: keycloak.idTokenParsed?.email,
-            roles: keycloak.tokenParsed?.realm_access?.roles || []
-        }
-
-        localStorage.setItem('userSession', JSON.stringify(userData))
-        localStorage.setItem('kc_token', keycloak.token)
-        if (keycloak.refreshToken) {
-            localStorage.setItem('kc_refreshToken', keycloak.refreshToken)
+            keycloak?.login({ redirectUri });
         }
     }
 
@@ -202,8 +154,8 @@ export function NavigationBar() {
                         onClick={handleUserIconClick}
                     >
                         <UserIcon className="h-5 w-5" />
-                        {tokenValid && !isKeycloakDisabled ? (
-                            <span className="font-medium text-sm">{getUsername()}</span>
+                        {isAuthenticated ? (
+                            <span className="font-medium text-sm">{username}</span>
                         ) : (
                             <span className="font-medium text-sm hidden md:inline">
                                 {'Zaloguj się'}
@@ -261,12 +213,14 @@ export function NavigationBar() {
                     </NavigationMenuList>
                 </NavigationMenu>
             </div>
+            {/* TODO: calculate level here or in UserAccount component*/}
             {!isKeycloakDisabled && (
                 <UserAccount
                     open={userAccountOpen}
                     onOpenChange={setUserAccountOpen}
-                    user={getUsername()}
-                    email={getUserEmail()}
+                    user={username}
+                    email={email}
+                    level={"Mistrz Kowal"}
                     onLogout={() => {
                         setUserAccountOpen(false)
                         keycloak?.logout({
