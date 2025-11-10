@@ -107,7 +107,6 @@ export function KeycloakWrapper({ children, keycloakConfig }: KeycloakWrapperPro
             <div className="flex items-center justify-center h-screen bg-gradient-to-b from-[#1C1C1C] to-[#2A2A2A]">
                 <div className="text-center text-white">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D4A44A] mx-auto mb-4"></div>
-                    <p>Checking authentication service...</p>
                 </div>
             </div>
         )

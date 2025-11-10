@@ -1,10 +1,8 @@
+import { RoleNeededError } from "@/components/RoleNeededError";
 import { createFileRoute } from "@tanstack/react-router";
 
+
 export const Route = createFileRoute("/error/role/")({
-  component: RouteComponent,
+  component: RoleNeededError,
 });
 
-// TODO: Create component for error handling
-function RouteComponent() {
-    return <div>Nie masz uprawnień!</div>
-}
