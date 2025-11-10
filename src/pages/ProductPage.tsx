@@ -8,6 +8,8 @@ import { useProduct } from "@/hooks/useProduct";
 import { useReviews } from "@/hooks/useReviews";
 import { useAISummary } from "@/hooks/useAISummary";
 import { useCartStock } from "@/hooks/useCartStock";
+import { Loader2 } from "lucide-react";
+import { ProductNotFound } from "@/components/product/ProductNotFound";
 
 export function ProductPage() {
     const match = useMatch({ from: "/products/$productId", shouldThrow: false });
@@ -18,8 +20,14 @@ export function ProductPage() {
     const { summary, loading: aiLoading } = useAISummary(productId);
     const cartStock = useCartStock(product);
 
-    if (isLoading) return <div className="text-[#D4A44A]">Ładowanie produktu...</div>;
-    if (!product) return <div className="text-red-400">Nie znaleziono produktu.</div>;
+    if (isLoading) 
+        return (
+            <div className="flex justify-center py-20">
+                <Loader2 className="animate-spin w-10 h-10 text-[#D4A44A]" />
+            </div>
+        )
+
+    if (!product) return <ProductNotFound/>;
 
     return (
         <div className="min-h-screen bg-[#1C1C1C] p-4 md:p-8">
