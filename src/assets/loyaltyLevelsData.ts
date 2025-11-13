@@ -6,3 +6,5 @@ export const loyaltyLevels = [
     { name: 'Legendarny Kowal', pointsRequired: 10000, discount: 12, color: 'yellow-400' },
     { name: 'Wielki Mistrz Kluczy', pointsRequired: 20000, discount: 15, color: 'orange-400' },
 ]
+
+export const pointsPerZloty = 2

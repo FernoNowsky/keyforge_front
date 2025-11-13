@@ -11,10 +11,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Trash2, Plus, Minus, ShoppingCart, CreditCard } from "lucide-react"
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from "@/components/ui/dialog"
+import {Trash2, Plus, Minus, ShoppingCart, CreditCard, Trophy} from "lucide-react"
 import { toast } from "sonner"
 import { PlatformBadge } from "@/components/PlatformBadge"
 import { OrdersApi, ProductsApi, type Product } from "@/api"
+import {loyaltyLevels, pointsPerZloty} from "@/assets/loyaltyLevelsData.ts";
+import {UsersApi} from "@/api/usersApi.ts";
+import {isAuthenticated, useAuth} from "@/hooks/useAuthToken.ts";
+import {getKeycloakInstance} from "@/KeycloakContext.tsx";
 
 type CartItem = {
   id: number
@@ -36,8 +48,36 @@ export function CartPage() {
   const [stockIssues, setStockIssues] = useState<StockIssue[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const navigate = useNavigate()
-
+  const [loyaltyDiscount, setLoyaltyDiscount] = useState<number>(0)
+  const [showLoginDialog, setShowLoginDialog] = useState(false)
+  const [loyaltyPoints, setLoyaltyPoints] = useState(0)
+  const auth = isAuthenticated()
+  const { userId } = useAuth()
+  const isKeycloakDisabled = localStorage.getItem('keycloak_disabled') === 'true'
+  const keycloak = getKeycloakInstance()
   useEffect(() => {
+      if (!auth) return
+
+      const fetchLoyaltyPoints = async () => {
+          try {
+              const userData = await UsersApi.getLoyaltyPoints(userId)
+              setLoyaltyPoints(userData.loyaltyPoints)
+              const currentLevel =
+                  loyaltyLevels
+                      .slice()
+                      .reverse()
+                      .find(level => userData.loyaltyPoints >= level.pointsRequired) || loyaltyLevels[0]
+
+              setLoyaltyDiscount(currentLevel.discount)
+          } catch (err) {
+              console.error("Błąd pobierania danych o punktach lojalnościowych", err)
+          }
+      }
+
+      fetchLoyaltyPoints()
+  }, [auth, userId])
+
+    useEffect(() => {
     loadCart()
   }, [])
 
@@ -116,6 +156,21 @@ const validateStock = (currentCart: CartItem[]) => {
     }
   }
 
+    const handleLogin = () => {
+        if (isKeycloakDisabled) {
+            alert('System logowania jest obecnie niedostępny. Spróbuj ponownie później')
+            return
+        }
+
+        const currentUrl = window.location.href;
+
+        const redirectUri = currentUrl.includes("error")
+            ? window.location.origin
+            : window.location.href;
+
+        keycloak?.login({ redirectUri });
+    }
+
   const updateQuantity = (id: number, delta: number) => {
     const updatedCart = cart
       .map((item) => {
@@ -152,19 +207,31 @@ const validateStock = (currentCart: CartItem[]) => {
       return total + price * item.quantity
     }, 0)
   }
+    const getTotalBeforeDiscount = () => {
+        return cart.reduce((total, item) => total + item.price * item.quantity, 0)
+    }
 
-  const getTotalDiscount = () => {
-    return cart.reduce((total, item) => {
-      const product = products.find((p) => p.id === item.id)
-      if (!product || !product.discountPercentage) return total
-      const discount = item.price * (product.discountPercentage / 100) * item.quantity
-      return total + discount
-    }, 0)
-  }
+    const getTotalAfterDiscount = () => {
+        return cart.reduce((total, item) => {
+            const product = products.find((p) => p.id === item.id)
+            const discountedPrice = getDiscountedPrice(product, item.price)
+            return total + discountedPrice * item.quantity
+        }, 0)
+    }
 
-  const hasStockIssues = stockIssues.length > 0
+    const getTotalDiscount = () => {
+        const before = getTotalBeforeDiscount()
+        const after = getTotalAfterDiscount()
+        return before - after
+    }
+    const hasStockIssues = stockIssues.length > 0
 
   const handleCheckout = async (): Promise<void> => {
+    if (!isAuthenticated()) {
+      setShowLoginDialog(true)
+      return
+    }
+
     if (cart.length === 0) {
       toast.warning("Pusty koszyk")
       return
@@ -391,7 +458,7 @@ const validateStock = (currentCart: CartItem[]) => {
                                 {(product?.discountPercentage ?? 0) > 0 ? (
                                   <>
                                     <div className="text-[#D4A44A] font-bold">
-                                      {discounted.toFixed(2)} PLN
+                                      {loyaltyDiscount > 0 ? (discounted * (1-loyaltyDiscount / 100)).toFixed(2) : discounted.toFixed(2)} PLN
                                     </div>
                                     <div className="text-[#A0A0A0] text-sm line-through">
                                       {item.price.toFixed(2)} PLN
@@ -399,12 +466,12 @@ const validateStock = (currentCart: CartItem[]) => {
                                   </>
                                 ) : (
                                   <div className="text-[#D4A44A] font-bold">
-                                    {item.price.toFixed(2)} PLN
+                                    {loyaltyDiscount > 0 ? (item.price * (1-loyaltyDiscount/100)).toFixed(2) : item.price.toFixed(2)} PLN
                                   </div>
                                 )}
                               </TableCell>
                               <TableCell className="text-[#D4A44A] font-bold text-right">
-                                {(discounted * item.quantity).toFixed(2)} PLN
+                                {loyaltyDiscount > 0 ? (discounted * item.quantity * (1-loyaltyDiscount / 100)).toFixed(2) : (discounted * item.quantity).toFixed(2)} PLN
                               </TableCell>
                               <TableCell>
                                 <button
@@ -427,9 +494,77 @@ const validateStock = (currentCart: CartItem[]) => {
             {/* ======== PODSUMOWANIE ======== */}
             <div className="lg:col-span-1">
               <Card className="bg-[#2A2A2A] border-[#3A3A3A] sticky top-4">
-                <CardHeader>
-                  <CardTitle className="text-[#F8F8F8]">Podsumowanie</CardTitle>
-                </CardHeader>
+                  <CardHeader>
+                      <CardTitle className="text-[#F8F8F8] text-center">Podsumowanie</CardTitle>
+                      {isAuthenticated() && (
+                          <div className="mt-2 flex items-center gap-2 bg-[#1C1C1C] border border-[#3A3A3A] rounded-lg px-3 py-2">
+                              <div className="flex items-center justify-center w-8 h-8 bg-[#D4A44A]/20 rounded-full">
+                                  <Trophy className="w-5 h-5 text-[#D4A44A]" />
+                              </div>
+                              <span className="text-[#D4A44A] font-medium text-sm md:text-base">
+                                 Otrzymasz{" "}
+                                  <span className="font-bold text-[#FFD166]">
+                                     {(getTotalAfterDiscount() * (1 - loyaltyDiscount / 100) * pointsPerZloty).toFixed(0)}
+                                 </span>{" "}
+                                  KeyPoints za ten zakup!
+                                </span>
+                          </div>)}
+                      {isAuthenticated() && (
+                          <div className="mt-3 bg-[#1C1C1C] border border-[#3A3A3A] rounded-lg px-3 py-3">
+                              {(() => {
+                                  const earnedPoints = (getTotalAfterDiscount() * (1 - loyaltyDiscount / 100) * pointsPerZloty);
+                                  const newTotal = loyaltyPoints + earnedPoints;
+
+                                  const currentLevel =
+                                      loyaltyLevels.slice().reverse().find(level => loyaltyPoints >= level.pointsRequired) || loyaltyLevels[0];
+
+                                  const levelAfterPurchase =
+                                      loyaltyLevels.slice().reverse().find(level => newTotal >= level.pointsRequired) || loyaltyLevels[0];
+
+                                  const nextLevelAfterPurchase = loyaltyLevels.find(level => level.pointsRequired > newTotal);
+
+                                  const willLevelUp = currentLevel.name !== levelAfterPurchase.name;
+
+                                  const progress = nextLevelAfterPurchase
+                                      ? Math.min(((newTotal - levelAfterPurchase.pointsRequired) / (nextLevelAfterPurchase.pointsRequired - levelAfterPurchase.pointsRequired)) * 100, 100)
+                                      : 100;
+
+                                  return (
+                                      <div>
+                                          <div className="flex justify-between items-center mb-1">
+                                              <span className="text-sm text-[#A0A0A0]">Twój poziom po zakupie</span>
+                                              <span className={`text-${levelAfterPurchase.color} font-medium`}>
+                                                {levelAfterPurchase.name}
+                                            </span>
+                                          </div>
+
+                                          <div className="w-full bg-[#3A3A3A] rounded-full h-2 overflow-hidden">
+                                              <div
+                                                  className="h-2 bg-[#D4A44A] transition-all duration-1000 ease-out"
+                                                  style={{ width: `${progress}%` }}
+                                              ></div>
+                                          </div>
+
+                                          <div className="flex justify-between mt-1 text-xs text-[#A0A0A0]">
+                                              <span>{Math.floor(newTotal)}/{nextLevelAfterPurchase ? nextLevelAfterPurchase.pointsRequired : levelAfterPurchase.pointsRequired} pkt</span>
+                                              {nextLevelAfterPurchase && <span>Do {nextLevelAfterPurchase.name}: {Math.max(nextLevelAfterPurchase.pointsRequired - newTotal, 0).toFixed(0)} pkt</span>}
+                                          </div>
+
+                                          {willLevelUp && (
+                                              <div className="mt-2 flex items-center gap-2 text-[#FFD166] text-sm font-medium">
+                                                  <Trophy className="w-4 h-4" />
+                                                  Awansujesz na poziom:{" "}
+                                                  <span className="font-semibold">
+                                                    {levelAfterPurchase.name}
+                                                </span> 🎉
+                                              </div>
+                                          )}
+                                      </div>
+                                  );
+                              })()}
+                          </div>
+                      )}
+                  </CardHeader>
                 <CardContent className="space-y-4">
 
                   <div className="border-t border-[#3A3A3A] pt-4 space-y-3">
@@ -441,23 +576,41 @@ const validateStock = (currentCart: CartItem[]) => {
                       <span>Rabat</span>
                       <span>-{getTotalDiscount().toFixed(2)} PLN</span>
                     </div>
-                    <div className="border-t border-[#3A3A3A] pt-3 flex justify-between text-[#F8F8F8] text-xl font-bold">
-                      <span>Suma</span>
-                      <span className="text-[#D4A44A]">{(getTotalPrice() - getTotalDiscount()).toFixed(2)} PLN</span>
-                    </div>
+                      {isAuthenticated() && (
+                              <div className="flex justify-between text-[#A0A0A0]">
+                                  <span>Rabat lojalnościowy (-{loyaltyDiscount}%)</span>
+                                  <span className="text-[#A0A0A0]">-{((getTotalPrice()-getTotalDiscount())*(loyaltyDiscount/100)).toFixed((2))} PLN</span>
+                              </div>
+                      )}
+                      <div className="border-t border-[#3A3A3A] pt-3 flex justify-between text-[#F8F8F8] text-xl font-bold">
+                          <span>Suma</span>
+                          <span className="text-[#D4A44A]">
+                            {(getTotalAfterDiscount() * (1 - loyaltyDiscount / 100)).toFixed(2)} PLN
+                          </span>
+                      </div>
                   </div>
 
-                  <Button
-                    onClick={handleCheckout}
-                    variant="outline"
-                    disabled={hasStockIssues}
-                    className={`w-full bg-[#D4A44A] text-black hover:bg-[#f1c562] font-semibold py-6 text-base ${
-                      hasStockIssues ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
-                  >
-                    <CreditCard className="w-5 h-5 mr-2" />
-                    Przejdź do płatności
-                  </Button>
+                    {!isAuthenticated() ? (
+                        <Button
+                            onClick={() => setShowLoginDialog(true)}
+                            variant="outline"
+                            className="w-full bg-[#D4A44A] text-black hover:bg-[#f1c562] font-semibold py-6 text-base"
+                        >
+                            Zaloguj się, aby zapłacić
+                        </Button>
+                    ) : (
+                        <Button
+                            onClick={handleCheckout}
+                            variant="outline"
+                            disabled={hasStockIssues}
+                            className={`w-full  hover:!bg-[#3A3A3A] font-semibold py-6 text-base ${
+                                hasStockIssues ? "opacity-50 cursor-not-allowed" : ""
+                            }`}
+                        >
+                            <CreditCard className="w-5 h-5 mr-2" />
+                            Przejdź do płatności
+                        </Button>
+                    )}
                   {hasStockIssues && (
                     <p className="text-red-400 text-sm text-center">
                       Popraw błędy w koszyku, aby przejść dalej
@@ -472,6 +625,34 @@ const validateStock = (currentCart: CartItem[]) => {
           </div>
         )}
       </div>
+        <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+            <DialogContent className="bg-[#2A2A2A] border-[#3A3A3A] text-[#F8F8F8]">
+                <DialogHeader>
+                    <DialogTitle className="text-[#D4A44A]">Wymagane logowanie</DialogTitle>
+                    <DialogDescription className="text-[#A0A0A0]">
+                        Aby dokończyć zakup, musisz być zalogowany.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <DialogFooter className="flex justify-end gap-2">
+                    <Button
+                        variant="outline"
+                        onClick={() => setShowLoginDialog(false)}
+                        className="hover:!bg-[#3A3A3A]"
+                    >
+                        Anuluj
+                    </Button>
+                    <Button
+                        onClick={() => handleLogin()}
+                        variant={"outline"}
+                        className="border-[#D4A44A] text-black hover:!bg-[#3A3A3A]"
+                    >
+                        Zaloguj się
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </div>
+
   )
 }

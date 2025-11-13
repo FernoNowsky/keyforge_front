@@ -31,7 +31,7 @@ export function NavigationBar() {
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState("")
     const navigate = useNavigate()
-    const {username, email, isAuthenticated} = useAuth()
+    const {username, isAuthenticated} = useAuth()
     const isKeycloakDisabled = localStorage.getItem('keycloak_disabled') === 'true'
     const keycloak = getKeycloakInstance()
     const handleSearch = (e: React.FormEvent) => {
@@ -218,8 +218,6 @@ export function NavigationBar() {
                 <UserAccount
                     open={userAccountOpen}
                     onOpenChange={setUserAccountOpen}
-                    user={username}
-                    email={email}
                     onLogout={() => {
                         setUserAccountOpen(false)
                         keycloak?.logout({
