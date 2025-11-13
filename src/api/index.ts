@@ -4,3 +4,4 @@ export * from "./client";
 export * from "./types/product.types";
 export * from "./types/common.types";
 export * from "./reviewsApi";
+export * from "./loyaltyPointsApi";

@@ -2,6 +2,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Award, Trophy, TrendingUp } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useAuth } from '@/hooks/useAuthToken'
+import { LoyaltyPointsApi } from '@/api'
 
 const levels = [
     { name: 'Nowicjusz Kowal', pointsRequired: 0, discount: 0, color: 'gray-400' },
@@ -13,7 +16,32 @@ const levels = [
 ]
 
 export function LoyaltyPage() {
-    const currentPoints = 5450
+    const {userId} = useAuth();
+    const [currentPointsApi, setCurrentPointsApi] = useState(0);
+    const mountedRef = useRef(false);
+
+  const fetchLoyaltyPointsPage = useCallback(
+    async () => {
+      try {
+        const response = await LoyaltyPointsApi.getByUserId(userId!);
+        console.log("API Response:", response);
+        console.log("Loyalty Points:", response.loyaltyPoints);
+        setCurrentPointsApi(response.loyaltyPoints);
+        console.log("Punkty zostały zaktualizowane do:", response.loyaltyPoints);
+      } catch (err) {
+        console.error("Błąd pobierania punktów:", err);
+      }
+    },
+    [userId]
+  );
+  
+    useEffect(() => {
+      if (mountedRef.current || !userId) return;
+      mountedRef.current = true;
+      fetchLoyaltyPointsPage();
+    }, [fetchLoyaltyPointsPage, userId]);
+ 
+    const currentPoints = currentPointsApi;
     const currentLevelIndex = 3
     const currentLevel = levels[currentLevelIndex]
     const nextLevel = levels[currentLevelIndex + 1]
