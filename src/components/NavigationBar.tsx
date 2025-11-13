@@ -220,7 +220,6 @@ export function NavigationBar() {
                     onOpenChange={setUserAccountOpen}
                     user={username}
                     email={email}
-                    level={"Mistrz Kowal"}
                     onLogout={() => {
                         setUserAccountOpen(false)
                         keycloak?.logout({

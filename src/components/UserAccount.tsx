@@ -16,14 +16,15 @@ import {
     Award,
     Percent
 } from "lucide-react"
+import { useEffect, useState } from "react"
+import { UsersApi } from "@/api/usersApi"
+import { useAuth } from "@/hooks/useAuthToken"
 
 interface UserAccountProps {
     open: boolean
     onOpenChange: (open: boolean) => void
     user?: string
     email?: string
-    level?: string
-    keyPoints?: number
     discount?: number
     onLogout: () => void
 }
@@ -33,13 +34,29 @@ export function UserAccount({
                                 onOpenChange,
                                 user,
                                 email,
-                                level,
-                                keyPoints = 5450,
                                 discount = 9,
                                 onLogout,
                             }: UserAccountProps) {
     const navigate = useNavigate()
+    const [loyaltyPoints, setLoyaltyPoints] = useState(0)
+    const {userId} = useAuth()
+    console.log(userId)
+    useEffect(() => {
+        const fetchLoyaltyPoints = async () => {
+            try {
+                const userData = await UsersApi.getLoyaltyPoints(userId)
 
+                setLoyaltyPoints(userData.loyaltyPoints)
+            } catch (err) {
+                console.error("Błąd pobierania danych do nawigacji:", err)
+            } finally {
+                // setLoading(false)
+            }
+        }
+
+        fetchLoyaltyPoints()
+    }, [])
+    
     const accountSections = [
         {
             icon: ShoppingBag,
@@ -105,7 +122,7 @@ export function UserAccount({
                     <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
                             <Trophy className="h-5 w-5 text-[#D4A44A]" />
-                            <span className="text-sm font-semibold text-[#D4A44A]">{level}</span>
+                            <span className="text-sm font-semibold text-[#D4A44A]">{loyaltyPoints}</span>
                         </div>
                         <div className="flex items-center gap-2 bg-[#2A2A2A] px-3 py-1 rounded-full">
                             <Percent className="h-4 w-4 text-green-400" />
@@ -116,16 +133,16 @@ export function UserAccount({
                     <div className="space-y-2">
                         <div className="flex justify-between text-xs">
                             <span className="text-gray-400">KeyPoints</span>
-                            <span className="text-[#D4A44A] font-semibold">{keyPoints}</span>
+                            <span className="text-[#D4A44A] font-semibold">{loyaltyPoints}</span>
                         </div>
                         <div className="w-full bg-[#3A3A3A] rounded-full h-2 overflow-hidden">
                             <div
                                 className="bg-gradient-to-r from-[#D4A44A] to-[#B8873D] h-full rounded-full transition-all duration-500"
-                                style={{ width: `${(keyPoints % 1000) / 10}%` }}
+                                style={{ width: `${(loyaltyPoints % 1000) / 10}%` }}
                             />
                         </div>
                         <p className="text-xs text-gray-500 text-center">
-                            {1000 - (keyPoints % 1000)} punktów do następnego poziomu
+                            {1000 - (loyaltyPoints % 1000)} punktów do następnego poziomu
                         </p>
                     </div>
                 </div>
