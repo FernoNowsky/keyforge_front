@@ -501,18 +501,18 @@ const validateStock = (currentCart: CartItem[]) => {
                               <div className="flex items-center justify-center w-8 h-8 bg-[#D4A44A]/20 rounded-full">
                                   <Trophy className="w-5 h-5 text-[#D4A44A]" />
                               </div>
-                              <span className="text-[#D4A44A] font-medium text-sm md:text-base">
-                                 Otrzymasz{" "}
+                              <span className="text-[#D4A44A] font-medium !text-sm md:text-base">
+                                 +
                                   <span className="font-bold text-[#FFD166]">
-                                     {(getTotalAfterDiscount() * (1 - loyaltyDiscount / 100) * pointsPerZloty).toFixed(0)}
+                                     {(Math.floor(getTotalAfterDiscount() * (1 - loyaltyDiscount / 100)) * pointsPerZloty).toFixed(0)}
                                  </span>{" "}
-                                  KeyPoints za ten zakup!
+                                  KeyPoints po odebraniu zamówienia!
                                 </span>
                           </div>)}
                       {isAuthenticated() && (
                           <div className="mt-3 bg-[#1C1C1C] border border-[#3A3A3A] rounded-lg px-3 py-3">
                               {(() => {
-                                  const earnedPoints = (getTotalAfterDiscount() * (1 - loyaltyDiscount / 100) * pointsPerZloty);
+                                  const earnedPoints = Math.floor(getTotalAfterDiscount() * (1 - loyaltyDiscount / 100)) * pointsPerZloty;
                                   const newTotal = loyaltyPoints + earnedPoints;
 
                                   const currentLevel =

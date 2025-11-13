@@ -20,6 +20,7 @@ import { useEffect, useState } from "react"
 import { UsersApi } from "@/api/usersApi"
 import { useAuth } from "@/hooks/useAuthToken"
 import { loyaltyLevels } from "@/assets/loyaltyLevelsData.ts";
+import {eventBus} from "@/utils/events.ts";
 
 interface UserAccountProps {
     open: boolean
@@ -38,15 +39,25 @@ export function UserAccount({
     useEffect(() => {
         const fetchLoyaltyPoints = async () => {
             try {
-                const userData = await UsersApi.getLoyaltyPoints(userId)
-
-                setLoyaltyPoints(userData.loyaltyPoints)
+                const userData = await UsersApi.getLoyaltyPoints(userId);
+                setLoyaltyPoints(userData.loyaltyPoints);
             } catch (err) {
-                console.error("Błąd pobierania danych o punktach lojalnościowych", err)
+                console.error("Błąd pobierania danych o punktach lojalnościowych", err);
             }
-        }
-        fetchLoyaltyPoints()
-    }, [userId])
+        };
+
+        fetchLoyaltyPoints();
+
+        const handlePointsUpdate = () => {
+            fetchLoyaltyPoints();
+        };
+
+        eventBus.on('loyaltyPointsUpdated', handlePointsUpdate);
+
+        return () => {
+            eventBus.off('loyaltyPointsUpdated', handlePointsUpdate);
+        };
+    }, [userId]);
     
     const accountSections = [
         {

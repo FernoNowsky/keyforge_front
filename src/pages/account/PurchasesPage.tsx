@@ -34,6 +34,8 @@ import {
 import { useNavigate } from "@tanstack/react-router";
 import { ReviewDialog } from "@/components/ReviewDialog";
 import {useAuth} from "@/hooks/useAuthToken.ts";
+import {pointsPerZloty} from "@/assets/loyaltyLevelsData.ts";
+import {eventBus} from "@/utils/events.ts";
 
 const statusMap: Record<string, { label: string; className: string }> = {
   READY_FOR_PAYMENT: {
@@ -245,10 +247,13 @@ const fetchOrdersPage = useCallback(
           o.id === selectedOrder.id ? { ...o, status: "COMPLETED" } : o
         )
       );
-
+      console.log(selectedOrder)
       setShowConfirmDialog(false);
       navigateToKeysPage(selectedOrder);
-      toast.success("Klucze zostały odebrane!");
+        setTimeout(() => {
+            eventBus.emit('loyaltyPointsUpdated');
+            toast.success(`Otrzymałeś ${Math.floor(selectedOrder.totalPrice) * pointsPerZloty} KeyPoints!`);
+        }, 500);
     } catch (error) {
       console.error("Błąd podczas odbierania kluczy:", error);
       toast.error("Nie udało się odebrać kluczy");
@@ -545,7 +550,7 @@ const fetchOrdersPage = useCallback(
                                 {order.status === "PAID" && (
                                   <Button
                                     size="sm"
-                                    className="bg-transparent !text-red-600 border border-red-700 hover:!bg-red-900/30 text-xs sm:text-sm flex items-center"
+                                    className="bg-transparent !text-red-600 border border-red-700 hover:!bg-[#3A3A3A] text-xs sm:text-sm flex items-center"
                                     variant="outline"
                                     onClick={() => handleReturnOrder(order)}
                                   >
@@ -575,7 +580,7 @@ const fetchOrdersPage = useCallback(
                                   order.status === "COMPLETED") && (
                                   <Button
                                     size="sm"
-                                    className="bg-[#D4A44A] text-black hover:!bg-[#B8873D] text-xs sm:text-sm border-[#D4A44A]"
+                                    className=" hover:!bg-[#3A3A3A] text-xs sm:text-sm border-[#D4A44A]"
                                     variant="outline"
                                     onClick={() => handleClaimKeys(order)}
                                   >
@@ -667,14 +672,15 @@ const fetchOrdersPage = useCallback(
                 variant="outline"
                 onClick={() => setShowConfirmDialog(false)}
                 disabled={isProcessing}
-                className="bg-transparent border-[#3A3A3A] text-white hover:!bg-[#2A2A2A]/30"
+                className="bg-transparent border-[#3A3A3A] text-white hover:!bg-[#3A3A3A]"
               >
                 Anuluj
               </Button>
               <Button
                 onClick={confirmClaimKeys}
                 disabled={isProcessing}
-                className="bg-[#D4A44A] text-black hover:!bg-[#B8873D]"
+                variant={"outline"}
+                className="border-[#D4A44A]  hover:!bg-[#3A3A3A]"
               >
                 {isProcessing ? "Przetwarzanie..." : "Tak, są zgodne"}
               </Button>
