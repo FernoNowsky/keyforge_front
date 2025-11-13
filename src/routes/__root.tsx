@@ -2,6 +2,7 @@ import { Outlet, createRootRoute, useLocation } from "@tanstack/react-router";
 import { NavigationBar } from "@/components/NavigationBar";
 import { Footer } from "@/components/Footer.tsx";
 import { Toaster } from "@/components/ui/sonner.tsx";
+import { NotFoundError } from "@/components/NotFoundError";
 
 const Layout = () => {
   const location = useLocation();
@@ -21,4 +22,5 @@ const Layout = () => {
 
 export const Route = createRootRoute({
   component: Layout,
+  notFoundComponent: NotFoundError
 });
