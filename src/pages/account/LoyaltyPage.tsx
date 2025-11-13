@@ -5,18 +5,9 @@ import { Award, Trophy, TrendingUp } from 'lucide-react'
 import {useEffect, useState} from "react";
 import {UsersApi} from "@/api/usersApi.ts";
 import {useAuth} from "@/hooks/useAuthToken.ts";
-
-const levels = [
-    { name: 'Nowicjusz Kowal', pointsRequired: 0, discount: 0, color: 'gray-400' },
-    { name: 'Uczeń Kuźni', pointsRequired: 1000, discount: 3, color: 'blue-400' },
-    { name: 'Czeladnik Kuźni', pointsRequired: 2500, discount: 6, color: 'green-400' },
-    { name: 'Mistrz Kuźni', pointsRequired: 5000, discount: 9, color: 'purple-400' },
-    { name: 'Legendarny Kowal', pointsRequired: 10000, discount: 12, color: 'yellow-400' },
-    { name: 'Wielki Mistrz Kluczy', pointsRequired: 20000, discount: 15, color: 'orange-400' },
-]
+import {loyaltyLevels} from "@/assets/loyaltyLevelsData.ts";
 
 export function LoyaltyPage() {
-    // TODO: logic with points and levels, when we have points from db
     const { userId } = useAuth()
     const [loyaltyPoints, setLoyaltyPoints] = useState(0)
 
@@ -34,9 +25,9 @@ export function LoyaltyPage() {
     }, [userId])
 
 
-    const currentLevel = [...levels].reverse().find(level => loyaltyPoints >= level.pointsRequired) || levels[0]
-    const currentLevelIndex = levels.findIndex(l => l.name === currentLevel.name)
-    const nextLevel = levels[currentLevelIndex + 1] || null
+    const currentLevel = [...loyaltyLevels].reverse().find(level => loyaltyPoints >= level.pointsRequired) || loyaltyLevels[0]
+    const currentLevelIndex = loyaltyLevels.findIndex(l => l.name === currentLevel.name)
+    const nextLevel = loyaltyLevels[currentLevelIndex + 1] || null
     const progressToNext = nextLevel
         ? ((loyaltyPoints - currentLevel.pointsRequired) /
         (nextLevel.pointsRequired - currentLevel.pointsRequired)) * 100
@@ -125,7 +116,7 @@ export function LoyaltyPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {levels.map((level, index) => {
+                            {loyaltyLevels.map((level, index) => {
                                 const levelColorClass = colorMap[level.color] || 'text-gray-400';
                                 return (
                                     <div
