@@ -19,28 +19,22 @@ import {
 import { useEffect, useState } from "react"
 import { UsersApi } from "@/api/usersApi"
 import { useAuth } from "@/hooks/useAuthToken"
+import { loyaltyLevels } from "@/assets/loyaltyLevelsData.ts";
 
 interface UserAccountProps {
     open: boolean
     onOpenChange: (open: boolean) => void
-    user?: string
-    email?: string
-    discount?: number
     onLogout: () => void
 }
 
 export function UserAccount({
                                 open,
                                 onOpenChange,
-                                user,
-                                email,
-                                discount = 9,
                                 onLogout,
                             }: UserAccountProps) {
     const navigate = useNavigate()
     const [loyaltyPoints, setLoyaltyPoints] = useState(0)
-    const {userId} = useAuth()
-    console.log(userId)
+    const { userId, username, email} = useAuth()
     useEffect(() => {
         const fetchLoyaltyPoints = async () => {
             try {
@@ -48,14 +42,11 @@ export function UserAccount({
 
                 setLoyaltyPoints(userData.loyaltyPoints)
             } catch (err) {
-                console.error("Błąd pobierania danych do nawigacji:", err)
-            } finally {
-                // setLoading(false)
+                console.error("Błąd pobierania danych o punktach lojalnościowych", err)
             }
         }
-
         fetchLoyaltyPoints()
-    }, [])
+    }, [userId])
     
     const accountSections = [
         {
@@ -100,6 +91,15 @@ export function UserAccount({
         onOpenChange(false)
     }
 
+    const currentLevel = loyaltyLevels
+        .slice()
+        .reverse()
+        .find(level => loyaltyPoints >= level.pointsRequired) || loyaltyLevels[0]
+
+    const level = currentLevel.name
+    const discount = currentLevel.discount
+    const nextLevel = loyaltyLevels.find(l => l.pointsRequired > loyaltyPoints)
+    const pointsToNext = nextLevel ? nextLevel.pointsRequired - loyaltyPoints : 0
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
             <SheetContent
@@ -111,7 +111,7 @@ export function UserAccount({
                         <div className="bg-gradient-to-br from-[#D4A44A] to-[#B8873D] p-5 rounded-full shadow-lg">
                             <User className="h-10 w-10 text-[#2A2A2A]" />
                         </div>
-                        <SheetTitle className="text-[#D4A44A] text-xl font-bold">{user}</SheetTitle>
+                        <SheetTitle className="text-[#D4A44A] text-xl font-bold">{username}</SheetTitle>
                         <SheetDescription className="text-gray-400 flex items-center gap-2 justify-center text-sm">
                             <Mail className="h-4 w-4" /> {email}
                         </SheetDescription>
@@ -122,7 +122,7 @@ export function UserAccount({
                     <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
                             <Trophy className="h-5 w-5 text-[#D4A44A]" />
-                            <span className="text-sm font-semibold text-[#D4A44A]">{loyaltyPoints}</span>
+                            <span className="text-sm font-semibold text-[#D4A44A]">{level}</span>
                         </div>
                         <div className="flex items-center gap-2 bg-[#2A2A2A] px-3 py-1 rounded-full">
                             <Percent className="h-4 w-4 text-green-400" />
@@ -142,7 +142,9 @@ export function UserAccount({
                             />
                         </div>
                         <p className="text-xs text-gray-500 text-center">
-                            {1000 - (loyaltyPoints % 1000)} punktów do następnego poziomu
+                            {pointsToNext > 0
+                                ? `${pointsToNext} punktów do następnego poziomu`
+                                : "Osiągnąłeś najwyższy poziom!"}
                         </p>
                     </div>
                 </div>

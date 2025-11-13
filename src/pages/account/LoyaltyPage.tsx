@@ -2,6 +2,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Award, Trophy, TrendingUp } from 'lucide-react'
+import {useEffect, useState} from "react";
+import {UsersApi} from "@/api/usersApi.ts";
+import {useAuth} from "@/hooks/useAuthToken.ts";
 
 const levels = [
     { name: 'Nowicjusz Kowal', pointsRequired: 0, discount: 0, color: 'gray-400' },
@@ -14,12 +17,29 @@ const levels = [
 
 export function LoyaltyPage() {
     // TODO: logic with points and levels, when we have points from db
-    const currentPoints = 5450
-    const currentLevelIndex = 3
-    const currentLevel = levels[currentLevelIndex]
-    const nextLevel = levels[currentLevelIndex + 1]
+    const { userId } = useAuth()
+    const [loyaltyPoints, setLoyaltyPoints] = useState(0)
+
+    useEffect(() => {
+        const fetchLoyaltyPoints = async () => {
+            try {
+                const userData = await UsersApi.getLoyaltyPoints(userId)
+
+                setLoyaltyPoints(userData.loyaltyPoints)
+            } catch (err) {
+                console.error("Błąd pobierania danych o punktach lojalnościowych", err)
+            }
+        }
+        fetchLoyaltyPoints()
+    }, [userId])
+
+
+    const currentLevel = [...levels].reverse().find(level => loyaltyPoints >= level.pointsRequired) || levels[0]
+    const currentLevelIndex = levels.findIndex(l => l.name === currentLevel.name)
+    const nextLevel = levels[currentLevelIndex + 1] || null
     const progressToNext = nextLevel
-        ? ((currentPoints - currentLevel.pointsRequired) / (nextLevel.pointsRequired - currentLevel.pointsRequired)) * 100
+        ? ((loyaltyPoints - currentLevel.pointsRequired) /
+        (nextLevel.pointsRequired - currentLevel.pointsRequired)) * 100
         : 100
 
 
@@ -65,14 +85,14 @@ export function LoyaltyPage() {
                         <div className="space-y-4">
                             <div className="flex justify-between text-sm">
                                 <span className="text-gray-400">Twoje KeyPoints</span>
-                                <span className="text-[#D4A44A] font-bold text-lg">{currentPoints}</span>
+                                <span className="text-[#D4A44A] font-bold text-lg">{loyaltyPoints}</span>
                             </div>
                             <Progress value={progressToNext} className="h-3 bg-[#3A3A3A]" />
                             {nextLevel && (
                                 <div className="flex justify-between text-sm">
                                     <span className="text-gray-400">Do następnego poziomu:</span>
                                     <span className="text-white font-semibold">
-                                        {nextLevel.pointsRequired - currentPoints} KeyPoints
+                                        {nextLevel.pointsRequired - loyaltyPoints} KeyPoints
                                     </span>
                                 </div>
                             )}
