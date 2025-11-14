@@ -22,6 +22,7 @@ export interface ApiRequestOptions {
     method?: Method;
     data?: unknown;
     requiresAuth?: boolean;
+    requiresAdmin?: boolean;
 }
 
 /**
@@ -29,7 +30,7 @@ export interface ApiRequestOptions {
  */
 export async function apiRequest<T = unknown>(
     path: string,
-    { params = {}, method = "get", data, requiresAuth = true}: ApiRequestOptions = {}
+    { params = {}, method = "get", data, requiresAuth = true, requiresAdmin = false}: ApiRequestOptions = {}
 ): Promise<T> {
     let baseUrl: string;
 
@@ -58,7 +59,8 @@ export async function apiRequest<T = unknown>(
         data,
         headers: {
             ...($axios.defaults.headers.common),
-            'X-Requires-Auth': requiresAuth.toString()
+            'X-Requires-Auth': requiresAuth.toString(),
+            'X-Requires-Admin': requiresAdmin.toString()
         }
     };
 

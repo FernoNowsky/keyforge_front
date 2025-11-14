@@ -111,7 +111,7 @@ export const ProductTable = ({
           ...(filters.sortDirection ? { sortDirection: filters.sortDirection } : {}),
         };
 
-        const data = await ProductsApi.getAllDetailed(params);
+        const data = await ProductsApi.getAllDetailed(params, true);
         setProducts(data.content);
         setTotalPages(data.totalPages ?? 1);
 

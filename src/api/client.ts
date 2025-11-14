@@ -13,12 +13,13 @@ $axios.interceptors.request.use(
     async (config) => {
 
         const requiresAuth = config.headers?.['X-Requires-Auth'] !== 'false';
-
+        const requiresAdmin = config.headers?.['X-Requires-Admin'] !== 'false';
         if (config.headers) {
             delete config.headers['X-Requires-Auth'];
+            delete config.headers['X-Requires-Admin'];
         }
 
-        if (requiresAuth) {
+        if (requiresAuth || requiresAdmin) {
             const token = await getValidToken();
             if (token) {
                 config.headers = config.headers || {};

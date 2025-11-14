@@ -7,8 +7,8 @@ export const ProductsApi = {
     getAll: (params?: PaginationDto) =>
         apiRequest<PaginatedResponse<Product>>("/products", { params, requiresAuth: false  }),
 
-    getAllDetailed: (params?: PaginationDto) =>
-        apiRequest<PaginatedResponse<DetailedProduct>>("/products", { params, requiresAuth: false  }),
+    getAllDetailed: (params?: PaginationDto, isAdmin?: boolean) =>
+        apiRequest<PaginatedResponse<DetailedProduct>>("/products", { params, requiresAuth: false, requiresAdmin: isAdmin }),
 
     getNewest: (params?: PaginationDto) =>
     apiRequest<PaginatedResponse<Product>>("/products", { 
