@@ -41,7 +41,7 @@ interface ProductQueryParams {
   priceMin?: number;
   priceMax?: number;
   filter?: string;
-  onlyVisible?: boolean;
+  visible?: boolean;
   sortBy?: string;
   sortDirection?: "ASC" | "DESC";
 }
@@ -106,7 +106,7 @@ export const ProductTable = ({
           ...(filters.priceRange.min !== null ? { priceMin: filters.priceRange.min } : {}),
           ...(filters.priceRange.max !== null ? { priceMax: filters.priceRange.max } : {}),
           ...(filters.name ? { filter: filters.name } : {}),
-          ...(filters.visible !== null ? { onlyVisible: filters.visible } : {}),
+          ...(filters.visible !== null ? { visible: filters.visible } : {}),
           ...(filters.sortBy ? { sortBy: filters.sortBy } : {}),
           ...(filters.sortDirection ? { sortDirection: filters.sortDirection } : {}),
         };
