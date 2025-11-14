@@ -19,6 +19,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { getKeycloakInstance } from "@/KeycloakContext"
 
 export function SidebarUser({
   user,
@@ -32,7 +33,7 @@ export function SidebarUser({
   collapsed: boolean
 }) {
   const { isMobile } = useSidebar()
-
+  const keycloak = getKeycloakInstance()
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -73,10 +74,17 @@ export function SidebarUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOut />
-              Log out
-            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                keycloak?.logout({
+                  redirectUri: window.location.origin,
+                })
+              }}
+              className="cursor-pointer"
+            >
+              <LogOut className="mr-2" />
+              Wyloguj się
+          </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

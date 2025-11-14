@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { SidebarUser } from "./SidebarUser";
 import { TeamSwitcher } from "./SidebarCompany";
 import Logo from "@/assets/logo_keyforge.png";
+import { useAuth } from "@/hooks/useAuthToken";
 
 interface AppSidebarProps {
   activeTab: string;
@@ -37,10 +38,10 @@ export function AdminSidebar({
 }: AppSidebarProps) {
   // Track if the sidebar is collapsed
   const [collapsed, setCollapsed] = useState(false);
-
+  const {username, email} = useAuth()
   const user = {
-    name: "shadcn",
-    email: "m@example.com",
+    name: username,
+    email: email,
     avatar: "/avatars/shadcn.jpg",
   };
 
