@@ -113,11 +113,21 @@ export default function SettingsPage() {
             setPasswordErrors({ current: '', new: '', confirm: '', general: '' })
             
             setTimeout(() => setSuccessMessage(''), 3000)
-        } catch (error) {
-            setPasswordErrors({
-                ...passwordErrors,
-                general: error instanceof Error ? error.message : 'Wystąpił błąd podczas zmiany hasła'
-            })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+            if (error?.response?.status === 409 || error?.status === 409) {
+                setPasswordErrors({
+                    ...passwordErrors,
+                    current: 'Podane hasło jest nieprawidłowe',
+                    general: ''
+                })
+            } else {
+                setPasswordErrors({
+                    ...passwordErrors,
+                    current: '',
+                    general: 'Wystąpił błąd podczas zmiany hasła'
+                })
+            }
         } finally {
             setIsLoading(false)
         }
