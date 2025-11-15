@@ -18,7 +18,7 @@ import {
 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { UsersApi } from "@/api/usersApi"
-import { useAuth } from "@/hooks/useAuthToken"
+import {isAuthenticated, useAuth} from "@/hooks/useAuthToken"
 import { loyaltyLevels } from "@/assets/loyaltyLevelsData.ts";
 import {eventBus} from "@/utils/events.ts";
 
@@ -37,26 +37,28 @@ export function UserAccount({
     const [loyaltyPoints, setLoyaltyPoints] = useState(0)
     const { userId, username, email} = useAuth()
     useEffect(() => {
-        const fetchLoyaltyPoints = async () => {
-            try {
-                const userData = await UsersApi.getLoyaltyPoints(userId);
-                setLoyaltyPoints(userData.loyaltyPoints);
-            } catch (err) {
-                console.error("Błąd pobierania danych o punktach lojalnościowych", err);
-            }
-        };
+        if (isAuthenticated()) {
+            const fetchLoyaltyPoints = async () => {
+                try {
+                    const userData = await UsersApi.getLoyaltyPoints(userId);
+                    setLoyaltyPoints(userData.loyaltyPoints);
+                } catch (err) {
+                    console.error("Błąd pobierania danych o punktach lojalnościowych", err);
+                }
+            };
 
-        fetchLoyaltyPoints();
-
-        const handlePointsUpdate = () => {
             fetchLoyaltyPoints();
-        };
 
-        eventBus.on('loyaltyPointsUpdated', handlePointsUpdate);
+            const handlePointsUpdate = () => {
+                fetchLoyaltyPoints();
+            };
 
-        return () => {
-            eventBus.off('loyaltyPointsUpdated', handlePointsUpdate);
-        };
+            eventBus.on('loyaltyPointsUpdated', handlePointsUpdate);
+
+            return () => {
+                eventBus.off('loyaltyPointsUpdated', handlePointsUpdate);
+            };
+        }
     }, [userId]);
     
     const accountSections = [
