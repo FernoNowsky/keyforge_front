@@ -34,6 +34,7 @@ import {ProductTypeApi} from "@/api/productTypeApi.ts";
 import {CategoriesApi} from "@/api/categoriesApi.ts";
 import {PlatformsApi} from "@/api/platformsApi.ts";
 import {ProducentsApi} from "@/api/producentsApi.ts";
+import {eventBus} from "@/utils/events.ts";
 
 
 interface ProductCreateDialogProps {
@@ -117,7 +118,9 @@ export function ProductCreateDialog({
         newErrors.name = newProduct.name.trim() === "";
         newErrors.price = newProduct.price <= 0;
         newErrors.stock = newProduct.stock < 0;
-        newErrors.discountPercentage = newProduct.discountPercentage < 0;
+        newErrors.discountPercentage =
+            newProduct.discountPercentage < 0 ||
+            newProduct.discountPercentage > 100;
         newErrors.releaseDate = newProduct.releaseDate.trim() === "";
         newErrors.logoId = newProduct.logoId.trim() === "";
         newErrors.descriptionPl = newProduct.descriptionPl.trim() === "";
@@ -164,6 +167,7 @@ export function ProductCreateDialog({
             setProducts([...products, createdProduct]);
             setCreateDialogOpen(false);
             toast.success("Produkt został pomyślnie utworzony!");
+            eventBus.emit("products:reload");
         } catch (error) {
             console.error("Błąd podczas tworzenia produktu:", error);
             toast.error("Nie udało się dodać produktu.");
@@ -293,6 +297,7 @@ export function ProductCreateDialog({
                       type="number"
                       step="0.01"
                       value={newProduct.price}
+                      onFocus={(e) => e.target.select()}
                       onChange={(e) => {
                         const val = parseFloat(e.target.value) || 0;
                         setNewProduct({
@@ -313,13 +318,17 @@ export function ProductCreateDialog({
                       min="0"
                       max="100"
                       value={newProduct.discountPercentage}
+                      onFocus={(e) => e.target.select()}
                       onChange={(e) => {
-                        const val = parseInt(e.target.value) || 0;
-                        setNewProduct({
-                          ...newProduct,
-                          discountPercentage: val
-                        });
-                        if (val >= 0) clearError("discountPercentage");
+                          let val = parseInt(e.target.value) || 0;
+                          if (val > 100) val = 100;
+                          if (val < 0) val = 0;
+                          setNewProduct({
+                              ...newProduct,
+                              discountPercentage: val,
+                          });
+
+                          if (val >= 0 && val <= 100) clearError("discountPercentage");
                       }}
                       className={`bg-[#2A2A2A] border h-11 ${
                         errors.discountPercentage ? "border-red-500" : "border-[#3A3A3A]"
@@ -332,6 +341,7 @@ export function ProductCreateDialog({
                       type="number"
                       min="0"
                       value={newProduct.stock}
+                      onFocus={(e) => e.target.select()}
                       onChange={(e) => {
                         const val = parseInt(e.target.value) || 0;
                         setNewProduct({

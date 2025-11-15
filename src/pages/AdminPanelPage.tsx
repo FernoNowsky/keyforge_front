@@ -54,6 +54,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {eventBus} from "@/utils/events.ts";
 
 const mockChartData = [
   { date: 'Nov 1', revenue: 850, orders: 12 },
@@ -106,9 +107,8 @@ export function AdminPanelPage() {
     try {
       await ProductsApi.setDeleted(productToDelete.id);
 
-      // Aktualizuj stan produktów
       setProducts(products.filter(p => p.id !== productToDelete.id));
-      
+      eventBus.emit("products:reload");
       setTimeout(() => {
         toast.success(`Pomyślnie usunięto produkt: ${productToDelete.name}`);
       }, 500);

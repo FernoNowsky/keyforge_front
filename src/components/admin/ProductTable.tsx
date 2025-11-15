@@ -7,6 +7,7 @@ import { ProductsApi, type DetailedProduct } from "@/api";
 import { toast } from "sonner";
 import { useEffect, useRef, useState } from "react";
 import { ProductFilter } from "./ProductFilter";
+import { eventBus } from "@/utils/events.ts";
 interface ProductTableProps {
   onEdit: (product: DetailedProduct) => void;
   onDelete: (product: DetailedProduct) => void;
@@ -88,46 +89,51 @@ export const ProductTable = ({
 
   const prevFiltersRef = useRef<string>("");
 
-  useEffect(() => {
-    const filtersString = JSON.stringify(filters) + page + pageSize;
-    if (prevFiltersRef.current === filtersString) return;
-    prevFiltersRef.current = filtersString;
-
     const fetchProducts = async () => {
-      setLoading(true);
-      try {
-        const params: ProductQueryParams = {
-          page,
-          size: pageSize,
-          ...(filters.platforms?.length ? { platformIds: filters.platforms } : {}),
-          ...(filters.categories?.length ? { categoryIds: filters.categories } : {}),
-          ...(filters.types?.length ? { typeIds: filters.types } : {}),
-          ...(filters.producentIds?.length ? { manufacturerIds: filters.producentIds } : {}),
-          ...(filters.priceRange.min !== null ? { priceMin: filters.priceRange.min } : {}),
-          ...(filters.priceRange.max !== null ? { priceMax: filters.priceRange.max } : {}),
-          ...(filters.name ? { filter: filters.name } : {}),
-          ...(filters.visible !== null ? { visible: filters.visible } : {}),
-          ...(filters.sortBy ? { sortBy: filters.sortBy } : {}),
-          ...(filters.sortDirection ? { sortDirection: filters.sortDirection } : {}),
-        };
+        setLoading(true);
+        try {
+            const params: ProductQueryParams = {
+                page,
+                size: pageSize,
+                ...(filters.platforms?.length ? { platformIds: filters.platforms } : {}),
+                ...(filters.categories?.length ? { categoryIds: filters.categories } : {}),
+                ...(filters.types?.length ? { typeIds: filters.types } : {}),
+                ...(filters.producentIds?.length ? { manufacturerIds: filters.producentIds } : {}),
+                ...(filters.priceRange.min !== null ? { priceMin: filters.priceRange.min } : {}),
+                ...(filters.priceRange.max !== null ? { priceMax: filters.priceRange.max } : {}),
+                ...(filters.name ? { filter: filters.name } : {}),
+                ...(filters.visible !== null ? { visible: filters.visible } : {}),
+                ...(filters.sortBy ? { sortBy: filters.sortBy } : {}),
+                ...(filters.sortDirection ? { sortDirection: filters.sortDirection } : {}),
+            };
 
-        const data = await ProductsApi.getAllDetailed(params, true);
-        setProducts(data.content);
-        setTotalPages(data.totalPages ?? 1);
+            const data = await ProductsApi.getAllDetailed(params, true);
+            setProducts(data.content);
+            setTotalPages(data.totalPages ?? 1);
 
-        if (onProductsChange) {
-          onProductsChange(data.content);
+            onProductsChange?.(data.content);
+        } catch (err) {
+            console.error("Błąd pobierania produktów:", err);
+            toast.error("Nie udało się pobrać produktów");
+        } finally {
+            setLoading(false);
         }
-      } catch (err) {
-        console.error("Błąd pobierania produktów:", err);
-        toast.error("Nie udało się pobrać produktów");
-      } finally {
-        setLoading(false);
-      }
     };
 
-    fetchProducts();
-  }, [filters, onProductsChange, page, pageSize]);
+    useEffect(() => {
+        const filtersString = JSON.stringify(filters) + page + pageSize;
+        if (prevFiltersRef.current === filtersString) return;
+
+        prevFiltersRef.current = filtersString;
+        fetchProducts();
+    }, [filters, page, pageSize]);
+
+    useEffect(() => {
+        const reloadHandler = () => fetchProducts();
+
+        eventBus.on("products:reload", reloadHandler);
+        return () => eventBus.off("products:reload", reloadHandler);
+    }, [filters, page, pageSize]);
 
   const handleFilterChange = (newFilters: ProductFilters) => {
     setPage(0);
