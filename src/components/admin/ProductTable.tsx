@@ -210,8 +210,7 @@ export const ProductTable = ({
               <option value="name">Nazwa</option>
               <option value="price">Cena</option>
               <option value="stock">Stan</option>
-              {/* TODO: Think about release Date as a data in a row. If yes, then add this below */}
-              {/* <option value="discountPercentage">Rabat</option> */}
+              <option value="discountPercentage">Rabat</option>
               <option value="releaseDate">Data wydania</option>
             </select>
           </div>

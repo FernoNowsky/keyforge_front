@@ -55,11 +55,10 @@ export const OrdersApi = {
         apiRequest<Order>(`/orders/${id}`),
 
     getByUserId: (userId?: string, params?: PaginationDto) =>
-        // TODO: for now sorting by id and desc to get the newest. maybe add this to params, not in api structure
         apiRequest<PaginatedResponse<OrdersResponse>>(`/orders?userId=${userId}&sortBy=id&sortDirection=DESC`, {params}),
 
     create: (data: CreateOrderRequest) => {
-        const obj = {items: data.products}; //TODO: adjust to backend dto
+        const obj = {items: data.products};
         return apiRequest<OrderResponse>("/orders", { method: "post", data: obj});
     },
 

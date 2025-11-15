@@ -213,7 +213,6 @@ export function NavigationBar() {
                     </NavigationMenuList>
                 </NavigationMenu>
             </div>
-            {/* TODO: calculate level here or in UserAccount component*/}
             {!isKeycloakDisabled && (
                 <UserAccount
                     open={userAccountOpen}

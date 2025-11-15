@@ -227,7 +227,6 @@ const fetchOrdersPage = useCallback(
       setSelectedOrder(order);
       setShowConfirmDialog(true);
     } else if (order.status === "COMPLETED") {
-      // TODO: spinner while waiting for keyspage
       navigateToKeysPage(order);
     }
   };

@@ -15,9 +15,7 @@ export function HomePage() {
     const fetchGames = async () => {
       try {
         const topGamesData = await ProductsApi.getAll();
-        // TODO: GET top games with stock > 0 based on orders from db
         setTopGames(topGamesData.content);
-        // TODO: Be sure that newGames have stcok > 0 before we display them in homePage
         const newestGamesData = await ProductsApi.getNewest();
         setNewGames(newestGamesData.content);
       } catch (err) {
