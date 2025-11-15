@@ -27,7 +27,7 @@ import {
     type Platform,
     type Producent,
     type ProductType,
-    ProductsApi,
+    ProductsApi, ReviewsAPI,
 } from "@/api";
 
 import {ProductTypeApi} from "@/api/productTypeApi.ts";
@@ -45,6 +45,7 @@ interface ProductEditDialogProps {
     setProducts: Dispatch<SetStateAction<DetailedProduct[]>>;
 }
 
+
 export function ProductEditDialog({
                                       editDialogOpen,
                                       setEditDialogOpen,
@@ -60,8 +61,46 @@ export function ProductEditDialog({
     const [productTypes, setProductTypes] = useState<ProductType[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [producents, setProducents] = useState<Producent[]>([]);
-
     const [errors, setErrors] = useState<Record<string, boolean>>({});
+    const [AIsummary, setAISummary] = useState("");
+
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [cooldown, setCooldown] = useState(0);
+
+    async function handleRefreshAISummary(productID: number) {
+        if (!productID) {
+            toast.error("Nie udało się pobrać danych z serwera.");
+            return;
+        }
+
+        setIsRefreshing(true);
+        setCooldown(10);
+
+        try {
+            await ReviewsAPI.refreshAISummary(productID)
+            const newAISummary = await ReviewsAPI.getAISummary(productID)
+            setAISummary(newAISummary.content)
+            toast.success("Wygenerowano ponownie streszczenie recenzji dla produktu")
+        } catch (err) {
+            console.error("Błąd pobierania streszczenia AI recenzji produktu:", err);
+            toast.error("Nie udało się pobrać danych z serwera.");
+        }
+    }
+
+
+    useEffect(() => {
+        if (!isRefreshing) return;
+        if (cooldown === 0) {
+            setIsRefreshing(false);
+            return;
+        }
+
+        const timer = setTimeout(() => {
+            setCooldown(prev => prev - 1);
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, [cooldown, isRefreshing]);
 
     useEffect(() => {
         const fetchMenuData = async () => {
@@ -78,6 +117,10 @@ export function ProductEditDialog({
                 setCategories(categoriesRes.content ?? categoriesRes);
                 setPlatforms(platformsRes.content ?? platformsRes);
                 setProducents(producentsRes.content ?? producentsRes);
+                if(selectedProductItem?.id) {
+                    const summaryData = await ReviewsAPI.getAISummary(selectedProductItem.id);
+                    if (summaryData) setAISummary(summaryData.content);
+                }
             } catch (err) {
                 console.error("Błąd pobierania danych do tworzenia produktu:", err);
                 toast.error("Nie udało się pobrać danych z serwera.");
@@ -87,7 +130,7 @@ export function ProductEditDialog({
         };
 
         fetchMenuData();
-    }, []);
+    }, [selectedProductItem]);
 
     useEffect(() => {
         if (editDialogOpen) {
@@ -446,6 +489,25 @@ export function ProductEditDialog({
                                         className={`bg-[#2A2A2A] border resize-none ${errors.descriptionEn ? "border-red-500" : "border-[#3A3A3A]"}`}
                                         placeholder="Enter product description in English..."
                                     />
+                                </div>
+                                <div className="bg-[#252525] rounded-lg p-6">
+                                    <Label className="text-sm text-[#C0C0C0] mb-2">Opis recenzji AI</Label>
+                                    <Textarea
+                                        rows={8}
+                                        value={AIsummary}
+                                        disabled={true}
+                                    />
+                                    <div className="w-full flex justify-end">
+                                        <Button
+                                            onClick={() => handleRefreshAISummary(selectedProductItem?.id)}
+                                            variant="outline"
+                                            disabled={isRefreshing}
+                                            className={`mt-4 px-6 shadow-lg 
+                                            ${isRefreshing ? "!cursor-not-allowed opacity-50" : "hover:!border-[#f1c562]/80"}`}
+                                        >
+                                            {isRefreshing ? `Odczekaj ${cooldown}s...` : "Wygeneruj streszczenie AI ponownie"}
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
                         </TabsContent>

@@ -45,5 +45,8 @@ export const ReviewsAPI = {
         apiRequest<AISummaryReview>(`reviews/main/product/${productId}`, {requiresAuth: false}),
 
     createReview: (review: ReviewCreateDto) =>
-        apiRequest<PaginatedResponse<ReviewsCreateResponse>>('reviews', {method: 'POST', data: review})
+        apiRequest<PaginatedResponse<ReviewsCreateResponse>>('reviews', {method: 'POST', data: review}),
+
+    refreshAISummary: (productId: number) =>
+        apiRequest(`reviews/main/product/regenerate/${productId}`, {method: 'POST'}),
 };
