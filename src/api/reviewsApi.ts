@@ -4,7 +4,7 @@ import type { PaginatedResponse } from "./types/common.types";
 export interface Review {
   id: number
   productId: number
-  userId: number
+  userId: string
   content: string
   status: "PENDING" | "APPROVED" | "REJECTED"
   rating: number
@@ -35,8 +35,8 @@ export interface ReviewsCreateResponse {
 
 export const ReviewsAPI = {
 
-    getByProductId: (productId: number) =>
-        apiRequest<PaginatedResponse<Review>>(`/reviews?productId=${productId}&status=APPROVED`, {requiresAuth: false}),
+    getByProductId: (productId: number, params?: PaginationDto) =>
+        apiRequest<PaginatedResponse<Review>>(`/reviews?productId=${productId}&status=APPROVED`, {requiresAuth: false, params}),
 
     getByUserId: (userId?: string, params?: PaginationDto) =>
         apiRequest<PaginatedResponse<Review>>(`reviews?userId=${userId}`, {params}),

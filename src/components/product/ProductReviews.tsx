@@ -4,23 +4,39 @@ import { User, Star, ChevronDown } from "lucide-react";
 import type { Review } from "@/api/reviewsApi";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 
+interface UserData {
+    id: string;
+    username: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+}
+
 interface Props {
     reviews: Review[];
     loading: boolean;
+    userMap: Record<string, UserData>;
+    loadNext: () => void;
+    hasMore: boolean;
 }
 
-export const ProductReviews = ({ reviews, loading }: Props) => {
+export const ProductReviews = ({ reviews, loading, userMap, loadNext, hasMore }: Props) => {
     const isMobile = useMediaQuery("(max-width: 768px)");
     const [open, setOpen] = useState(false);
     const contentRef = useRef<HTMLDivElement>(null);
     const [height, setHeight] = useState(0);
 
-    // Aktualizacja wysokości, gdy zmieniają się recenzje lub stan
     useEffect(() => {
         if (contentRef.current) {
             setHeight(contentRef.current.scrollHeight);
         }
     }, [reviews, open]);
+
+    const getUserDisplay = (userId: string) => {
+        const user = userMap[userId];
+        if (!user) return userId;
+        return user.username;
+    };
 
     return (
         <Card className="bg-[#2A2A2A] border-[#3A3A3A] overflow-hidden">
@@ -43,7 +59,6 @@ export const ProductReviews = ({ reviews, loading }: Props) => {
                 )}
             </CardHeader>
 
-            {/* Kontener z dynamiczną wysokością */}
             <div
                 style={{
                     maxHeight: isMobile ? (open ? `${height}px` : "0px") : "none",
@@ -74,7 +89,7 @@ export const ProductReviews = ({ reviews, loading }: Props) => {
                                     </div>
                                     <div className="flex-1">
                                         <p className="text-[#F8F8F8] font-semibold text-sm">
-                                            {review.userId}
+                                            {getUserDisplay(review.userId)}
                                         </p>
                                         <p className="text-[#A0A0A0] text-xs">
                                             {new Date(
@@ -104,6 +119,16 @@ export const ProductReviews = ({ reviews, loading }: Props) => {
                                 </p>
                             </div>
                         ))
+                    )}
+                    {hasMore && (
+                        <div className="flex justify-center mt-4">
+                            <button
+                                onClick={loadNext}
+                                className="px-4 py-2 bg-[#3A3A3A] text-[#F8F8F8] rounded-lg hover:bg-[#4A4A4A] transition"
+                            >
+                                {loading ? "Ładowanie..." : "Załaduj więcej"}
+                            </button>
+                        </div>
                     )}
                 </CardContent>
             </div>

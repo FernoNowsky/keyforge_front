@@ -7,29 +7,66 @@ export function useReviews(productId?: number) {
     const [totalReviews, setTotalReviews] = useState(0);
     const [loading, setLoading] = useState(true);
 
-    const loadReviews = useCallback(async () => {
-        if (!productId) return;
-        try {
-            const data = await ReviewsAPI.getByProductId(productId);
-            if (data) {
-                setReviews(data.content);
+    const [page, setPage] = useState(0);
+    const [hasMore, setHasMore] = useState(true);
+
+    const PAGE_SIZE = 10;
+
+    const loadReviews = useCallback(
+        async (requestedPage: number = 0) => {
+            if (!productId) return;
+
+            setLoading(true);
+
+            try {
+                const data = await ReviewsAPI.getByProductId(productId, {
+                    page: requestedPage,
+                    size: PAGE_SIZE
+                });
+
+                if (requestedPage === 0) {
+                    // first load / refresh
+                    setReviews(data.content);
+                } else {
+                    // append next page
+                    setReviews(prev => [...prev, ...data.content]);
+                }
+
                 setTotalReviews(data.totalElements);
+                setHasMore(data.content.length === PAGE_SIZE);
+                setPage(requestedPage);
+            } catch {
+                toast.warning("Nie udało się wczytać opinii produktu");
+            } finally {
+                setLoading(false);
             }
-        } catch {
-            toast.warning("Nie udało się wczytać opinii produktu");
-        } finally {
-            setLoading(false);
+        },
+        [productId]
+    );
+
+    useEffect(() => {
+        if (productId) {
+            loadReviews(0);
         }
     }, [productId]);
 
-    useEffect(() => {
-        loadReviews();
-    }, [loadReviews]);
+    const loadNext = () => {
+        if (!loading && hasMore) {
+            loadReviews(page + 1);
+        }
+    };
 
     const averageRating =
         reviews.length > 0
             ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
             : 0;
 
-    return { reviews, totalReviews, averageRating, loading };
+    return {
+        reviews,
+        totalReviews,
+        averageRating,
+        loading,
+        loadNext,
+        hasMore
+    };
 }

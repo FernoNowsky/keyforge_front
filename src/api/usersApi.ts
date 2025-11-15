@@ -16,6 +16,14 @@ export interface ChangeUsernameQuery {
     lastName: string
 }
 
+export interface User {
+    id: string,
+    username: string,
+    firstName: string,
+    lastName: string,
+    email: string
+}
+
 export const UsersApi = {
     getLoyaltyPoints: (userID: string | undefined) =>
         apiRequest<UserPointsResponse>(`/loyalty-users/${userID}`),
@@ -27,5 +35,13 @@ export const UsersApi = {
         apiRequest(`/users/${userID}`, { method: "PUT", data: data }),
 
     isGoogleAccount: (userID: string | undefined) =>
-        apiRequest<boolean>(`/users/${userID}/is-federated`)
+        apiRequest<boolean>(`/users/${userID}/is-federated`),
+
+    getUsersById: (userIDs: string[]): Promise<User[]>=>
+        apiRequest(`/users/`, {
+            params: {
+                userIds: userIDs.join(','),
+                requiresAuth: false
+            },
+        })
 };
