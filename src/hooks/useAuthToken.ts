@@ -82,11 +82,12 @@ export async function logout() {
 
 export function useAuth() {
     const keycloak = useKeycloakInstance()
-
     return {
         isAuthenticated: keycloak?.authenticated ?? false,
         username: keycloak?.idTokenParsed?.preferred_username ?? null,
         email: keycloak?.idTokenParsed?.email ?? null,
+        firstName: keycloak?.idTokenParsed?.given_name ?? null,
+        lastName: keycloak?.idTokenParsed?.family_name ?? null,
         userId: keycloak?.idTokenParsed?.sub ?? undefined,
         token: keycloak?.token ?? null,
         refreshToken: keycloak?.refreshToken ?? null,

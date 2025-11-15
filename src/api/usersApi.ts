@@ -10,10 +10,19 @@ export interface ResetPasswordQuery {
     newPassword: string
 }
 
+export interface ChangeUsernameQuery {
+    username: string,
+    firstName: string,
+    lastName: string
+}
+
 export const UsersApi = {
     getLoyaltyPoints: (userID: string | undefined) =>
         apiRequest<UserPointsResponse>(`/loyalty-users/${userID}`),
 
     resetPassword: (userID: string | undefined, data: ResetPasswordQuery) =>
-        apiRequest(`/users/${userID}/reset-password`, { method: "PUT", data: data}),
+        apiRequest(`/users/${userID}/reset-password`, { method: "PUT", data: data }),
+
+    changeUsername: (userID: string | undefined, data: ChangeUsernameQuery) =>
+        apiRequest(`/users/${userID}`, { method: "PUT", data: data })
 };

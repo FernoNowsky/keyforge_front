@@ -3,15 +3,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Mail, Lock, AlertCircle, CheckCircle } from 'lucide-react'
+import {Lock, AlertCircle, CheckCircle, Users} from 'lucide-react'
 import { UsersApi } from '@/api/usersApi'
 import { useAuth } from '@/hooks/useAuthToken'
 
 export default function SettingsPage() {
-    const { userId, email: authEmail } = useAuth()
+    const { userId, username: authUsername, firstName, lastName } = useAuth()
 
-    const [email, setEmail] = useState('')
-    const [emailError, setEmailError] = useState('')
+    const [username, setUsername] = useState('')
+    const [usernameError, setUsernameError] = useState('')
     const [passwordData, setPasswordData] = useState({
         current: '',
         new: '',
@@ -27,22 +27,54 @@ export default function SettingsPage() {
     const [isLoading, setIsLoading] = useState(false)
 
     useEffect(() => {
-        if (authEmail) setEmail(authEmail)
-    }, [authEmail])
+        if (authUsername) setUsername(authUsername)
+    }, [authUsername])
 
-    const validateEmail = (value: string) => {
+    const validateUsername = (value: string) => {
         if (!value.trim()) {
-            setEmailError('Adres e-mail nie może być pusty')
+            setUsernameError('Nazwa użytkownika nie może być pusta')
             return false
         }
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        if (!emailRegex.test(value)) {
-            setEmailError('Nieprawidłowy format adresu e-mail')
+
+        if (value.length < 6) {
+            setUsernameError('Nazwa użytkownika musi mieć co najmniej 6 znaków')
             return false
         }
-        setEmailError('')
+
+        const usernameRegex = /^[a-zA-Z0-9_]+$/
+        if (!usernameRegex.test(value)) {
+            setUsernameError('Nazwa użytkownika może zawierać tylko litery, cyfry i "_"')
+            return false
+        }
+
+        setUsernameError('')
         return true
     }
+
+    const handleChangeUsername = async () => {
+        setSuccessMessage('')
+
+        if (!validateUsername(username)) return
+
+        setIsLoading(true)
+        try {
+            await UsersApi.changeUsername(userId, { username, firstName, lastName })
+            setSuccessMessage('Nazwa użytkownika została zaktualizowana')
+            setTimeout(() => setSuccessMessage(''), 3000)
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        catch (error: any) {
+            if (error?.response?.status === 409 || error?.status === 409) {
+                setUsernameError('Taka nazwa użytkownika jest już zajęta')
+            } else {
+                setUsernameError('Wystąpił błąd podczas zmiany nazwy użytkownika')
+            }
+        }
+        finally {
+            setIsLoading(false)
+        }
+    }
+
     const validatePassword = () => {
         const errors = {
             current: '',
@@ -84,13 +116,6 @@ export default function SettingsPage() {
 
         setPasswordErrors(errors)
         return isValid
-    }
-
-    const handleChangeEmail = () => {
-        if (validateEmail(email)) {
-            setSuccessMessage('Adres e-mail został zaktualizowany')
-            setTimeout(() => setSuccessMessage(''), 3000)
-        }
     }
 
     const handleChangePassword = async () => {
@@ -155,40 +180,40 @@ export default function SettingsPage() {
                 <Card className="bg-[#1F1F1F] border-[#3A3A3A] hover:border-[#D4A44A]/40 transition-all duration-300 hover:scale-[1.01]">
                     <CardHeader>
                         <CardTitle className="text-white flex items-center gap-2 text-lg">
-                            <Mail className="h-5 w-5 text-[#D4A44A]" />
-                            Adres e-mail
+                            <Users className="h-5 w-5 text-[#D4A44A]" />
+                            Nazwa użytkownika
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div>
-                            <Label htmlFor="email" className="text-gray-400">Aktualny e-mail</Label>
+                            <Label htmlFor="username" className="text-gray-400">Aktualna nazwa użytkownika</Label>
                             <Input
-                                id="email"
-                                type="email"
-                                value={email}
+                                id="username"
+                                value={username}
                                 onChange={(e) => {
-                                    setEmail(e.target.value)
-                                    setEmailError('')
+                                    setUsername(e.target.value)
+                                    setUsernameError('')
                                 }}
                                 className={`bg-[#2A2A2A] border-[#3A3A3A] text-white mt-2 focus:ring-1 focus:ring-[#D4A44A] ${
-                                    emailError ? 'border-red-500' : ''
+                                    usernameError ? 'border-red-500' : ''
                                 }`}
                             />
-                            {emailError && (
+                            {usernameError && (
                                 <div className="flex items-center gap-2 mt-2 text-red-400 text-sm">
                                     <AlertCircle className="h-4 w-4" />
-                                    <span>{emailError}</span>
+                                    <span>{usernameError}</span>
                                 </div>
                             )}
                         </div>
-                        <Button 
-                            onClick={handleChangeEmail}
+                        <Button
+                            onClick={handleChangeUsername}
                             className="bg-[#D4A44A] text-black hover:bg-[#B8873D] font-semibold"
                         >
-                            Zmień e-mail
+                            Zmień nazwę użytkownika
                         </Button>
                     </CardContent>
                 </Card>
+
                 <Card className="bg-[#1F1F1F] border-[#3A3A3A] hover:border-[#D4A44A]/40 transition-all duration-300 hover:scale-[1.01]">
                     <CardHeader>
                         <CardTitle className="text-white flex items-center gap-2 text-lg">
