@@ -24,5 +24,8 @@ export const UsersApi = {
         apiRequest(`/users/${userID}/reset-password`, { method: "PUT", data: data }),
 
     changeUsername: (userID: string | undefined, data: ChangeUsernameQuery) =>
-        apiRequest(`/users/${userID}`, { method: "PUT", data: data })
+        apiRequest(`/users/${userID}`, { method: "PUT", data: data }),
+
+    isGoogleAccount: (userID: string | undefined) =>
+        apiRequest<boolean>(`/users/${userID}/is-federated`)
 };

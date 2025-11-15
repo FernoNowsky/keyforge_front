@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {Lock, AlertCircle, CheckCircle, Users} from 'lucide-react'
+import {Lock, AlertCircle, CheckCircle, Users, ShieldCheck} from 'lucide-react'
 import { UsersApi } from '@/api/usersApi'
 import { useAuth } from '@/hooks/useAuthToken'
 
@@ -25,10 +25,26 @@ export default function SettingsPage() {
     })
     const [successMessage, setSuccessMessage] = useState('')
     const [isLoading, setIsLoading] = useState(false)
+    const [isGoogleAccount, setIsGoogleAccount] = useState(false)
 
     useEffect(() => {
         if (authUsername) setUsername(authUsername)
     }, [authUsername])
+
+    useEffect(() => {
+        const checkGoogleAccount = async () => {
+            try {
+                const isGoogle = await UsersApi.isGoogleAccount(userId)
+                setIsGoogleAccount(isGoogle)
+            } catch (err) {
+                console.error(err)
+            }
+        }
+
+        if (userId) {
+            checkGoogleAccount()
+        }
+    }, [userId])
 
     const validateUsername = (value: string) => {
         if (!value.trim()) {
@@ -120,25 +136,25 @@ export default function SettingsPage() {
 
     const handleChangePassword = async () => {
         setSuccessMessage('')
-        
+
         if (!validatePassword()) {
             return
         }
 
         setIsLoading(true)
-        
+
         try {
             await UsersApi.resetPassword(userId, {
                 password: passwordData.current,
                 newPassword: passwordData.new
             })
-            
+
             setSuccessMessage('Hasło zostało pomyślnie zmienione')
             setPasswordData({ current: '', new: '', confirm: '' })
             setPasswordErrors({ current: '', new: '', confirm: '', general: '' })
-            
+
             setTimeout(() => setSuccessMessage(''), 3000)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             if (error?.response?.status === 409 || error?.status === 409) {
                 setPasswordErrors({
@@ -207,106 +223,126 @@ export default function SettingsPage() {
                         </div>
                         <Button
                             onClick={handleChangeUsername}
-                            className="bg-[#D4A44A] text-black hover:bg-[#B8873D] font-semibold"
+                            disabled={isLoading}
+                            className="bg-[#D4A44A] text-black hover:bg-[#B8873D] font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             Zmień nazwę użytkownika
                         </Button>
                     </CardContent>
                 </Card>
 
-                <Card className="bg-[#1F1F1F] border-[#3A3A3A] hover:border-[#D4A44A]/40 transition-all duration-300 hover:scale-[1.01]">
-                    <CardHeader>
-                        <CardTitle className="text-white flex items-center gap-2 text-lg">
-                            <Lock className="h-5 w-5 text-[#D4A44A]" />
-                            Zmiana hasła
-                        </CardTitle>
-                        <CardDescription className="text-gray-400">
-                            Hasło musi zawierać minimum 8 znaków, wielką i małą literę oraz cyfrę
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {passwordErrors.general && (
-                            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 flex items-center gap-2">
-                                <AlertCircle className="h-4 w-4 text-red-400" />
-                                <p className="text-red-400 text-sm">{passwordErrors.general}</p>
+                {isGoogleAccount ? (
+                    <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 border-blue-500/30">
+                        <CardContent className="p-6 flex flex-col sm:flex-row items-start gap-4">
+                            <div className="bg-blue-500 p-3 rounded-lg shadow-md shadow-blue-900/40">
+                                <ShieldCheck className="h-6 w-6 text-white" />
                             </div>
-                        )}
-                        
-                        <div>
-                            <Label htmlFor="current-password" className="text-gray-400">Aktualne hasło</Label>
-                            <Input
-                                id="current-password"
-                                type="password"
-                                value={passwordData.current}
-                                onChange={(e) => {
-                                    setPasswordData({ ...passwordData, current: e.target.value })
-                                    setPasswordErrors({ ...passwordErrors, current: '', general: '' })
-                                }}
-                                className={`bg-[#2A2A2A] border-[#3A3A3A] text-white mt-2 focus:ring-1 focus:ring-[#D4A44A] ${
-                                    passwordErrors.current ? 'border-red-500' : ''
-                                }`}
-                            />
-                            {passwordErrors.current && (
-                                <div className="flex items-center gap-2 mt-2 text-red-400 text-sm">
-                                    <AlertCircle className="h-4 w-4" />
-                                    <span>{passwordErrors.current}</span>
+                            <div>
+                                <h3 className="text-lg font-bold text-white mb-2">Konto Google</h3>
+                                <p className="text-sm text-gray-300 leading-relaxed">
+                                    Używasz konta Google do logowania. Zarządzanie hasłem odbywa się przez{' '}
+                                    <span className="text-blue-400 font-semibold">Google Account</span>.
+                                    Nie możesz zmienić hasła w tym panelu.
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                ) : (
+                    <Card className="bg-[#1F1F1F] border-[#3A3A3A] hover:border-[#D4A44A]/40 transition-all duration-300 hover:scale-[1.01]">
+                        <CardHeader>
+                            <CardTitle className="text-white flex items-center gap-2 text-lg">
+                                <Lock className="h-5 w-5 text-[#D4A44A]" />
+                                Zmiana hasła
+                            </CardTitle>
+                            <CardDescription className="text-gray-400">
+                                Hasło musi zawierać minimum 8 znaków, wielką i małą literę oraz cyfrę
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {passwordErrors.general && (
+                                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 flex items-center gap-2">
+                                    <AlertCircle className="h-4 w-4 text-red-400" />
+                                    <p className="text-red-400 text-sm">{passwordErrors.general}</p>
                                 </div>
                             )}
-                        </div>
 
-                        <div>
-                            <Label htmlFor="new-password" className="text-gray-400">Nowe hasło</Label>
-                            <Input
-                                id="new-password"
-                                type="password"
-                                value={passwordData.new}
-                                onChange={(e) => {
-                                    setPasswordData({ ...passwordData, new: e.target.value })
-                                    setPasswordErrors({ ...passwordErrors, new: '', general: '' })
-                                }}
-                                className={`bg-[#2A2A2A] border-[#3A3A3A] text-white mt-2 focus:ring-1 focus:ring-[#D4A44A] ${
-                                    passwordErrors.new ? 'border-red-500' : ''
-                                }`}
-                            />
-                            {passwordErrors.new && (
-                                <div className="flex items-center gap-2 mt-2 text-red-400 text-sm">
-                                    <AlertCircle className="h-4 w-4" />
-                                    <span>{passwordErrors.new}</span>
-                                </div>
-                            )}
-                        </div>
+                            <div>
+                                <Label htmlFor="current-password" className="text-gray-400">Aktualne hasło</Label>
+                                <Input
+                                    id="current-password"
+                                    type="password"
+                                    value={passwordData.current}
+                                    onChange={(e) => {
+                                        setPasswordData({ ...passwordData, current: e.target.value })
+                                        setPasswordErrors({ ...passwordErrors, current: '', general: '' })
+                                    }}
+                                    className={`bg-[#2A2A2A] border-[#3A3A3A] text-white mt-2 focus:ring-1 focus:ring-[#D4A44A] ${
+                                        passwordErrors.current ? 'border-red-500' : ''
+                                    }`}
+                                />
+                                {passwordErrors.current && (
+                                    <div className="flex items-center gap-2 mt-2 text-red-400 text-sm">
+                                        <AlertCircle className="h-4 w-4" />
+                                        <span>{passwordErrors.current}</span>
+                                    </div>
+                                )}
+                            </div>
 
-                        <div>
-                            <Label htmlFor="confirm-password" className="text-gray-400">Potwierdź nowe hasło</Label>
-                            <Input
-                                id="confirm-password"
-                                type="password"
-                                value={passwordData.confirm}
-                                onChange={(e) => {
-                                    setPasswordData({ ...passwordData, confirm: e.target.value })
-                                    setPasswordErrors({ ...passwordErrors, confirm: '', general: '' })
-                                }}
-                                className={`bg-[#2A2A2A] border-[#3A3A3A] text-white mt-2 focus:ring-1 focus:ring-[#D4A44A] ${
-                                    passwordErrors.confirm ? 'border-red-500' : ''
-                                }`}
-                            />
-                            {passwordErrors.confirm && (
-                                <div className="flex items-center gap-2 mt-2 text-red-400 text-sm">
-                                    <AlertCircle className="h-4 w-4" />
-                                    <span>{passwordErrors.confirm}</span>
-                                </div>
-                            )}
-                        </div>
+                            <div>
+                                <Label htmlFor="new-password" className="text-gray-400">Nowe hasło</Label>
+                                <Input
+                                    id="new-password"
+                                    type="password"
+                                    value={passwordData.new}
+                                    onChange={(e) => {
+                                        setPasswordData({ ...passwordData, new: e.target.value })
+                                        setPasswordErrors({ ...passwordErrors, new: '', general: '' })
+                                    }}
+                                    className={`bg-[#2A2A2A] border-[#3A3A3A] text-white mt-2 focus:ring-1 focus:ring-[#D4A44A] ${
+                                        passwordErrors.new ? 'border-red-500' : ''
+                                    }`}
+                                />
+                                {passwordErrors.new && (
+                                    <div className="flex items-center gap-2 mt-2 text-red-400 text-sm">
+                                        <AlertCircle className="h-4 w-4" />
+                                        <span>{passwordErrors.new}</span>
+                                    </div>
+                                )}
+                            </div>
 
-                        <Button 
-                            onClick={handleChangePassword}
-                            disabled={isLoading}
-                            className="bg-[#D4A44A] text-black hover:bg-[#B8873D] font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {isLoading ? 'Zmieniam hasło...' : 'Zmień hasło'}
-                        </Button>
-                    </CardContent>
-                </Card>
+                            <div>
+                                <Label htmlFor="confirm-password" className="text-gray-400">Potwierdź nowe hasło</Label>
+                                <Input
+                                    id="confirm-password"
+                                    type="password"
+                                    value={passwordData.confirm}
+                                    onChange={(e) => {
+                                        setPasswordData({ ...passwordData, confirm: e.target.value })
+                                        setPasswordErrors({ ...passwordErrors, confirm: '', general: '' })
+                                    }}
+                                    className={`bg-[#2A2A2A] border-[#3A3A3A] text-white mt-2 focus:ring-1 focus:ring-[#D4A44A] ${
+                                        passwordErrors.confirm ? 'border-red-500' : ''
+                                    }`}
+                                />
+                                {passwordErrors.confirm && (
+                                    <div className="flex items-center gap-2 mt-2 text-red-400 text-sm">
+                                        <AlertCircle className="h-4 w-4" />
+                                        <span>{passwordErrors.confirm}</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            <Button
+                                onClick={handleChangePassword}
+                                disabled={isLoading}
+                                className="bg-[#D4A44A] text-black hover:bg-[#B8873D] font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isLoading ? 'Zmieniam hasło...' : 'Zmień hasło'}
+                            </Button>
+                        </CardContent>
+                    </Card>
+                )}
+
                 <Card className="bg-gradient-to-br from-red-500/10 to-red-600/10 border-red-500/30 hover:border-red-500/50 transition-all duration-300 hover:scale-[1.01]">
                     <CardContent className="p-6 flex flex-col sm:flex-row items-start gap-4">
                         <div className="bg-red-500 p-3 rounded-lg shadow-md shadow-red-900/40">
