@@ -57,6 +57,11 @@ export interface OrdersStatsRevenueResponse {
     revenue: number;
 }
 
+export interface OrdersStatsAmountResponse {
+    date: Date
+    amount: number;
+}
+
 export const OrdersApi = {
     getAll: (params?: PaginationDto) =>
         apiRequest<OrdersResponse>("/orders", { params }),
@@ -83,11 +88,28 @@ export const OrdersApi = {
     },
 
     getRevenueStats: (data: OrdersStatsRevenueRequest) => {
-      return apiRequest<OrdersStatsRevenueResponse>(`orders/stats/revenue`, {
+      return apiRequest<OrdersStatsRevenueResponse[]>(`orders/stats/revenue`, {
           params: {
             fromDate: data.fromDate.toISOString().split("T")[0],
             toDate: data.toDate.toISOString().split("T")[0]
         },
       })
-    }
+    },
+
+    getOrdersAmountStats: (data: OrdersStatsRevenueRequest) => {
+        return apiRequest<OrdersStatsAmountResponse[]>(`orders/stats/amount`, {
+            params: {
+                fromDate: data.fromDate.toISOString().split("T")[0],
+                toDate: data.toDate.toISOString().split("T")[0]
+            },
+        })
+    },
+
+    getRevenueStatsToday: () => {
+        return apiRequest<number>(`orders/stats/revenue/today`)
+    },
+
+    getOrdersAmountStatsToday: () => {
+        return apiRequest<number>(`orders/stats/amount/today`)
+    },
 };
