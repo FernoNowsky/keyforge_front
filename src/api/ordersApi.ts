@@ -47,6 +47,16 @@ export interface UpdateOrderRequest {
   status: OrderStatus;
 }
 
+export interface OrdersStatsRevenueRequest {
+    fromDate: Date
+    toDate: Date;
+}
+
+export interface OrdersStatsRevenueResponse {
+    date: Date
+    revenue: number;
+}
+
 export const OrdersApi = {
     getAll: (params?: PaginationDto) =>
         apiRequest<OrdersResponse>("/orders", { params }),
@@ -70,5 +80,14 @@ export const OrdersApi = {
     updateOrderById: (data: UpdateOrderRequest) => {
         const obj = {status: data.status}
         return apiRequest<Order>(`/orders/${data.orderId}`, {method: "PUT", data: obj})
+    },
+
+    getRevenueStats: (data: OrdersStatsRevenueRequest) => {
+      return apiRequest<OrdersStatsRevenueResponse>(`orders/stats/revenue`, {
+          params: {
+            fromDate: data.fromDate.toISOString().split("T")[0],
+            toDate: data.toDate.toISOString().split("T")[0]
+        },
+      })
     }
 };
