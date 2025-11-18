@@ -723,7 +723,7 @@ const fetchOrdersPage = useCallback(
           onOpenChange={setShowReviewDialog}
           products={reviewProducts}
           orderId={selectedOrderId ?? 0}
-          userId={1}
+          userId={userId}
           onReviewsCompleted={handleReviewsCompleted}
         />
       </div>

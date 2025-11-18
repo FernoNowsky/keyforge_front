@@ -4,10 +4,10 @@ import {
     TrendingDown,
     DollarSign,
     ShoppingCart,
-    Edit,
-    Trash2,
     Search,
-    Star, Loader2,
+    Star, 
+    Loader2,
+    ChevronDown,
 } from 'lucide-react';
 import {
     Card,
@@ -31,13 +31,17 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
-import {ProductsApi, type DetailedProduct, type Review, OrdersApi} from '@/api';
-import { mockReviews } from '@/assets/adminData';
+import {ProductsApi, type DetailedProduct, type Review, OrdersApi, ReviewsAPI} from '@/api';
 import { ProductEditDialog } from "@/components/admin/ProductEditDialog.tsx";
 import { toast } from 'sonner';
 import { ProductTable } from '@/components/admin/ProductTable';
@@ -53,6 +57,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {eventBus} from "@/utils/events.ts";
+import { UsersApi } from '@/api/usersApi';
 
 interface RevenueData {
     date: string;
@@ -115,7 +120,6 @@ const calcPercentChange = (today: number, yesterday: number): number => {
 
 export function AdminPanelPage() {
     const [activeTab, setActiveTab] = useState('dashboard');
-    const [reviews, setReviews] = useState<Review[]>(mockReviews);
     const [selectedProductItem, setSelectedProductItem] = useState<DetailedProduct | null>(null);
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -130,6 +134,7 @@ export function AdminPanelPage() {
     const [ordersToday, setOrdersToday] = useState(0)
     const [todayRevenueChange, setTodayRevenueChange] = useState(0);
     const [todayOrdersChange, setTodayOrdersChange] = useState(0);
+    const [reviews, setReviews] = useState<Review[]>([])
     const pendingReviews = reviews.filter((r) => r.status === 'PENDING').length;
 
     const loadDashboardData = async () => {
@@ -155,7 +160,6 @@ export function AdminPanelPage() {
                 OrdersApi.getOrdersAmountStatsToday(),
             ]);
 
-            // Normalize for fillMissingDates
             const revenueMapped: RevenueData[] = (revenueRes as unknown as RevenueData[]).map((r) => ({
                 date: r.date,
                 revenue: r.revenue,
@@ -170,11 +174,9 @@ export function AdminPanelPage() {
 
             setChartData(filled);
 
-            // Today values
             setRevenueToday(revenueTodayVal);
             setOrdersToday(ordersTodayVal);
 
-            // Yesterday values for % calculation
             const yesterday = new Date();
             yesterday.setDate(yesterday.getDate() - 1);
             const yDate = yesterday.toISOString().split('T')[0];
@@ -196,6 +198,38 @@ export function AdminPanelPage() {
     useEffect(() => {
         loadDashboardData();
     }, []);
+
+    const loadReviews = async () => {
+        try {
+            const res = await ReviewsAPI.getAll();
+            const reviewsWithUserId = res.content;
+            const allUserIds = Array.from(new Set(res.content.map(r => r.userId)));
+            const usersData = await UsersApi.getUsersById(allUserIds);
+
+            const userIdToUsername = new Map<string, string>();
+            usersData.forEach(user => {
+                userIdToUsername.set(user.id, user.username);
+            });
+
+            const updatedReviews = reviewsWithUserId.map(review => {
+                const username = userIdToUsername.get(review.userId);
+                    return {
+                        ...review,
+                        userId: username || review.userId,
+                    };
+            });
+
+            setReviews(updatedReviews);
+        } catch (error) {
+            console.error(error)
+            toast.error("Nie udało się pobrać opinii użytkowników")
+        }
+    }
+
+    useEffect(() => {
+        loadReviews();
+    }, []);
+
 
     const monthRevenueTotal = chartData.reduce((s, d) => s + d.revenue, 0);
     const avgOrderValue =
@@ -234,8 +268,41 @@ export function AdminPanelPage() {
         }
     };
 
-    const handleDeleteReview = (id: number) => {
-        setReviews(reviews.filter(r => r.id !== id));
+    const handleReviewStatusChange = async (
+        reviewId: number, 
+        currentStatus: string, 
+        newStatus: "PENDING" | "APPROVED" | "REJECTED"
+    ) => {
+        if (currentStatus === newStatus) return;
+
+        const shouldRefresh = 
+            newStatus === "APPROVED" || 
+            (currentStatus === "APPROVED" && (newStatus === "PENDING" || newStatus === "REJECTED"));
+        console.log(shouldRefresh)
+        try {
+            
+            await ReviewsAPI.updateReviewStatus(reviewId, {
+                status: newStatus,
+                refreshMainReviewProduct: shouldRefresh
+            });
+
+            setTimeout(() => {
+                setReviews(prevReviews =>
+                    prevReviews.map(review =>
+                        review.id === reviewId ? { ...review, status: newStatus } : review
+                    )
+                );
+                toast.success(`Status opinii został zaktualizowany na: ${
+                    newStatus === 'APPROVED' ? 'Zatwierdzono' :
+                    newStatus === 'REJECTED' ? 'Odrzucono' : 'Oczekuje'
+                }`);
+            }, 500);
+        } catch (error) {
+            console.error('Error updating review status:', error);
+            setTimeout(() => {
+                toast.error("Nie udało się zaktualizować statusu opinii");
+            }, 500);
+        }
     };
 
     const filteredReviews = reviews.filter(review => {
@@ -495,7 +562,6 @@ export function AdminPanelPage() {
                                                 <TableHead className="text-[#A0A0A0]">Ocena</TableHead>
                                                 <TableHead className="text-[#A0A0A0]">Status</TableHead>
                                                 <TableHead className="text-[#A0A0A0]">Data</TableHead>
-                                                <TableHead className="text-[#A0A0A0] text-right">Akcje</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -514,38 +580,46 @@ export function AdminPanelPage() {
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <Badge className={
-                                                            review.status === 'APPROVED'
-                                                                ? 'bg-green-500/20 text-green-500'
-                                                                : review.status === 'REJECTED'
-                                                                    ? 'bg-red-500/20 text-red-500'
-                                                                    : 'bg-yellow-500/20 text-yellow-500'
-                                                        }>
-                                                            {review.status === 'APPROVED' ? 'Zatwierdzono' :
-                                                                review.status === 'REJECTED' ? 'Odrzucono' : 'Oczekuje'}
-                                                        </Badge>
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <button className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                                                                    <Badge className={
+                                                                        review.status === 'APPROVED'
+                                                                            ? 'bg-green-500/20 text-green-500'
+                                                                            : review.status === 'REJECTED'
+                                                                                ? 'bg-red-500/20 text-red-500'
+                                                                                : 'bg-yellow-500/20 text-yellow-500'
+                                                                    }>
+                                                                        {review.status === 'APPROVED' ? 'Zatwierdzono' :
+                                                                            review.status === 'REJECTED' ? 'Odrzucono' : 'Oczekuje'}
+                                                                    </Badge>
+                                                                    <ChevronDown className="w-4 h-4 text-[#A0A0A0]" />
+                                                                </button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent className="bg-[#2A2A2A] border-[#3A3A3A]">
+                                                                <DropdownMenuItem
+                                                                    onClick={() => handleReviewStatusChange(review.id, review.status, 'PENDING')}
+                                                                    className="text-yellow-500 hover:bg-yellow-500/20 cursor-pointer"
+                                                                >
+                                                                    Oczekuje
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem
+                                                                    onClick={() => handleReviewStatusChange(review.id, review.status, 'APPROVED')}
+                                                                    className="text-green-500 hover:bg-green-500/20 cursor-pointer"
+                                                                >
+                                                                    Zatwierdź
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem
+                                                                    onClick={() => handleReviewStatusChange(review.id, review.status, 'REJECTED')}
+                                                                    className="text-red-500 hover:bg-red-500/20 cursor-pointer"
+                                                                >
+                                                                    Odrzuć
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
                                                     </TableCell>
                                                     <TableCell className="text-[#A0A0A0]">
-                                                        {review.createdAt.toLocaleDateString('pl-PL')}
-                                                    </TableCell>
-                                                    <TableCell className="text-right">
-                                                        <div className="flex items-center justify-end gap-2">
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                className="text-[#D4A44A] hover:text-[#f1c562] hover:bg-[#3A3A3A]"
-                                                            >
-                                                                <Edit className="w-4 h-4" />
-                                                            </Button>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                onClick={() => handleDeleteReview(review.id)}
-                                                                className="text-red-400 hover:text-red-300 hover:bg-[#3A3A3A]"
-                                                            >
-                                                                <Trash2 className="w-4 h-4" />
-                                                            </Button>
-                                                        </div>
+                                                        {new Date(review.createdAt).toLocaleDateString('pl-PL')}
                                                     </TableCell>
                                                 </TableRow>
                                             ))}

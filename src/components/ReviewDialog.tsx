@@ -22,7 +22,7 @@ interface ReviewDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   products: Product[];
-  userId: number;
+  userId: string | undefined;
   orderId: number;
   onReviewsCompleted?: () => void;
 }

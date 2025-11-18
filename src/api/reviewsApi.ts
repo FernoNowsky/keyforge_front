@@ -22,7 +22,7 @@ export interface AISummaryReview {
 
 export interface ReviewCreateDto {
   productId: number;
-  userId: number;
+  userId: string | undefined;
   rating: number;
   content: string;
   valid: boolean;
@@ -33,10 +33,18 @@ export interface ReviewsCreateResponse {
   totalElements: number;
 }
 
+export interface UpdateReviewResponse {
+  status: "PENDING" | "APPROVED" | "REJECTED",
+  refreshMainReviewProduct: boolean
+}
+
 export const ReviewsAPI = {
 
     getByProductId: (productId: number, params?: PaginationDto) =>
         apiRequest<PaginatedResponse<Review>>(`/reviews?productId=${productId}&status=APPROVED`, {requiresAuth: false, params}),
+
+    getAll: (params?: PaginationDto) =>
+        apiRequest<PaginatedResponse<Review>>(`/reviews`, {params}),
 
     getByUserId: (userId?: string, params?: PaginationDto) =>
         apiRequest<PaginatedResponse<Review>>(`reviews?userId=${userId}`, {params}),
@@ -49,4 +57,7 @@ export const ReviewsAPI = {
 
     refreshAISummary: (productId: number) =>
         apiRequest(`reviews/main/product/regenerate/${productId}`, {method: 'POST'}),
+
+    updateReviewStatus: (reviewId: number, data: UpdateReviewResponse) =>
+        apiRequest(`reviews/status/${reviewId}`, {method: "PUT", data: data})
 };
