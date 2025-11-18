@@ -4,10 +4,7 @@ import {
     TrendingDown,
     DollarSign,
     ShoppingCart,
-    Search,
-    Star, 
     Loader2,
-    ChevronDown,
 } from 'lucide-react';
 import {
     Card,
@@ -16,29 +13,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import {ProductsApi, type DetailedProduct, type Review, OrdersApi, ReviewsAPI} from '@/api';
@@ -58,6 +32,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import {eventBus} from "@/utils/events.ts";
 import { UsersApi } from '@/api/usersApi';
+import {ReviewsPagination} from "@/components/admin/reviews/ReviewsPagination.tsx";
+import {ReviewsTable} from "@/components/admin/reviews/ReviewsTable.tsx";
+import {ReviewsFilters} from "@/components/admin/reviews/ReviewsFilters.tsx";
+import {ReviewsHeader} from "@/components/admin/reviews/ReviewsHeader.tsx";
+import type {ReviewStatus} from "@/components/admin/reviews/ReviewsRow.tsx";
 
 interface RevenueData {
     date: string;
@@ -73,6 +52,16 @@ interface ChartDataPoint {
     date: string;
     revenue: number;
     amount: number;
+}
+
+interface ReviewsQueryParams {
+    page: number;
+    size?: number;
+    filter?: string;
+    status?: "PENDING" | "APPROVED" | "REJECTED";
+    userId?: string;
+    sortBy?: string;
+    sortDirection?: "ASC" | "DESC";
 }
 
 const getLast30Days = () => {
@@ -124,7 +113,6 @@ export function AdminPanelPage() {
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState('all');
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
     const [productToDelete, setProductToDelete] = useState<DetailedProduct | null>(null);
     const [dashboardLoading, setDashboardLoading] = useState(true);
@@ -136,6 +124,26 @@ export function AdminPanelPage() {
     const [todayOrdersChange, setTodayOrdersChange] = useState(0);
     const [reviews, setReviews] = useState<Review[]>([])
     const pendingReviews = reviews.filter((r) => r.status === 'PENDING').length;
+
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
+    const [totalPages, setTotalPages] = useState(1);
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [sortBy, setSortBy] = useState<string>("createdAt");
+    const [sortDirection, setSortDirection] = useState<"ASC" | "DESC">("DESC");
+    const [searchInput, setSearchInput] = useState('');
+
+
+    const handleSearch = () => {
+        setPage(0);
+        setSearchTerm(searchInput);
+    };
+
+    const handlePageChange = (newPage: number) => {
+        if (newPage >= 0 && newPage < totalPages) {
+            setPage(newPage);
+        }
+    };
 
     const loadDashboardData = async () => {
         try {
@@ -201,11 +209,22 @@ export function AdminPanelPage() {
 
     const loadReviews = async () => {
         try {
-            const res = await ReviewsAPI.getAll();
-            const reviewsWithUserId = res.content;
-            const allUserIds = Array.from(new Set(res.content.map(r => r.userId)));
-            const usersData = await UsersApi.getUsersById(allUserIds);
+            const params: ReviewsQueryParams = {
+                page,
+                size: pageSize,
+                sortBy,
+                sortDirection,
+                filter: searchTerm
+            };
 
+            if (statusFilter !== "all") {
+                params.status = statusFilter as ReviewStatus;
+            }
+
+            const res = await ReviewsAPI.getAll(params);
+            const reviewsWithUserId = res.content;
+            const allUserIds = Array.from(new Set(reviewsWithUserId.map(r => r.userId)));
+            const usersData = await UsersApi.getUsersById(allUserIds);
             const userIdToUsername = new Map<string, string>();
             usersData.forEach(user => {
                 userIdToUsername.set(user.id, user.username);
@@ -220,6 +239,7 @@ export function AdminPanelPage() {
             });
 
             setReviews(updatedReviews);
+            setTotalPages(res.totalPages ?? 1);
         } catch (error) {
             console.error(error)
             toast.error("Nie udało się pobrać opinii użytkowników")
@@ -228,7 +248,7 @@ export function AdminPanelPage() {
 
     useEffect(() => {
         loadReviews();
-    }, []);
+    }, [page, pageSize, statusFilter, sortBy, sortDirection, searchTerm]);
 
 
     const monthRevenueTotal = chartData.reduce((s, d) => s + d.revenue, 0);
@@ -304,12 +324,6 @@ export function AdminPanelPage() {
             }, 500);
         }
     };
-
-    const filteredReviews = reviews.filter(review => {
-        const matchesSearch = review.content.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStatus = statusFilter === 'all' || review.status === statusFilter;
-        return matchesSearch && matchesStatus;
-    });
 
     if (dashboardLoading && activeTab === 'dashboard') {
         return (
@@ -521,113 +535,68 @@ export function AdminPanelPage() {
 
                 {activeTab === 'reviews' && (
                     <div className="space-y-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h2 className="text-3xl font-bold text-[#F8F8F8]">Opinie użytkowników</h2>
-                                <p className="text-[#A0A0A0] mt-1">Moderuj i zarządzaj opiniami</p>
-                            </div>
-                        </div>
 
-                        <div className="flex gap-4">
-                            <div className="relative flex-1">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#A0A0A0]" />
-                                <Input
-                                    placeholder="Szukaj opinii..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-10 bg-[#2A2A2A] border-[#3A3A3A] text-[#F8F8F8]"
-                                />
+                        <ReviewsHeader />
+
+                        <ReviewsFilters
+                            searchTerm={searchInput}
+                            setSearchTerm={setSearchInput}
+                            onSearch={handleSearch}
+                            statusFilter={statusFilter}
+                            setStatusFilter={setStatusFilter}
+                            pageSize={pageSize}
+                            setPageSize={(size) => {
+                                setPageSize(size);
+                                setPage(0);
+                            }}
+                        />
+                        <div className="flex items-center gap-4 mb-4">
+
+                            <div>
+                                <label className="text-[#A0A0A0] mr-2">Sortuj według:</label>
+                                <select
+                                    value={sortBy}
+                                    onChange={(e) => { setSortBy(e.target.value); setPage(0); }}
+                                    className="bg-[#2A2A2A] border border-[#3A3A3A] text-white rounded-xl px-3 py-1"
+                                >
+                                    <option value="createdAt">Data dodania</option>
+                                    <option value="rating">Ocena</option>
+                                </select>
                             </div>
-                            <Select value={statusFilter} onValueChange={setStatusFilter}>
-                                <SelectTrigger className="w-48 bg-[#2A2A2A] border-[#3A3A3A] text-[#F8F8F8]">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent className="bg-[#2A2A2A] border-[#3A3A3A]">
-                                    <SelectItem value="all" className="text-[#F8F8F8]">Wszystkie</SelectItem>
-                                    <SelectItem value="PENDING" className="text-[#F8F8F8]">Oczekujące</SelectItem>
-                                    <SelectItem value="APPROVED" className="text-[#F8F8F8]">Zatwierdzone</SelectItem>
-                                    <SelectItem value="REJECTED" className="text-[#F8F8F8]">Odrzucone</SelectItem>
-                                </SelectContent>
-                            </Select>
+
+                            <div>
+                                <label className="text-[#A0A0A0] mr-2">Kierunek:</label>
+                                <select
+                                    value={sortDirection}
+                                    onChange={(e) =>
+                                    { setSortDirection(e.target.value as "ASC" | "DESC"); setPage(0); }
+                                    }
+                                    className="bg-[#2A2A2A] border border-[#3A3A3A] text-white rounded-xl px-3 py-1"
+                                >
+                                    <option value="ASC">Rosnąco</option>
+                                    <option value="DESC">Malejąco</option>
+                                </select>
+                            </div>
+
                         </div>
 
                         <Card className="bg-[#2A2A2A] border-[#3A3A3A]">
                             <CardContent className="p-6">
-                                <div className="overflow-x-auto">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow className="border-[#3A3A3A] hover:bg-transparent">
-                                                <TableHead className="text-[#A0A0A0]">Użytkownik</TableHead>
-                                                <TableHead className="text-[#A0A0A0]">Treść</TableHead>
-                                                <TableHead className="text-[#A0A0A0]">Ocena</TableHead>
-                                                <TableHead className="text-[#A0A0A0]">Status</TableHead>
-                                                <TableHead className="text-[#A0A0A0]">Data</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {filteredReviews.map((review) => (
-                                                <TableRow key={review.id} className="border-[#3A3A3A] hover:bg-[#1C1C1C]">
-                                                    <TableCell className="text-[#F8F8F8] font-medium">
-                                                        {review.userId}
-                                                    </TableCell>
-                                                    <TableCell className="text-[#F8F8F8] max-w-md">
-                                                        <div className="truncate">{review.content}</div>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <div className="flex items-center gap-1">
-                                                            <Star className="w-4 h-4 fill-[#D4A44A] text-[#D4A44A]" />
-                                                            <span className="text-[#F8F8F8]">{review.rating}</span>
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <DropdownMenu>
-                                                            <DropdownMenuTrigger asChild>
-                                                                <button className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                                                                    <Badge className={
-                                                                        review.status === 'APPROVED'
-                                                                            ? 'bg-green-500/20 text-green-500'
-                                                                            : review.status === 'REJECTED'
-                                                                                ? 'bg-red-500/20 text-red-500'
-                                                                                : 'bg-yellow-500/20 text-yellow-500'
-                                                                    }>
-                                                                        {review.status === 'APPROVED' ? 'Zatwierdzono' :
-                                                                            review.status === 'REJECTED' ? 'Odrzucono' : 'Oczekuje'}
-                                                                    </Badge>
-                                                                    <ChevronDown className="w-4 h-4 text-[#A0A0A0]" />
-                                                                </button>
-                                                            </DropdownMenuTrigger>
-                                                            <DropdownMenuContent className="bg-[#2A2A2A] border-[#3A3A3A]">
-                                                                <DropdownMenuItem
-                                                                    onClick={() => handleReviewStatusChange(review.id, review.status, 'PENDING')}
-                                                                    className="text-yellow-500 hover:bg-yellow-500/20 cursor-pointer"
-                                                                >
-                                                                    Oczekuje
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem
-                                                                    onClick={() => handleReviewStatusChange(review.id, review.status, 'APPROVED')}
-                                                                    className="text-green-500 hover:bg-green-500/20 cursor-pointer"
-                                                                >
-                                                                    Zatwierdź
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem
-                                                                    onClick={() => handleReviewStatusChange(review.id, review.status, 'REJECTED')}
-                                                                    className="text-red-500 hover:bg-red-500/20 cursor-pointer"
-                                                                >
-                                                                    Odrzuć
-                                                                </DropdownMenuItem>
-                                                            </DropdownMenuContent>
-                                                        </DropdownMenu>
-                                                    </TableCell>
-                                                    <TableCell className="text-[#A0A0A0]">
-                                                        {new Date(review.createdAt).toLocaleDateString('pl-PL')}
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                </div>
+
+                                <ReviewsTable
+                                    filteredReviews={reviews}
+                                    handleReviewStatusChange={handleReviewStatusChange}
+                                />
+
+                                <ReviewsPagination
+                                    page={page}
+                                    totalPages={totalPages}
+                                    handlePageChange={handlePageChange}
+                                />
+
                             </CardContent>
                         </Card>
+
                     </div>
                 )}
             </main>
@@ -638,8 +607,8 @@ export function AdminPanelPage() {
                         <AlertDialogTitle>Czy na pewno chcesz usunąć produkt?</AlertDialogTitle>
                         <AlertDialogDescription className="text-[#A0A0A0]">
                             Produkt <span className="text-[#D4A44A] font-semibold">
-                {productToDelete?.name}
-              </span>{" "}
+                                    {productToDelete?.name}
+                                  </span>{" "}
                             zostanie trwale usunięty z listy. Tej operacji nie można cofnąć.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
