@@ -232,21 +232,37 @@ export default function SettingsPage() {
                 </Card>
 
                 {isGoogleAccount ? (
-                    <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 border-blue-500/30">
-                        <CardContent className="p-6 flex flex-col sm:flex-row items-start gap-4">
-                            <div className="bg-blue-500 p-3 rounded-lg shadow-md shadow-blue-900/40">
-                                <ShieldCheck className="h-6 w-6 text-white" />
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-bold text-white mb-2">Konto Google</h3>
-                                <p className="text-sm text-gray-300 leading-relaxed">
-                                    Używasz konta Google do logowania. Zarządzanie hasłem odbywa się przez{' '}
-                                    <span className="text-blue-400 font-semibold">Google Account</span>.
-                                    Nie możesz zmienić hasła w tym panelu.
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <>
+                        <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 border-blue-500/30">
+                            <CardContent className="p-6 flex flex-col sm:flex-row items-start gap-4">
+                                <div className="bg-blue-500 p-3 rounded-lg shadow-md shadow-blue-900/40">
+                                    <ShieldCheck className="h-6 w-6 text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-white mb-2">Konto Google</h3>
+                                    <p className="text-sm text-gray-300 leading-relaxed">
+                                        Używasz konta Google do logowania. Zarządzanie hasłem odbywa się przez{' '}
+                                        <span className="text-blue-400 font-semibold">Google Account</span>.
+                                        Nie możesz zmienić hasła w tym panelu.
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <Card className="bg-gradient-to-br from-red-500/10 to-red-600/10 border-red-500/30 hover:border-red-500/50 transition-all duration-300 hover:scale-[1.01]">
+                            <CardContent className="p-6 flex flex-col sm:flex-row items-start gap-4">
+                                <div className="bg-red-500 p-3 rounded-lg shadow-md shadow-red-900/40">
+                                    <Lock className="h-6 w-6 text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-white mb-2">Bezpieczeństwo konta</h3>
+                                    <p className="text-sm text-gray-300 leading-relaxed">
+                                        Uwierzytelnianie odbywa się poprzez Google z użyciem protokołu <span className="text-white font-semibold">OAuth2</span>.
+                                        Nie przechowujemy Twojego hasła — wszystkie zmiany i zabezpieczenia konfigurujesz w ustawieniach Google.
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </>
                 ) : (
                     <Card className="bg-[#1F1F1F] border-[#3A3A3A] hover:border-[#D4A44A]/40 transition-all duration-300 hover:scale-[1.01]">
                         <CardHeader>
@@ -342,21 +358,6 @@ export default function SettingsPage() {
                         </CardContent>
                     </Card>
                 )}
-
-                <Card className="bg-gradient-to-br from-red-500/10 to-red-600/10 border-red-500/30 hover:border-red-500/50 transition-all duration-300 hover:scale-[1.01]">
-                    <CardContent className="p-6 flex flex-col sm:flex-row items-start gap-4">
-                        <div className="bg-red-500 p-3 rounded-lg shadow-md shadow-red-900/40">
-                            <Lock className="h-6 w-6 text-white" />
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-bold text-white mb-2">Bezpieczeństwo konta</h3>
-                            <p className="text-sm text-gray-300 leading-relaxed">
-                                Twoje dane są chronione protokołem <span className="text-white font-semibold">OAuth2</span>.
-                                Zalecamy używanie silnych, unikalnych haseł i ich regularną zmianę w celu maksymalnego bezpieczeństwa.
-                            </p>
-                        </div>
-                    </CardContent>
-                </Card>
             </div>
         </div>
     )
