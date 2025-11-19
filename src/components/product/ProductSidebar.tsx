@@ -106,6 +106,7 @@ export const ProductSidebar = ({ product, cartStock }: Props) => {
                     imgId: p.logoId,
                     name: p.name,
                     platform: p.platform.name,
+                    discountPercentage: p.discountPercentage,
                     price: p.price,
                     quantity: 1,
                 });

@@ -56,6 +56,7 @@ export function GameCard({ name, platform, price, imgId, id, discountPercentage 
                     imgId: imgId,
                     name: name,
                     platform: platform,
+                    discountPercentage: discountPercentage,
                     price: price,
                     quantity: 1
                 });

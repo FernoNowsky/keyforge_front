@@ -18,7 +18,7 @@ export function HomeBanner() {
 
         <div className="relative z-10 h-full flex flex-col justify-end items-center text-center px-6 pb-10 md:pb-16">
             <motion.h1
-            className="!text-2xl md:text-6xl font-extrabold text-[#D4A44A] mb-3 drop-shadow-md [text-stroke:_2px_black] [webkit-text-stroke:_2px_black]"
+            className="!text-2xl font-extrabold text-[#D4A44A] mb-3 drop-shadow-md [text-stroke:_2px_black] [webkit-text-stroke:_2px_black]"
             style={{
                 WebkitTextStroke: "2px black",
                 color: "#D4A44A",
