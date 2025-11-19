@@ -3,6 +3,12 @@
 
 @custom-variant dark (&:is(.dark *));
 
+* {
+    font-family: "Sora", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+}
+
 :root {
     font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
     line-height: 1.5;
