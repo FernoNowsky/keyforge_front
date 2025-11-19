@@ -10,6 +10,7 @@ type CartItem = {
     imgId: string
     platform: string
     price: number
+    discountPercentage: number
     quantity: number
 }
 
@@ -64,7 +65,13 @@ export function CartHoverSection() {
         }, 150)
     }
 
-    const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+    const getDiscountedPrice = (item: CartItem) => 
+        item.discountPercentage > 0
+            ? item.price * (1 - item.discountPercentage / 100)
+            : item.price;
+
+    const totalPrice = cartItems.reduce(
+        (sum, item) => sum + getDiscountedPrice(item) * item.quantity, 0);
 
     return (
         <div
@@ -98,6 +105,7 @@ export function CartHoverSection() {
                         <>
                             <div className="max-h-64 overflow-y-auto space-y-3 mb-3">
                                 {cartItems.map((item) => (
+
                                     <div
                                         key={item.id}
                                         className="flex justify-between items-center text-sm border-b border-[#3A3A3A] pb-2"
@@ -115,7 +123,7 @@ export function CartHoverSection() {
                                             </div>
                                         </div>
                                         <p className="text-[#D4A44A] font-semibold whitespace-nowrap">
-                                            {(item.price * item.quantity).toFixed(2)} PLN
+                                            {(getDiscountedPrice(item) * item.quantity).toFixed(2)} PLN
                                         </p>
                                     </div>
                                 ))}
