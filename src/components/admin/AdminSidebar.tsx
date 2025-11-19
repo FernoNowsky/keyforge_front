@@ -19,7 +19,6 @@ import {
   MessageSquare,
   Settings,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { SidebarUser } from "./SidebarUser";
 import { TeamSwitcher } from "./SidebarCompany";
 import Logo from "@/assets/logo_keyforge.png";
@@ -28,13 +27,11 @@ import { useAuth } from "@/hooks/useAuthToken";
 interface AppSidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  pendingReviews: number;
 }
 
 export function AdminSidebar({
   activeTab,
   setActiveTab,
-  pendingReviews,
 }: AppSidebarProps) {
   // Track if the sidebar is collapsed
   const [collapsed, setCollapsed] = useState(false);
@@ -74,7 +71,6 @@ export function AdminSidebar({
           title: "Opinie użytkowników",
           icon: MessageSquare,
           value: "reviews",
-          badge: pendingReviews,
         },
       ],
     },
@@ -128,11 +124,6 @@ export function AdminSidebar({
                         >
                           <item.icon className="w-5 h-5" />
                           <span>{item.title}</span>
-                          {item.badge && item.badge > 0 && (
-                            <Badge className="ml-auto bg-red-500 text-white">
-                              {item.badge}
-                            </Badge>
-                          )}
                         </button>
                       </SidebarMenuButton>
                     </SidebarMenuItem>

@@ -123,7 +123,6 @@ export function AdminPanelPage() {
     const [todayRevenueChange, setTodayRevenueChange] = useState(0);
     const [todayOrdersChange, setTodayOrdersChange] = useState(0);
     const [reviews, setReviews] = useState<Review[]>([])
-    const pendingReviews = reviews.filter((r) => r.status === 'PENDING').length;
 
     const [page, setPage] = useState(0);
     const [pageSize, setPageSize] = useState(10);
@@ -328,7 +327,7 @@ export function AdminPanelPage() {
     if (dashboardLoading && activeTab === 'dashboard') {
         return (
             <div className="flex min-h-screen bg-[#1C1C1C]">
-                <AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} pendingReviews={0} />
+                <AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
                 <main className="flex-1 py-4 mr-14">
                     <div className="space-y-6 flex justify-center items-center min-h-screen">
                         <Loader2 className="animate-spin w-10 h-10 text-[#D4A44A]" />
@@ -343,7 +342,6 @@ export function AdminPanelPage() {
             <AdminSidebar
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
-                pendingReviews={pendingReviews}
             />
             <main className="flex-1 py-4 mr-14">
                 {activeTab === 'dashboard' && (
