@@ -37,6 +37,7 @@ import {ReviewsTable} from "@/components/admin/reviews/ReviewsTable.tsx";
 import {ReviewsFilters} from "@/components/admin/reviews/ReviewsFilters.tsx";
 import {ReviewsHeader} from "@/components/admin/reviews/ReviewsHeader.tsx";
 import type {ReviewStatus} from "@/components/admin/reviews/ReviewsRow.tsx";
+import { OrdersTable } from '@/components/admin/orders/OrdersTable';
 
 interface RevenueData {
     date: string;
@@ -520,6 +521,10 @@ export function AdminPanelPage() {
                         </div>
 
                     </div>
+                )}
+
+                {activeTab === "orders" && (
+                    <OrdersTable/>
                 )}
 
                 {activeTab === "products" && (

@@ -64,7 +64,7 @@ export interface OrdersStatsAmountResponse {
 
 export const OrdersApi = {
     getAll: (params?: PaginationDto) =>
-        apiRequest<OrdersResponse>("/orders", { params }),
+        apiRequest<PaginatedResponse<OrdersResponse>>("/orders", { params }),
 
     getById: (id: number) =>
         apiRequest<Order>(`/orders/${id}`),

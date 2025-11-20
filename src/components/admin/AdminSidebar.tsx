@@ -17,7 +17,7 @@ import {
   LayoutDashboard,
   Package,
   MessageSquare,
-  Settings,
+  ShoppingCart,
 } from "lucide-react";
 import { SidebarUser } from "./SidebarUser";
 import { TeamSwitcher } from "./SidebarCompany";
@@ -63,6 +63,11 @@ export function AdminSidebar({
       title: "Zarządzanie",
       items: [
         {
+          title: "Zamówienia",
+          icon: ShoppingCart,
+          value: "orders",
+        },
+        {
           title: "Produkty",
           icon: Package,
           value: "products",
@@ -71,16 +76,6 @@ export function AdminSidebar({
           title: "Opinie użytkowników",
           icon: MessageSquare,
           value: "reviews",
-        },
-      ],
-    },
-    {
-      title: "Konfiguracja",
-      items: [
-        {
-          title: "Ustawienia",
-          icon: Settings,
-          value: "settings",
         },
       ],
     },
