@@ -78,18 +78,31 @@ export function OrdersTable() {
 
   const fetchOrders = async () => {
     setLoading(true);
+
+    if (filters.orderId && filters.orderId.trim()) {
+      const orderIdNum = parseInt(filters.orderId.trim());
+
+      if (!isNaN(orderIdNum)) {
+        try {
+          const order = await OrdersApi.getById(orderIdNum);
+          setOrders([order]);
+          setTotalPages(1);
+          setLoading(false);
+          return;
+        } catch {
+          setOrders([]);
+          setTotalPages(1);
+          setLoading(false);
+          return;
+        }
+      }
+    }
+
     try {
       const params: OrderQueryParams = {
         page,
         size: pageSize,
       };
-
-      if (filters.orderId && filters.orderId.trim()) {
-        const orderIdNum = parseInt(filters.orderId.trim());
-        if (!isNaN(orderIdNum)) {
-          params.orderId = orderIdNum;
-        }
-      }
 
       if (filters.userId && filters.userId.trim()) {
         params.userId = filters.userId;
