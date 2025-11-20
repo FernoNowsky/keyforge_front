@@ -47,12 +47,13 @@ export function OrderDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#1F1F1F] border-[#3A3A3A] text-white !max-w-6xl w-full max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-[#D4A44A]">
-            Szczegóły zamówienia #{order.id}
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="bg-[#1F1F1F] border-[#3A3A3A] text-white !max-w-6xl w-full max-h-[90vh] overflow-y-auto !px-8 p-0">
+        <DialogHeader className="sticky top-0 z-20 bg-[#1F1F1F] border-b border-[#3A3A3A] py-8">
+        <DialogTitle className="text-2xl font-bold text-[#D4A44A]">
+          Szczegóły zamówienia #{order.id}
+        </DialogTitle>
+      </DialogHeader>
+
 
         <div className="space-y-6 mt-4">
           <div className="grid grid-cols-2 gap-4">
@@ -116,7 +117,7 @@ export function OrderDetailsDialog({
 
           <Separator className="bg-[#3A3A3A]" />
 
-          <div className="bg-[#2A2A2A] rounded-xl p-4 border-2 border-[#3A3A3A] flex justify-between items-center">
+          <div className="bg-[#2A2A2A] rounded-xl p-4 border-2 border-[#3A3A3A] flex justify-between items-center mb-6">
             <span className="text-white font-bold text-xl">Razem:</span>
             <span className="text-[#D4A44A] font-bold text-2xl">
               {order.totalPrice.toFixed(2)} PLN
