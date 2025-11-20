@@ -273,6 +273,11 @@ export const ProductFilter = ({ onFilterChange }: ProductFiltersProps) => {
                         name: e.target.value,
                       }))
                     }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleApplyFilters();
+                      }
+                    }}
                     className="pl-10 bg-[#1A1A1A] border-[#3A3A3A] text-[#F8F8F8] placeholder:text-[#6A6A6A]"
                   />
                 </div>
