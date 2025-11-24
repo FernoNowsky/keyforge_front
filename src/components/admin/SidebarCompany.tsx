@@ -32,7 +32,10 @@ export function TeamSwitcher({
             <div>{team.logo}</div>
           </div>
           <span className={`truncate ml-2 ${collapsed ? "text-xl" : "text-2xl"} font-medium`}>
-            {team.name}
+           <span className={`flex flex-col ml-2 ${collapsed ? "text-xl" : "text-2xl"} font-medium leading-tight`}>
+            <span className="truncate">{team.name}</span>
+            <span className="text-sm text-gray-400 -mt-1">Panel administracyjny</span>
+          </span>
           </span>
         </SidebarMenuButton>
       </SidebarMenuItem>

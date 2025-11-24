@@ -86,7 +86,7 @@ export function AdminSidebar({
   };
 
   return (
-    <SidebarProvider>
+    <SidebarProvider className="mr-8">
       <Sidebar
         collapsible="icon"
         className="border-r border-[#3A3A3A] bg-[#2A2A2A]"
@@ -94,7 +94,7 @@ export function AdminSidebar({
         <SidebarHeader>
           <TeamSwitcher team={team} collapsed={collapsed} />
         </SidebarHeader>
-        <SidebarContent>
+        <SidebarContent className="  overflow-x-hidden">
           {menuItems.map((group) => (
             <SidebarGroup key={group.title}>
               <SidebarGroupLabel className="text-[#A0A0A0] text-xs uppercase tracking-wider px-6">
@@ -132,7 +132,13 @@ export function AdminSidebar({
           <SidebarUser user={user} collapsed={collapsed}/>
         </SidebarFooter>
       </Sidebar>
-      <SidebarTrigger className="ml-2 -translate-y-1.75 h-[32px] w-[32px]" onClick={handleSidebarToggle} />
+      <SidebarTrigger
+      className={`
+        fixed top-2 z-50 h-[32px] w-[32px] transition-all duration-300 opacity-60
+        ${collapsed ? "left-14" : "left-66"}
+      `}
+      onClick={handleSidebarToggle}
+    />
     </SidebarProvider>
   );
 }
