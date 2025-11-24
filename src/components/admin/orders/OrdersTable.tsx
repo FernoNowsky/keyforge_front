@@ -347,9 +347,9 @@ export function OrdersTable() {
                       <TableHead className="text-[#A0A0A0]">ID</TableHead>
                       <TableHead className="text-[#A0A0A0]">User ID</TableHead>
                       <TableHead className="text-[#A0A0A0] text-center">Produkty</TableHead>
-                      <TableHead className="text-[#A0A0A0]">Cena</TableHead>
+                      <TableHead className="text-[#A0A0A0] text-center">Cena</TableHead>
                       <TableHead className="text-[#A0A0A0] text-center">Status</TableHead>
-                      <TableHead className="text-[#A0A0A0]">Data</TableHead>
+                      <TableHead className="text-[#A0A0A0] text-center">Data</TableHead>
                       <TableHead className="text-[#A0A0A0] text-right">Akcje</TableHead>
                     </TableRow>
                   </TableHeader>
