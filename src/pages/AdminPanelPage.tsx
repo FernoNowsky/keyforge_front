@@ -329,7 +329,7 @@ export function AdminPanelPage() {
         return (
             <div className="flex min-h-screen bg-[#1C1C1C]">
                 <AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-                <main className="flex-1 py-4 mr-14">
+                <main className="flex-1 py-4 mr-16">
                     <div className="space-y-6 flex justify-center items-center min-h-screen">
                         <Loader2 className="animate-spin w-10 h-10 text-[#D4A44A]" />
                     </div>
@@ -344,7 +344,7 @@ export function AdminPanelPage() {
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
             />
-            <main className="flex-1 py-4 mr-14">
+            <main className="flex-1 py-4 mr-16">
                 {activeTab === 'dashboard' && (
                     <div className="space-y-8">
 

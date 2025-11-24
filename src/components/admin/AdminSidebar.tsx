@@ -86,7 +86,7 @@ export function AdminSidebar({
   };
 
   return (
-    <SidebarProvider className="mr-8">
+    <SidebarProvider className="mr-12">
       <Sidebar
         collapsible="icon"
         className="border-r border-[#3A3A3A] bg-[#2A2A2A]"
