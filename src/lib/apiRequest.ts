@@ -2,13 +2,13 @@ import { $axios } from "@/api/client";
 import type { AxiosRequestConfig, Method } from "axios";
 
 const ORDER_SERVICE_URL =
-    import.meta.env.VITE_ORDER_SERVICE_URL || "http://localhost:8090/order-service";
+    import.meta.env.VITE_ORDER_SERVICE_URL || "/order-service";
 const PRODUCT_SERVICE_URL =
-    import.meta.env.VITE_PRODUCT_SERVICE_URL || "http://localhost:8090/product-service";
+    import.meta.env.VITE_PRODUCT_SERVICE_URL || "/product-service";
 const REVIEW_SERVICE_URL =
-    import.meta.env.VITE_REVIEW_SERVICE_URL || "http://localhost:8090/review-service";
+    import.meta.env.VITE_REVIEW_SERVICE_URL || "/review-service";
 const USER_SERVICE_URL =
-    import.meta.env.VITE_USER_SERVICE_URL || "http://localhost:8090/user-service";  
+    import.meta.env.VITE_USER_SERVICE_URL || "/user-service";  
 export interface PaginationDto {
     page?: number;
     size?: number;
@@ -32,25 +32,26 @@ export async function apiRequest<T = unknown>(
     path: string,
     { params = {}, method = "get", data, requiresAuth = true, requiresAdmin = false}: ApiRequestOptions = {}
 ): Promise<T> {
-    let baseUrl: string;
+    let servicePath: string;
 
     if (path.includes("orders")) {
-        baseUrl = ORDER_SERVICE_URL;
+        servicePath = ORDER_SERVICE_URL;
     } else if (
         ["products", "categories", "types", "producents", "platforms"].some((segment) =>
             path.includes(segment)
         )
     ) {
-        baseUrl = PRODUCT_SERVICE_URL;
+        servicePath = PRODUCT_SERVICE_URL;
     } else if (path.includes("reviews")) {
-        baseUrl = REVIEW_SERVICE_URL;
+        servicePath = REVIEW_SERVICE_URL;
     } else if (path.includes("users")) {
-        baseUrl = USER_SERVICE_URL;
-    }else {
-        baseUrl = $axios.defaults.baseURL || "http://localhost:8090";
+        servicePath = USER_SERVICE_URL;
+    } else {
+        servicePath = "";
     }
 
-    const url = `${baseUrl}${path.startsWith("/") ? path : `/${path}`}`;
+    // Use relative path for axios to work with baseURL properly
+    const url = `${servicePath}${path.startsWith("/") ? path : `/${path}`}`;
 
     const config: AxiosRequestConfig = {
         url,

@@ -24,7 +24,9 @@ export function LoginNeededError() {
       return;
     }
 
-    const redirectUri = previousUrl || window.location.origin;
+    const redirectUri = previousUrl || (window.location.hostname === 'localhost' && window.location.port === ''
+        ? 'com.keyforge.app://login'  // Mobile Capacitor
+        : window.location.origin);    // Web browser
     keycloak?.login({ redirectUri });
   };
 

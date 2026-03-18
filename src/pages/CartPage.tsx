@@ -165,8 +165,12 @@ const validateStock = (currentCart: CartItem[]) => {
         const currentUrl = window.location.href;
 
         const redirectUri = currentUrl.includes("error")
-            ? window.location.origin
-            : window.location.href;
+            ? (window.location.hostname === 'localhost' && window.location.port === ''
+                ? 'com.keyforge.app://login'  // Mobile Capacitor
+                : window.location.origin)     // Web browser
+            : (window.location.hostname === 'localhost' && window.location.port === ''
+                ? 'com.keyforge.app://login'  // Mobile Capacitor  
+                : window.location.href);      // Web browser
 
         keycloak?.login({ redirectUri });
     }

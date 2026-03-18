@@ -219,8 +219,12 @@ export function NavigationBar() {
                     onOpenChange={setUserAccountOpen}
                     onLogout={() => {
                         setUserAccountOpen(false)
+                        const redirectUri = window.location.hostname === 'localhost' && window.location.port === ''
+                            ? 'com.keyforge.app://login'  // Mobile Capacitor deep link
+                            : window.location.origin; // Web browser
+                            
                         keycloak?.logout({
-                            redirectUri: "http://localhost:5173"
+                            redirectUri
                         })
                     }}
                 />

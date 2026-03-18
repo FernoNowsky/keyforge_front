@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Keyforge</string>
+    <string name="title_activity_main">Keyforge</string>
+    <string name="package_name">com.keyforge.app</string>
+    <string name="custom_url_scheme">com.keyforge.app</string>
+</resources>

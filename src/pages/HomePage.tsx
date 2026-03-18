@@ -3,6 +3,7 @@ import { TopGamesCarousel } from "@/components/TopGamesSlider";
 import { NewGamesSection } from "@/components/NewGamesSection";
 import { HomeBanner } from "@/components/home/HomeBanner";
 import { HomeInfoSection } from "@/components/home/HomeInfoSection";
+import { NetworkDebug } from "@/components/NetworkDebug";
 import { ProductsApi } from "@/api";
 import type { Product } from "@/api";
 
@@ -37,6 +38,9 @@ export function HomePage() {
 
   return (
     <div className="-mt-4">
+      {/* Debug panel - only in development */}
+      {import.meta.env.DEV && <NetworkDebug />}
+      
       <HomeBanner />
       <main className="flex-1 pt-6 space-y-12">
         <section className="mx-auto px-4">

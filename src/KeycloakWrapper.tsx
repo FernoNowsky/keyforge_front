@@ -41,7 +41,7 @@ export function KeycloakWrapper({ children, keycloakConfig }: KeycloakWrapperPro
 
     useEffect(() => {
         const checkAndInitKeycloak = async () => {
-            const keycloakUrl = 'http://localhost:5000'
+            const keycloakUrl = import.meta.env.VITE_KEYCLOAK_URL || 'http://localhost:5000'
             const isReachable = await isKeycloakReachable(keycloakUrl)
 
             if (!isReachable) {

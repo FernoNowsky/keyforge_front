@@ -77,7 +77,9 @@ export function SidebarUser({
             <DropdownMenuItem
               onClick={() => {
                 keycloak?.logout({
-                  redirectUri: window.location.origin,
+                  redirectUri: window.location.hostname === 'localhost' && window.location.port === ''
+                    ? 'com.keyforge.app://login'  // Mobile Capacitor
+                    : window.location.origin,    // Web browser
                 })
               }}
               className="cursor-pointer"
