@@ -6,16 +6,9 @@ import { useEffect, useState } from "react";
 export function LoginNeededError() {
   const keycloak = getKeycloakInstance();
   const [isKeycloakDisabled, setIsKeycloakDisabled] = useState(false);
-  const [previousUrl, setPreviousUrl] = useState<string>("");
 
   useEffect(() => {
     setIsKeycloakDisabled(!keycloak);
-
-    const referrer = sessionStorage.getItem("preLoginUrl") || document.referrer;
-    if (referrer && !referrer.includes("/error/")) {
-      setPreviousUrl(referrer);
-      sessionStorage.removeItem("preLoginUrl")
-    }
   }, [keycloak]);
 
   const handleLogin = () => {
@@ -23,11 +16,7 @@ export function LoginNeededError() {
       alert("System logowania jest obecnie niedostępny. Spróbuj ponownie później");
       return;
     }
-
-    const redirectUri = previousUrl || (window.location.hostname === 'localhost' && window.location.port === ''
-        ? 'com.keyforge.app://login'  // Mobile Capacitor
-        : window.location.origin);    // Web browser
-    keycloak?.login({ redirectUri });
+    keycloak?.login();
   };
 
   return (

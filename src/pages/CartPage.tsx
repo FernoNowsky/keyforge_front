@@ -161,18 +161,7 @@ const validateStock = (currentCart: CartItem[]) => {
             alert('System logowania jest obecnie niedostępny. Spróbuj ponownie później')
             return
         }
-
-        const currentUrl = window.location.href;
-
-        const redirectUri = currentUrl.includes("error")
-            ? (window.location.hostname === 'localhost' && window.location.port === ''
-                ? 'com.keyforge.app://login'  // Mobile Capacitor
-                : window.location.origin)     // Web browser
-            : (window.location.hostname === 'localhost' && window.location.port === ''
-                ? 'com.keyforge.app://login'  // Mobile Capacitor  
-                : window.location.href);      // Web browser
-
-        keycloak?.login({ redirectUri });
+        keycloak?.login()
     }
 
   const updateQuantity = (id: number, delta: number) => {

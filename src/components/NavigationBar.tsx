@@ -77,13 +77,7 @@ export function NavigationBar() {
         if (isAuthenticated) {
             setUserAccountOpen(true)
         } else {
-            const currentUrl = window.location.href;
-
-            const redirectUri = currentUrl.includes("error")
-                ? window.location.origin
-                : window.location.href;
-
-            keycloak?.login({ redirectUri });
+            keycloak?.login()
         }
     }
 
@@ -219,13 +213,7 @@ export function NavigationBar() {
                     onOpenChange={setUserAccountOpen}
                     onLogout={() => {
                         setUserAccountOpen(false)
-                        const redirectUri = window.location.hostname === 'localhost' && window.location.port === ''
-                            ? 'com.keyforge.app://login'  // Mobile Capacitor deep link
-                            : window.location.origin; // Web browser
-                            
-                        keycloak?.logout({
-                            redirectUri
-                        })
+                        keycloak?.logout()
                     }}
                 />
             )}

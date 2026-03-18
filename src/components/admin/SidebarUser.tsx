@@ -76,11 +76,7 @@ export function SidebarUser({
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
-                keycloak?.logout({
-                  redirectUri: window.location.hostname === 'localhost' && window.location.port === ''
-                    ? 'com.keyforge.app://login'  // Mobile Capacitor
-                    : window.location.origin,    // Web browser
-                })
+                keycloak?.logout()
               }}
               className="cursor-pointer"
             >
