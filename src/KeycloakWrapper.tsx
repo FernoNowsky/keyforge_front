@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { ReactKeycloakProvider } from '@react-keycloak/web'
 import Keycloak from 'keycloak-js'
 import { Capacitor } from '@capacitor/core'
-import { App } from '@capacitor/app'
 import { Browser } from '@capacitor/browser'
 import { KeycloakContext, setKeycloakInstance } from './KeycloakContext'
 import { toast } from 'sonner'
+import { App } from '@capacitor/app'
 
 const MOBILE_REDIRECT_URI = 'com.keyforge.app://login'
 
@@ -112,6 +112,65 @@ export function KeycloakWrapper({ children, keycloakConfig }: KeycloakWrapperPro
         instance: null
     })
 
+    // ─── Handle Keycloak Callback ─────────────────────────────────────────────
+    const handleKeycloakCallback = useCallback(async (url: string) => {
+        console.log('[Keycloak] Handling callback:', url);
+        
+        await Browser.close().catch(() => {});
+
+        // Parse params from either query string or fragment
+        const urlObj = new URL(url);
+        let params: URLSearchParams;
+
+        if (urlObj.search) {
+            params = new URLSearchParams(urlObj.search);
+        } else if (urlObj.hash) {
+            params = new URLSearchParams(urlObj.hash.slice(1));
+        } else {
+            const suffix = url.slice(MOBILE_REDIRECT_URI.length);
+            params = new URLSearchParams(suffix.startsWith('?') || suffix.startsWith('#') ? suffix.slice(1) : suffix);
+        }
+
+        const code = params.get('code');
+        if (!code) {
+            console.log('[Keycloak] No code in callback URL (likely logout or error). Reloading to refresh state.');
+            window.location.reload();
+            return;
+        }
+
+        const codeVerifier = localStorage.getItem('kc_pkce_verifier');
+        if (!codeVerifier) {
+            console.error('[Keycloak] No PKCE code_verifier found');
+            return;
+        }
+
+        localStorage.removeItem('kc_pkce_verifier');
+
+        const keycloakUrl = import.meta.env.VITE_KEYCLOAK_URL || 'http://localhost:5000';
+
+        const tokens = await exchangeCodeForTokens(
+            keycloakUrl,
+            'keyforge',
+            'keyforge-frontend',
+            code,
+            codeVerifier
+        );
+
+        if (tokens) {
+            // Store tokens — keycloak.init() will pick these up on next init
+            localStorage.setItem('kc_token', tokens.access_token);
+            localStorage.setItem('kc_refreshToken', tokens.refresh_token);
+            if (tokens.id_token) {
+                localStorage.setItem('kc_idToken', tokens.id_token);
+            }
+            console.log('[Keycloak] Tokens stored, reloading...');
+            window.location.reload();
+        } else {
+            console.error('[Keycloak] Token exchange failed');
+            toast.error('Logowanie nie powiodło się. Spróbuj ponownie.');
+        }
+    }, []);
+
     // ─── Mobile OAuth Callback Listener ───────────────────────────────────────
     // When Keycloak redirects to com.keyforge.app://login?code=X&state=Y,
     // we extract the code and do the token exchange ourselves.
@@ -119,66 +178,19 @@ export function KeycloakWrapper({ children, keycloakConfig }: KeycloakWrapperPro
         if (!Capacitor.isNativePlatform()) return
 
         const sub = App.addListener('appUrlOpen', async (data: { url: string }) => {
-            console.log('[Keycloak] appUrlOpen:', data.url)
-            if (!data.url.startsWith(MOBILE_REDIRECT_URI)) return
-
-            await Browser.close().catch(() => {})
-
-            // Parse params from either query string or fragment
-            const urlObj = new URL(data.url)
-            let params: URLSearchParams
-
-            if (urlObj.search) {
-                params = new URLSearchParams(urlObj.search)
-            } else if (urlObj.hash) {
-                params = new URLSearchParams(urlObj.hash.slice(1))
-            } else {
-                const suffix = data.url.slice(MOBILE_REDIRECT_URI.length)
-                params = new URLSearchParams(suffix.startsWith('?') || suffix.startsWith('#') ? suffix.slice(1) : suffix)
+            console.log('[Keycloak] appUrlOpen received:', data.url)
+            
+            // ONLY handle Keycloak login URLs - ignore all other schemes
+            if (!data.url.startsWith(MOBILE_REDIRECT_URI)) {
+                console.log('[Keycloak] Not a Keycloak URL, ignoring:', data.url)
+                return // This allows other listeners to handle non-Keycloak URLs
             }
 
-            const code = params.get('code')
-            if (!code) {
-                console.log('[Keycloak] No code in callback URL (likely logout or error). Reloading to refresh state.')
-                window.location.reload()
-                return
-            }
+            await handleKeycloakCallback(data.url);
+        });
 
-            const codeVerifier = localStorage.getItem('kc_pkce_verifier')
-            if (!codeVerifier) {
-                console.error('[Keycloak] No PKCE code_verifier found')
-                return
-            }
-
-            localStorage.removeItem('kc_pkce_verifier')
-
-            const keycloakUrl = import.meta.env.VITE_KEYCLOAK_URL || 'http://localhost:5000'
-
-            const tokens = await exchangeCodeForTokens(
-                keycloakUrl,
-                'keyforge',
-                'keyforge-frontend',
-                code,
-                codeVerifier
-            )
-
-            if (tokens) {
-                // Store tokens — keycloak.init() will pick these up on next init
-                localStorage.setItem('kc_token', tokens.access_token)
-                localStorage.setItem('kc_refreshToken', tokens.refresh_token)
-                if (tokens.id_token) {
-                    localStorage.setItem('kc_idToken', tokens.id_token)
-                }
-                console.log('[Keycloak] Tokens stored, reloading...')
-                window.location.reload()
-            } else {
-                console.error('[Keycloak] Token exchange failed')
-                toast.error('Logowanie nie powiodło się. Spróbuj ponownie.')
-            }
-        })
-
-        return () => { sub.then(h => h.remove()).catch(() => {}) }
-    }, [])
+        return () => { sub.then((h: { remove: () => void }) => h.remove()).catch(() => {}) }
+    }, [handleKeycloakCallback]);
 
     // ─── Keycloak Initialisation ───────────────────────────────────────────────
     useEffect(() => {
