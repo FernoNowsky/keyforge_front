@@ -32,15 +32,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="com.keyforge.app" />
-            </intent-filter>
-            
-            <!-- Deep link for app navigation -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="twojaappka" />
+                <data android:scheme="com.keyforge.app" android:host="login" />
             </intent-filter>
 
         </activity>
