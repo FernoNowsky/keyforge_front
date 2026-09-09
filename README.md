@@ -80,20 +80,20 @@ keyforge/
 ## Port Mapping & Infrastructure Overview (Docker Compose)
 
 | Container Name | Service Role | Underlying Technology / Database |
-| :--- | :--- | :--- | :--- | :--- |
+| :--- | :--- | :--- |
 | `api-gateway` | Main API Entry Point | Spring Cloud Gateway |
 | `keycloak` | Identity Management | Keycloak Server |
-| `postgres-keycloak`| Keycloak Persistence | PostgreSQL |
+| `postgres-keycloak` | Keycloak Persistence | PostgreSQL |
 | `user-service` | Profiles & KeyPoints | Spring Boot + MongoDB |
 | `mongo-users` | User Data Store | MongoDB |
 | `product-service` | Catalog & Inventory | Spring Boot + PostgreSQL |
-| `postgres-products`| Product Data Store | PostgreSQL |
+| `postgres-products` | Product Data Store | PostgreSQL |
 | `order-service` | Orders & Pricing State | Spring Boot + PostgreSQL |
 | `postgres-orders` | Order Data Store | PostgreSQL |
 | `payment-service` | Stripe & Webhooks | Spring Boot + Stripe SDK |
 | `review-service` | Reviews & Ratings | Spring Boot + MongoDB |
 | `mongo-review` | Reviews Data Store | MongoDB |
-| `ai-service` | AI Moderation & Summary| Spring Boot + Google AI |
+| `ai-service` | AI Moderation & Summary | Spring Boot + Google AI |
 | `frontend` | Web User Interface | React.js + Vite |
 
 ---
