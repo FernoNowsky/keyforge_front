@@ -1,73 +1,112 @@
-# React + TypeScript + Vite
+# KeyForge 🗝️
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, cloud-native e-commerce platform built for the digital distribution of game keys. KeyForge leverages a microservices architecture to provide an end-to-end shopping experience, automated digital fulfillment, a tiered customer loyalty system ("KeyPoints"), and AI-powered review moderation.
 
-Currently, two official plugins are available:
+> **Notice:** This repo shows only front end version of Keyforge. Complete and detailed documentation covering architecture diagrams (UML, ERD, sequence diagrams), API references, backend design and UI flows can be found in the **`documentation`** folder.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## System Architecture
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+KeyForge is designed as a distributed system of loosely coupled microservices isolated via Docker containers. All external client requests are routed through a central API Gateway, with identity management centralized through Keycloak.
 
-## Expanding the ESLint configuration
+### Architecture Highlights:
+* **Central API Gateway:** Single entry point managing route dispatching and security.
+* **Polyglot Persistence:** 
+  * **PostgreSQL:** Handles relational and transaction-critical data (products, orders, line items).
+  * **MongoDB:** Stores document-oriented, unstructured data (user profiles, reviews).
+* **Identity & Access Management:** Centralized authentication via Keycloak utilizing OAuth2, OpenID Connect, and JWT.
+* **External Integrations:** Stripe API for payment processing with webhook fulfillment, and Google AI models for review moderation and content synthesis.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 📁 Project Structure & Microservices
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```text
+keyforge/
+├── api-gateway/          # Spring Cloud Gateway (Port: 8090)
+├── user-service/         # User profile and loyalty KeyPoints management (MongoDB)
+├── product-service/      # Product catalog, stock, and pricing engine (PostgreSQL)
+├── order-service/        # Order creation, calculation, and state management (PostgreSQL)
+├── payment-service/      # Stripe API integration & payment webhooks
+├── review-service/       # Customer ratings & reviews management (MongoDB)
+├── ai-service/           # Review moderation & AI review summarization
+├── frontend/             # Single Page Application (React.js, TanStack Router, Tailwind CSS)
+├── documentation/        # Full technical documentation, diagrams, and API specifications
+├── docker-compose.yml    # Container orchestration for services and databases
+└── .env.example          # Environment variables template
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🛠️ Complete Tech Stack & Infrastructure
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Backend & Core Services
+* **Language & Framework:** Java 21, Spring Boot 3
+* **Data Access & ORM:** Spring Data JPA, Hibernate (Code-First schema generation)
+* **API Gateway & Routing:** Spring Cloud Gateway
+* **Build Tool:** Gradle
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### Databases & Multi-Model Storage
+* **Relational Storage:** PostgreSQL 16 (Products, Orders, Order Items)
+* **Document / NoSQL Storage:** MongoDB (User Profiles, Product Reviews, Rating Aggregates)
+* **Identity Storage:** Dedicated PostgreSQL instance for Keycloak
+
+### Identity, Authentication & Security
+* **IAM Server:** Keycloak (Quay.io container)
+* **Protocols & Standards:** OAuth2, OpenID Connect (OIDC), Stateless JWT tokens
+* **Social Login:** Google OAuth2 Integration
+* **Route Protection:** Role-based access control (RBAC) enforced at both API Gateway and TanStack Router levels
+
+### Frontend & Client Application
+* **Core Framework:** React.js (Single Page Application architecture)
+* **Client-Side Routing:** TanStack Router (with route guards and authorization hooks)
+* **Styling & Design System:** Tailwind CSS
+* **Theme:** Dark mode UI tailored for gaming e-commerce
+
+### DevOps, Networking & Containerization
+* **Containerization:** Docker & Docker Engine
+* **Service Orchestration:** Docker Compose (Multi-container private bridge network `keyforge-network`)
+* **Container Registry:** GitHub Container Registry (GHCR)
+
+### External Integrations & APIs
+* **Payment Processing:** Stripe API (Checkout sessions, webhook event verification for order states)
+* **Artificial Intelligence:** Google AI API (Automated content moderation, profanity filtering, sentiment/summary generation)
+
+### API Contracts, Documentation & Testing
+* **API Specifications:** OpenAPI 3.0 / Swagger UI (`springdoc-openapi`)
+* **API Client & Manual Testing:** Insomnia (Token validation, role-permission verification, HTTP 401/403 testing)
+
+---
+
+## Port Mapping & Infrastructure Overview (Docker Compose)
+
+| Container Name | Service Role | Underlying Technology / Database |
+| :--- | :--- | :--- | :--- | :--- |
+| `api-gateway` | Main API Entry Point | Spring Cloud Gateway |
+| `keycloak` | Identity Management | Keycloak Server |
+| `postgres-keycloak`| Keycloak Persistence | PostgreSQL |
+| `user-service` | Profiles & KeyPoints | Spring Boot + MongoDB |
+| `mongo-users` | User Data Store | MongoDB |
+| `product-service` | Catalog & Inventory | Spring Boot + PostgreSQL |
+| `postgres-products`| Product Data Store | PostgreSQL |
+| `order-service` | Orders & Pricing State | Spring Boot + PostgreSQL |
+| `postgres-orders` | Order Data Store | PostgreSQL |
+| `payment-service` | Stripe & Webhooks | Spring Boot + Stripe SDK |
+| `review-service` | Reviews & Ratings | Spring Boot + MongoDB |
+| `mongo-review` | Reviews Data Store | MongoDB |
+| `ai-service` | AI Moderation & Summary| Spring Boot + Google AI |
+| `frontend` | Web User Interface | React.js + Vite |
+
+---
+
+## Key Business Logic
+
+* **Loyalty Progression Tiers:**
+  * Nowicjusz Kowal (0 pts – 0% discount)
+  * Uczeń Kuźni (1,000 pts – 3% discount)
+  * Czeladnik Kuźni (2,500 pts – 6% discount)
+  * Mistrz Kuźni (5,000 pts – 9% discount)
+  * Legendarny Kowal (10,000 pts – 12% discount)
+  * Wielki Mistrz Kluczy (20,000 pts – 15% discount)
+* **Order State Machine:**
+  * `READY_FOR_PAYMENT` ➔ `PAID` ➔ `COMPLETED` (Keys revealed, points awarded, refunds locked)
+  * `READY_FOR_PAYMENT` ➔ `PAYMENT_FAILED` ➔ `CANCELLED` (Inventory unlocked)
